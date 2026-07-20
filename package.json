@@ -1,0 +1,28 @@
+{
+  "name": "gribakin-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive scroll-driven portfolio by Aleksandr Gribakin",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "bot": "node telegram-bot.js",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "three": "^0.160.0",
+    "gsap": "^3.12.2"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.0"
+  },
+  "browserslist": {
+    "production": [">0.5%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version"]
+  }
+}
