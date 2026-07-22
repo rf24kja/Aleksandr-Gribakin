@@ -188,6 +188,12 @@ if (isMobile) {
   renderer.toneMappingExposure = 0.7;
 }
 
+if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+  setTimeout(() => {
+    document.dispatchEvent(new CustomEvent('fx:quality', { detail: { level: 'medium' } }))
+  }, 1000)
+}
+
 document.addEventListener('fx:quality', (e) => {
   const { quality } = e.detail;
   renderer.setPixelRatio(quality === 'high' ? Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2) : quality === 'medium' ? 1 : 0.75);

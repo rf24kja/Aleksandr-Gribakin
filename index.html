@@ -150,6 +150,14 @@
 
     canvas#webgl { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
     #scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, var(--scanline-color) 0px, var(--scanline-color) 1px, transparent 1px, transparent 3px); }
+    [data-theme="dark"] #scanlines,
+    [data-theme="cyber"] #scanlines {
+      background: transparent !important;
+    }
+    [data-theme="dark"] #scanlines::after,
+    [data-theme="cyber"] #scanlines::after {
+      display: none !important;
+    }
     #ui-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
     #ui-overlay > * { pointer-events: auto; }
 
@@ -243,7 +251,7 @@
     .section-overlay::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 1px 1px, var(--dot-color) 1px, transparent 0); background-size: 40px 40px; pointer-events: none; }
     .section-overlay.visible { opacity: 1; transform: scale(1); }
     .section-overlay.visible > * { pointer-events: auto; }
-    .section-overlay .section-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: .3em; text-transform: uppercase; margin-bottom: 28px; opacity: .8; background: var(--gradient-title); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .section-overlay .section-title { font-family: var(--font-mono); font-size: clamp(9px, 1.2vw, 12px); letter-spacing: .3em; text-transform: uppercase; margin-bottom: 28px; opacity: .8; background: var(--gradient-title); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* Intro */
     .intro-text { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2; text-align: center; pointer-events: none; opacity: 0; transition: opacity 1s; }
