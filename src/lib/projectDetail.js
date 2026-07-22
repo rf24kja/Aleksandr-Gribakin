@@ -405,7 +405,14 @@ export function renderCareerPage(idx) {
 
   wrap.classList.add('active');
   _wireGenericDetail();
-  requestAnimationFrame(() => animateCharts());
+  requestAnimationFrame(() => {
+    animateCharts();
+    setTimeout(() => {
+      wrap.querySelectorAll('[data-pd-animate]').forEach((el, i) => {
+        setTimeout(() => el.classList.add('pd-visible'), 100 + i * 60);
+      });
+    }, 50);
+  });
 }
 
 function _renderCareerChartItem(h, i) {

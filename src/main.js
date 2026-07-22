@@ -114,7 +114,10 @@ gsap.timeline({
       orchestrator.s.set('progress', p);
       orchestrator._resolveScene(p);
       orchestrator.s.setScene(orchestrator.currentScene, p);
-      progressBar.style.width = `${p * 100}%`;
+      const spBar = document.getElementById('spBar');
+      const spDot = document.getElementById('spDot');
+      if (spBar) spBar.style.width = `${p * 100}%`;
+      if (spDot) spDot.style.left = `${p * 100}%`;
 
       const lang = orchestrator.s.lang;
       const idx = orchestrator.currentScene;
@@ -308,17 +311,6 @@ applyTheme(savedTheme);
     }
   }, 2000);
 })();
-
-// --- Scroll Progress Bar ---
-ScrollTrigger.create({
-  trigger: document.body, start: 'top top', end: 'bottom bottom',
-  onUpdate: (self) => {
-    const bar = document.getElementById('spBar');
-    const dot = document.getElementById('spDot');
-    if (bar) bar.style.width = `${self.progress * 100}%`;
-    if (dot) dot.style.left = `${self.progress * 100}%`;
-  },
-});
 
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.theme-btn');

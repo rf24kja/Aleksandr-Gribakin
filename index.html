@@ -267,10 +267,12 @@
     /* Scanline overlay on hover */
     #portrait-wrap:hover #portrait { opacity: .25; filter: grayscale(.3) contrast(1.1) brightness(.9); }
     #portrait-wrap:hover::before { opacity: .6; }
-    [data-theme="dark"] #portrait-wrap::before { background: linear-gradient(135deg, #c9a86c, #d4af37, #8b7355, #c9a86c, #a67c52) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
     [data-theme="cyber"] #portrait { filter: grayscale(1) contrast(1.4) brightness(.5); opacity: .12; }
+    [data-theme="cyber"] #portrait-wrap::before { background: linear-gradient(135deg, #00d4ff, #00ff88, #00d4ff, #00ff88) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
     [data-theme="terminal"] #portrait { filter: grayscale(1) contrast(1.6) brightness(.3); opacity: .08; }
+    [data-theme="terminal"] #portrait-wrap::before { background: linear-gradient(135deg, #33ff33, #66ff66, #33ff33, #00cc00) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
     [data-theme="steampunk"] #portrait { filter: sepia(.6) grayscale(.4) contrast(1.2) brightness(.6); opacity: .08; }
+    [data-theme="steampunk"] #portrait-wrap::before { background: linear-gradient(135deg, #b8860b, #d4a017, #8b6508, #c49a1a) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
     /* Hologram glitch line animation */
     @keyframes hologram-scan { 0% { opacity: 0; transform: translateY(-50%) translateX(0); } 50% { opacity: .15; } 100% { opacity: 0; transform: translateY(-50%) translateX(4px); } }
     #portrait-wrap::before { animation: hologram-border 4s ease-in-out infinite; }

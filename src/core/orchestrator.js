@@ -444,6 +444,7 @@ export default class PortfolioOrchestrator {
       const lang = this.s.lang;
       const fd = new FormData(form);
       const data = { name: fd.get('name'), email: fd.get('email'), message: fd.get('message'), _website: fd.get('_website') };
+      if (data._website) return;
       const { valid, errors } = validateForm(data, lang);
       this._renderFormErrors(form, errors);
       if (!valid) return;
