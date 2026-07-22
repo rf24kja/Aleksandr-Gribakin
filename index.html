@@ -339,10 +339,10 @@
     .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; max-width: 960px; width: 100%; max-height: 60vh; overflow-y: auto; padding: 4px 20px; scrollbar-width: thin; scrollbar-color: var(--glow) transparent; }
     .projects-grid::-webkit-scrollbar { width: 3px; }
     .projects-grid::-webkit-scrollbar-thumb { background: var(--glow); border-radius: 2px; }
-    .project-card { padding: 2px; background: var(--gradient-card); border-radius: var(--radius); pointer-events: auto; cursor: pointer; perspective: 600px; opacity: 0; transform: translateY(20px); transition: all .4s cubic-bezier(.23,1,.32,1); }
+    .project-card { padding: 2px; background: var(--gradient-card); border-radius: var(--radius); pointer-events: auto; cursor: pointer; perspective: 600px; opacity: 0; transform: translateY(20px); transition: all .4s cubic-bezier(.4,0,.2,1); }
     .project-card.visible { opacity: 1; transform: translateY(0); }
     .project-card:hover { box-shadow: var(--shadow); }
-    .project-card .card-inner { padding: 16px; background: var(--card-bg); backdrop-filter: blur(12px); border-radius: calc(var(--radius) - 1px); transition: transform .3s cubic-bezier(.23,1,.32,1); }
+    .project-card .card-inner { padding: 16px; background: var(--card-bg); backdrop-filter: blur(12px); border-radius: calc(var(--radius) - 1px); transition: transform .3s cubic-bezier(.4,0,.2,1); }
     .project-card:hover .card-inner { background: color-mix(in srgb, var(--bg2) 80%, transparent); }
     .project-card .card-tag { display: inline-block; font-family: var(--font-mono); font-size: 8px; letter-spacing: .12em; color: var(--accent2); border: 1px solid color-mix(in srgb, var(--accent2) 20%, transparent); border-radius: 3px; padding: 1px 6px; margin-bottom: 8px; }
     .project-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 5px; font-family: var(--font-mono); background: var(--gradient-name); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -352,7 +352,7 @@
 
     /* Achievements */
     .achievements-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; max-width: 700px; width: 100%; padding: 0 20px; }
-    .achievement-item { padding: 16px 18px; background: var(--section-bg); backdrop-filter: blur(8px); border: 1px solid var(--border-light); border-radius: var(--radius); opacity: 0; transform: scale(.92); transition: all .4s cubic-bezier(.23,1,.32,1); cursor: pointer; }
+    .achievement-item { padding: 16px 18px; background: var(--section-bg); backdrop-filter: blur(8px); border: 1px solid var(--border-light); border-radius: var(--radius); opacity: 0; transform: scale(.92); transition: all .4s cubic-bezier(.4,0,.2,1); cursor: pointer; }
     .achievement-item.visible { opacity: 1; transform: scale(1); }
     .achievement-item:hover { transform: translateY(-2px); box-shadow: 0 4px 20px var(--glow-strong), 0 0 40px var(--glow); border-color: var(--accent); background: color-mix(in srgb, var(--section-bg) 70%, transparent); }
     .achievement-item .ach-year { font-family: var(--font-mono); font-size: 9px; color: var(--accent); margin-bottom: 3px; }
@@ -741,12 +741,12 @@
     .pd-section-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; opacity: .7; }
     .pd-metrics { margin-bottom: 28px; }
     .pd-charts { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
-    .pd-chart-item { padding: 12px 14px; background: var(--section-bg); border: 1px solid var(--border-light); border-radius: var(--radius); opacity: 0; transform: translateY(10px); transition: all .5s cubic-bezier(.23,1,.32,1); }
+    .pd-chart-item { padding: 12px 14px; background: var(--section-bg); border: 1px solid var(--border-light); border-radius: var(--radius); opacity: 0; transform: translateY(10px); transition: all .5s cubic-bezier(.4,0,.2,1); }
     .pd-chart-item.pd-visible { opacity: 1; transform: translateY(0); }
     .pd-chart-item.pd-chart-wide { grid-column: 1 / -1; }
     .pd-chart-label { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); letter-spacing: .08em; margin-bottom: 6px; text-transform: uppercase; }
     .pd-chart-bar-wrap { height: 6px; background: color-mix(in srgb, var(--text-bright) 5%, transparent); border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
-    .pd-chart-bar-fill { height: 100%; background: var(--gradient-title); border-radius: 3px; transition: width 1.2s cubic-bezier(.23,1,.32,1); }
+    .pd-chart-bar-fill { height: 100%; background: var(--gradient-title); border-radius: 3px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
     .pd-chart-val { font-family: var(--font-mono); font-size: 16px; font-weight: 400; color: var(--text-bright); }
     .pd-chart-bool { text-align: center; padding: 8px; }
     .pd-chart-bool svg { width: 40px; height: 40px; }

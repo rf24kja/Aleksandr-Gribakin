@@ -412,12 +412,12 @@ export default class PortfolioOrchestrator {
     } catch {}
     return 'EN';
   }
-  _updateLangToggleText() { const b = document.querySelector('[data-lang-switch]'); if (b) b.textContent = this.s.lang === 'EN' ? 'RU / EN' : 'EN / RU'; }
+  _updateLangToggleText() { const b = document.querySelector('[data-lang-switch]'); if (b) { b.textContent = this.s.lang === 'EN' ? 'RU / EN' : 'EN / RU'; b.setAttribute('aria-current', 'true'); } }
 
   _wireLanguageToggle() {
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-lang-switch]');
-      if (btn) this.s.toggleLang();
+      if (btn) { this.s.toggleLang(); document.querySelectorAll('[data-lang-switch]').forEach(el => el.setAttribute('aria-current', 'true')); }
     });
   }
 
@@ -494,7 +494,9 @@ export default class PortfolioOrchestrator {
   _clearFormErrors(form) { form.querySelectorAll('[data-field-error]').forEach((el) => { el.textContent = ''; el.style.opacity = '0'; }); }
 
   _showFormSuccess(form) {
-    form.querySelector('[type="submit"]')?.classList.remove('loading');
+    const btn = form.querySelector('[type="submit"]');
+    btn?.classList.remove('loading');
+    if (btn) { btn.disabled = false; btn.style.pointerEvents = 'auto'; }
     const c = form.querySelector('[data-form-success]');
     if (c) {
       c.textContent = this._l().FORM.SUCCESS;
@@ -583,10 +585,12 @@ export default class PortfolioOrchestrator {
       if (m = h.match(/^#\/project\/(.+)$/)) { this._showSkeleton(); renderProjectPage(m[1]); handled = true; }
       else if (m = h.match(/^#\/career\/(\d+)$/)) { this._showSkeleton(); renderCareerPage(parseInt(m[1])); handled = true; }
       else if (m = h.match(/^#\/achievement\/(\d+)$/)) { this._showSkeleton(); renderAchievementPage(parseInt(m[1])); handled = true; }
-      const pd = document.getElementById('projectDetail');
-      if (pd) {
-        if (pd.classList.contains('active')) closeProjectDetail();
-        document.getElementById('page404').style.display = 'none';
+      if (!handled) {
+        const pd = document.getElementById('projectDetail');
+        if (pd) {
+          if (pd.classList.contains('active')) closeProjectDetail();
+          document.getElementById('page404').style.display = 'none';
+        }
       }
       if (h && !handled) {
         document.getElementById('page404').style.display = 'flex';
