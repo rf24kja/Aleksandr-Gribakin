@@ -196,6 +196,18 @@ document.addEventListener('fx:quality', (e) => {
   renderer.toneMappingExposure = quality === 'high' ? 1.0 : quality === 'medium' ? 0.8 : 0.6;
 });
 
+// --- Mobile 3D Fallback ---
+if (window.innerWidth < 768) {
+  setTimeout(() => {
+    const fpsText = document.getElementById('fpsCounter')?.textContent || ''
+    const fps = Number(fpsText.split(' ')[0])
+    if (fps > 0 && fps < 30) {
+      renderer.setAnimationLoop(null)
+      document.querySelector('canvas#webgl').style.display = 'none'
+    }
+  }, 5000)
+}
+
 // --- Render Loop ---
 (function animate() { requestAnimationFrame(animate); updateParallax(); if (!document.hidden) composer.render(); })();
 

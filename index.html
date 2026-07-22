@@ -673,12 +673,15 @@
       .terminal-form { margin: 20px; padding: 28px 20px; }
       .terminal-form input, .terminal-form textarea { font-size: 16px; }
       .theme-switcher { top: 18px; left: 12px; gap: 4px; }
-      .theme-btn { width: 32px; height: 32px; font-size: 12px; }
-      .lang-toggle { top: 18px; right: 12px; font-size: 11px; padding: 6px 12px; }
+      .theme-btn { width: 40px; height: 40px; font-size: 12px; }
+      .lang-toggle { top: 18px; right: 12px; padding: 10px 16px; font-size: 12px; }
+      .coffee-egg { width: 44px; height: 44px; }
       #portrait { width: 200px; right: 0; opacity: .06; }
       .pd-scroll { padding: 20px 16px; }
       .pd-panel { max-height: 94vh; }
-      .project-card .card-inner { pointer-events: none; }
+      .project-card { -webkit-tap-highlight-color: rgba(201,168,108,.15); }
+      .project-card .card-inner { pointer-events: auto; }
+      .project-card:active .card-inner { background: color-mix(in srgb, var(--accent) 8%, transparent); }
     }
     /* Project Detail */
     #projectDetail { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .4s; }
@@ -767,7 +770,12 @@
   <canvas id="webgl"></canvas>
   <div id="scanlines"></div>
   <div id="portrait-wrap">
-    <img id="portrait" src="/img_2025_12_23.png" alt="Aleksandr Gribakin" fetchpriority="high" />
+    <img id="portrait"
+      src="/img_2025_12_23.png"
+      srcset="/img_2025_12_23.png 1x, /img_2025_12_23@2x.png 2x"
+      alt="Aleksandr Gribakin"
+      fetchpriority="high"
+      decoding="async" />
 
   </div>
 
