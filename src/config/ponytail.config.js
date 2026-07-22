@@ -74,7 +74,20 @@ const EN = {
   ],
   CTA_TITLE: 'Initiate Consult',
   CTA_SUB: 'Ready to build something extraordinary? One message starts the conversation.',
-  FORM: { NAME: 'Your Name', EMAIL: 'Email Address', MESSAGE: 'Describe your project...', SUBMIT: 'Initiate Consult', SUCCESS: '▸ Message transmitted. I will reach out shortly.', PLACEHOLDER_NAME: 'e.g., Elon Musk', PLACEHOLDER_EMAIL: 'elon@spacex.com', PLACEHOLDER_MSG: 'Tell me about your product, team, and what you are building...' },
+  FORM: { NAME: 'Your Name', EMAIL: 'Email Address', MESSAGE: 'Describe your project...', SUBMIT: 'Initiate Consult', SUCCESS: '▸ Message transmitted. I will reach out shortly.', PLACEHOLDER_NAME: 'Your name, or your best alias', PLACEHOLDER_EMAIL: 'where pixels meet purpose', PLACEHOLDER_MSG: 'Product, team, dream — paint the picture...' },
+  FORM_ERRORS: {
+    NAME_REQUIRED: 'Enter your name',
+    EMAIL_REQUIRED: 'Enter your email',
+    EMAIL_INVALID: 'That does not look like an email',
+    MSG_REQUIRED: 'Describe your project briefly',
+    NETWORK: 'Network error. Try again later.',
+    RATE_LIMIT: 'Slow down. One message at a time.',
+  },
+  _PAGE_404: {
+    TITLE: '404 — Page Not Found',
+    SUB: 'This route does not exist.',
+    CTA: 'Return Home',
+  },
   COFFEE: { TITLE: '☕ Buy me a coffee', NETWORK: 'USDT TRC-20', COPY: 'Copy Address', DONE: '✓ Copied', CLOSE: 'Close' },
   DETAIL: { BACK: 'Back', BACK_CAREER: 'Back to Career', BACK_ACH: 'Back to Achievements', NOT_FOUND: 'not found', KEY_METRICS: 'Key Metrics', FEATURES: 'Features', TECH_STACK: 'Tech Stack', KEY_ACH: 'Key Achievements', TYPE_PROJECT: 'Project', TYPE_CAREER: 'Career', TYPE_ACH: 'Achievement' },
 };
@@ -147,7 +160,20 @@ const RU = {
   ],
   CTA_TITLE: 'Начать консультацию',
   CTA_SUB: 'Готовы построить нечто экстраординарное? Одно сообщение запускает разговор.',
-  FORM: { NAME: 'Ваше Имя', EMAIL: 'Email Адрес', MESSAGE: 'Опишите ваш проект...', SUBMIT: 'Начать консультацию', SUCCESS: '▸ Сообщение отправлено. Я свяжусь с вами в ближайшее время.', PLACEHOLDER_NAME: 'Например, Иван Иванов', PLACEHOLDER_EMAIL: 'ivan@example.com', PLACEHOLDER_MSG: 'Расскажите о вашем продукте, команде и над чем работаете...' },
+  FORM: { NAME: 'Ваше Имя', EMAIL: 'Email Адрес', MESSAGE: 'Опишите ваш проект...', SUBMIT: 'Начать консультацию', SUCCESS: '▸ Сообщение отправлено. Я свяжусь с вами в ближайшее время.', PLACEHOLDER_NAME: 'Имя или лучший псевдоним', PLACEHOLDER_EMAIL: 'туда, где живёт идея', PLACEHOLDER_MSG: 'Продукт, команда, мечта — опишите картину...' },
+  FORM_ERRORS: {
+    NAME_REQUIRED: 'Введите ваше имя',
+    EMAIL_REQUIRED: 'Введите ваш email',
+    EMAIL_INVALID: 'Это не похоже на email',
+    MSG_REQUIRED: 'Опишите ваш проект кратко',
+    NETWORK: 'Ошибка сети. Попробуйте позже.',
+    RATE_LIMIT: 'Не так быстро. По одному сообщению.',
+  },
+  _PAGE_404: {
+    TITLE: '404 — Страница не найдена',
+    SUB: 'Этот маршрут не существует.',
+    CTA: 'Вернуться на главную',
+  },
   COFFEE: { TITLE: '☕ Угостить кофе', NETWORK: 'USDT TRC-20', COPY: 'Скопировать адрес', DONE: '✓ Скопировано', CLOSE: 'Закрыть' },
   DETAIL: { BACK: 'Назад', BACK_CAREER: 'Назад к карьере', BACK_ACH: 'Назад к достижениям', NOT_FOUND: 'не найден', KEY_METRICS: 'Ключевые метрики', FEATURES: 'Возможности', TECH_STACK: 'Технологии', KEY_ACH: 'Ключевые достижения', TYPE_PROJECT: 'Проект', TYPE_CAREER: 'Карьера', TYPE_ACH: 'Достижение' },
 };
