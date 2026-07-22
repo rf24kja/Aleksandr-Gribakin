@@ -449,6 +449,7 @@ export default class PortfolioOrchestrator {
       this._renderFormErrors(form, errors);
       if (!valid) return;
       this._clearFormErrors(form);
+      btn.classList.add('loading');
       animateSubmission(btn);
       try {
         const res = await fetch('/api/consult', {
@@ -460,6 +461,7 @@ export default class PortfolioOrchestrator {
         this.s.set('_lastSubmission', Date.now());
         this._showFormSuccess(form);
       } catch (err) {
+        btn.classList.remove('loading');
         btn.disabled = false;
         btn.style.pointerEvents = 'auto';
         btn.textContent = PONYTAIL.LOCALE[this.s.lang]?.FORM?.SUBMIT || 'Initiate Consult';
@@ -492,6 +494,7 @@ export default class PortfolioOrchestrator {
   _clearFormErrors(form) { form.querySelectorAll('[data-field-error]').forEach((el) => { el.textContent = ''; el.style.opacity = '0'; }); }
 
   _showFormSuccess(form) {
+    form.querySelector('[type="submit"]')?.classList.remove('loading');
     const c = form.querySelector('[data-form-success]');
     if (c) {
       c.textContent = this._l().FORM.SUCCESS;
@@ -520,6 +523,14 @@ export default class PortfolioOrchestrator {
     });
   }
 
+  _showSkeleton() {
+    const panel = document.getElementById('projectDetail');
+    if (panel) {
+      panel.innerHTML = '<div class="pd-panel" style="padding:32px"><div class="pd-skeleton"></div><div class="pd-skeleton"></div><div class="pd-skeleton"></div></div>';
+      panel.classList.add('active');
+    }
+  }
+
   // --- Detail Pages ---
   _wireProjectClicks() {
     document.addEventListener('click', (e) => {
@@ -532,6 +543,7 @@ export default class PortfolioOrchestrator {
       const p = filtered[idx];
       if (p?.id) {
         setProjectLocale(this.s.lang);
+        this._showSkeleton();
         renderProjectPage(p.id);
         history.replaceState(null, '', `#/project/${p.id}`);
       }
@@ -544,6 +556,7 @@ export default class PortfolioOrchestrator {
       if (career) {
         const idx = parseInt(career.dataset.career);
         setProjectLocale(this.s.lang);
+        this._showSkeleton();
         renderCareerPage(idx);
         history.replaceState(null, '', `#/career/${idx}`);
         return;
@@ -552,6 +565,7 @@ export default class PortfolioOrchestrator {
       if (ach) {
         const idx = parseInt(ach.dataset.ach);
         setProjectLocale(this.s.lang);
+        this._showSkeleton();
         renderAchievementPage(idx);
         history.replaceState(null, '', `#/achievement/${idx}`);
       }
@@ -566,9 +580,9 @@ export default class PortfolioOrchestrator {
       lastHash = h;
       setProjectLocale(this.s.lang);
       let m, handled = false;
-      if (m = h.match(/^#\/project\/(.+)$/)) { renderProjectPage(m[1]); handled = true; }
-      else if (m = h.match(/^#\/career\/(\d+)$/)) { renderCareerPage(parseInt(m[1])); handled = true; }
-      else if (m = h.match(/^#\/achievement\/(\d+)$/)) { renderAchievementPage(parseInt(m[1])); handled = true; }
+      if (m = h.match(/^#\/project\/(.+)$/)) { this._showSkeleton(); renderProjectPage(m[1]); handled = true; }
+      else if (m = h.match(/^#\/career\/(\d+)$/)) { this._showSkeleton(); renderCareerPage(parseInt(m[1])); handled = true; }
+      else if (m = h.match(/^#\/achievement\/(\d+)$/)) { this._showSkeleton(); renderAchievementPage(parseInt(m[1])); handled = true; }
       const pd = document.getElementById('projectDetail');
       if (pd) {
         if (pd.classList.contains('active')) closeProjectDetail();
