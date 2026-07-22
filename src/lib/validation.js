@@ -17,42 +17,25 @@ const VALIDATION = Object.freeze({
       max: 2000,
     },
   },
-
-  ERRORS: {
-    EN: {
-      name: { required: 'Name is required', min: 'Name must be at least 2 characters', max: 'Name is too long', pattern: 'Name contains invalid characters' },
-      email: { required: 'Email is required', pattern: 'Please enter a valid email address' },
-      message: { required: 'Message is required', min: 'Message must be at least 10 characters', max: 'Message is too long (max 2000)' },
-    },
-    RU: {
-      name: { required: 'Имя обязательно', min: 'Имя должно содержать минимум 2 символа', max: 'Имя слишком длинное', pattern: 'Имя содержит недопустимые символы' },
-      email: { required: 'Email обязателен', pattern: 'Введите корректный email адрес' },
-      message: { required: 'Сообщение обязательно', min: 'Сообщение должно содержать минимум 10 символов', max: 'Сообщение слишком длинное (макс. 2000)' },
-    },
-  },
 });
 
-function validateField(field, value, lang) {
+function validateField(field, value) {
   const rule = VALIDATION.RULES[field];
-  const errorMap = VALIDATION.ERRORS[lang]?.[field] || VALIDATION.ERRORS.EN[field];
   if (!rule) return null;
-
   const val = rule.normalize ? rule.normalize(value) : value.trim();
-
-  if (rule.required && !val) return errorMap.required;
-  if (rule.min && val.length < rule.min) return errorMap.min;
-  if (rule.max && val.length > rule.max) return errorMap.max;
-  if (rule.pattern && !rule.pattern.test(val)) return errorMap.pattern;
-
+  if (rule.required && !val) return 'required';
+  if (rule.min && val.length < rule.min) return 'min';
+  if (rule.max && val.length > rule.max) return 'max';
+  if (rule.pattern && !rule.pattern.test(val)) return 'pattern';
   return null;
 }
 
-export function validateForm(data, lang = 'EN') {
+export function validateForm(data) {
   const errors = {};
   let valid = true;
 
   for (const field of ['name', 'email', 'message']) {
-    const err = validateField(field, data[field] || '', lang);
+    const err = validateField(field, data[field] || '');
     if (err) { errors[field] = err; valid = false; }
   }
 

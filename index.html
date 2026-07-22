@@ -818,6 +818,12 @@
   </section>
 
   <div id="projectDetail"></div>
+  <div id="page404" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9997;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;font-family:var(--font-mono);text-align:center;gap:12px;">
+    <div style="font-size:48px;color:var(--accent);font-weight:200;">404</div>
+    <div data-i18n="_PAGE_404.TITLE" style="font-size:14px;color:var(--text-bright);"></div>
+    <div data-i18n="_PAGE_404.SUB" style="font-size:11px;color:var(--text-dim);"></div>
+    <button data-i18n="_PAGE_404.CTA" style="margin-top:8px;padding:8px 20px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:var(--font-mono);cursor:pointer;" onclick="window.location.hash=''">Return Home</button>
+  </div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

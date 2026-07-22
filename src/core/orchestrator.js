@@ -445,7 +445,7 @@ export default class PortfolioOrchestrator {
       const fd = new FormData(form);
       const data = { name: fd.get('name'), email: fd.get('email'), message: fd.get('message'), _website: fd.get('_website') };
       if (data._website) return;
-      const { valid, errors } = validateForm(data, lang);
+      const { valid, errors } = validateForm(data);
       this._renderFormErrors(form, errors);
       if (!valid) return;
       this._clearFormErrors(form);
@@ -472,11 +472,20 @@ export default class PortfolioOrchestrator {
     form.querySelectorAll('[data-field-error]').forEach((el) => { el.textContent = ''; el.style.opacity = '0'; });
     const c = form.querySelector('[data-form-errors]');
     if (c) c.textContent = '';
+    const t = PONYTAIL.LOCALE[this.s.lang]?.FORM_ERRORS || {};
     let first = true;
-    Object.entries(errors).forEach(([field, msg]) => {
+    Object.entries(errors).forEach(([field, key]) => {
       const el = form.querySelector(`[data-field-error="${field}"]`);
-      if (el) { el.textContent = msg; el.style.opacity = '1'; }
-      if (first && c && field !== '_api') { c.textContent = msg; first = false; }
+      if (!el) return;
+      if (field === '_api') {
+        const msg = (key + '').toLowerCase().includes('rate') ? t.RATE_LIMIT : t.NETWORK;
+        el.textContent = msg || key;
+      } else {
+        const lookup = (field + '_' + key).toUpperCase();
+        el.textContent = t[lookup] || key;
+      }
+      el.style.opacity = '1';
+      if (first && c && field !== '_api') { c.textContent = el.textContent; first = false; }
     });
   }
 
@@ -556,12 +565,20 @@ export default class PortfolioOrchestrator {
       if (h === lastHash) return;
       lastHash = h;
       setProjectLocale(this.s.lang);
-      let m;
-      if (m = h.match(/^#\/project\/(.+)$/)) { renderProjectPage(m[1]); return; }
-      if (m = h.match(/^#\/career\/(\d+)$/)) { renderCareerPage(parseInt(m[1])); return; }
-      if (m = h.match(/^#\/achievement\/(\d+)$/)) { renderAchievementPage(parseInt(m[1])); return; }
+      let m, handled = false;
+      if (m = h.match(/^#\/project\/(.+)$/)) { renderProjectPage(m[1]); handled = true; }
+      else if (m = h.match(/^#\/career\/(\d+)$/)) { renderCareerPage(parseInt(m[1])); handled = true; }
+      else if (m = h.match(/^#\/achievement\/(\d+)$/)) { renderAchievementPage(parseInt(m[1])); handled = true; }
       const pd = document.getElementById('projectDetail');
-      if (pd && pd.classList.contains('active')) closeProjectDetail();
+      if (pd) {
+        if (pd.classList.contains('active')) closeProjectDetail();
+        document.getElementById('page404').style.display = 'none';
+      }
+      if (h && !handled) {
+        document.getElementById('page404').style.display = 'flex';
+        this._applyI18n();
+        return;
+      }
     };
     window.addEventListener('hashchange', checkHash);
     checkHash();
