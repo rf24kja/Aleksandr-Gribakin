@@ -1,7 +1,7 @@
 const CATEGORIES = ['Fintech', 'ML/AI', 'Infrastructure', 'Open Source', 'Web3', 'Platform'];
 
 const EN = {
-  NAME: 'ALEKSANDR GRIBAKIN', TAGLINE: '15 Years in Code',
+  NAME: 'ALEKSANDR GRIBAKIN', TAGLINE: '15 Years in Code', SKIP_LINK: 'Skip to content',
   ROLE: 'Lead Full Stack Engineer & System Architect',
   INTRO_SUB: 'Building systems that scale. Leading teams that deliver.',
   SECTION_TITLES: { STATS: 'Impact By The Numbers', CAREER: 'Career Timeline', PROJECTS: 'Projects & Impact', ACHIEVEMENTS: 'Milestones & Recognition' },
@@ -99,7 +99,7 @@ const EN = {
 };
 
 const RU = {
-  NAME: 'АЛЕКСАНДР ГРИБАКИН', TAGLINE: '15 лет в коде',
+  NAME: 'АЛЕКСАНДР ГРИБАКИН', TAGLINE: '15 лет в коде', SKIP_LINK: 'Перейти к содержанию',
   ROLE: 'Lead Full Stack Engineer & System Architect',
   INTRO_SUB: 'Строю системы, которые масштабируются. Веду команды, которые доставляют.',
   SECTION_TITLES: { STATS: 'Влияние в цифрах', CAREER: 'Карьерный путь', PROJECTS: 'Проекты и влияние', ACHIEVEMENTS: 'Вехи и признание' },

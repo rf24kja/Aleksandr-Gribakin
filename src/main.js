@@ -26,6 +26,11 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.documentElement.setAttribute('data-reduced-motion', '')
+  document.dispatchEvent(new CustomEvent('fx:quality', { detail: { level: 'low' } }))
+}
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x08080c);
 scene.fog = new THREE.FogExp2(0x08080c, 0.012);
@@ -232,6 +237,8 @@ function applyTheme(theme, anim = true) {
     }, 150);
   }
   document.documentElement.setAttribute('data-theme', theme);
+  document.querySelectorAll('.theme-btn').forEach(b => b.removeAttribute('aria-current'))
+  document.querySelector(`.theme-btn[data-theme="${theme}"]`)?.setAttribute('aria-current', 'true')
   try { localStorage.setItem('theme', theme); } catch {}
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) metaTheme.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0c0a09';
