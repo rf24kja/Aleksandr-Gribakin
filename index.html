@@ -1105,6 +1105,10 @@
       letter-spacing: .1em;
       text-transform: uppercase;
     }
+    [data-mode="business"] .stat-item:hover .stat-value {
+      color: var(--b-accent);
+      transition: color .2s ease;
+    }
 
     /* Career */
     [data-mode="business"] .career-list {
@@ -1126,8 +1130,9 @@
       transition: border-color .2s;
     }
     [data-mode="business"] .career-item:hover {
-      border-color: rgba(233,84,32,.15);
-      transform: none;
+      border-color: rgba(233,84,32,.3);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
       background: var(--b-bg2);
     }
     [data-mode="business"] .career-item .period {
@@ -1187,6 +1192,7 @@
       margin-bottom: 20px;
     }
     [data-mode="business"] .cat-tab {
+      position: relative;
       font-family: var(--b-font-mono);
       font-size: 10px;
       letter-spacing: .06em;
@@ -1197,6 +1203,16 @@
       color: var(--b-text-dim);
       cursor: pointer;
       transition: all .2s;
+    }
+    [data-mode="business"] .cat-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: var(--b-accent);
+      transition: opacity .2s;
     }
     [data-mode="business"] .cat-tab:hover {
       border-color: var(--b-accent);
@@ -1235,8 +1251,9 @@
       transform: none;
     }
     [data-mode="business"] .project-card:hover {
-      border-color: rgba(233,84,32,.2);
-      box-shadow: none;
+      border-color: rgba(233,84,32,.25);
+      box-shadow: 0 4px 20px rgba(0,0,0,.12);
+      transform: translateY(-2px);
     }
     /* Category accent stripes */
     [data-mode="business"] .project-card::before {
@@ -1329,9 +1346,9 @@
       transform: none;
     }
     [data-mode="business"] .achievement-item:hover {
-      transform: none;
-      box-shadow: none;
-      border-color: rgba(233,84,32,.12);
+      border-color: rgba(233,84,32,.2);
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      transform: translateY(-1px);
     }
     [data-mode="business"] .achievement-item .ach-year {
       font-family: var(--b-font-mono);
@@ -1673,6 +1690,15 @@
       line-height: 1.5;
     }
     [data-mode="business"] .pd-metrics { margin-bottom: 28px; }
+
+    /* Entrance micro-animation */
+    @keyframes biz-entrance {
+      0%   { transform: translateY(6px) scale(0.99); opacity: .7; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    [data-mode="business"] .entered {
+      animation: biz-entrance 0.35s ease-out forwards;
+    }
 
     /* Light theme overrides */
     [data-mode="business"][data-theme="light"] .stat-item,
