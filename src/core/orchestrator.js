@@ -108,6 +108,7 @@ export default class PortfolioOrchestrator {
     this._renderProjects();
     this._renderAchievements();
     this._applyI18n();
+    this._observeEntrance();
   }
 
   _reRenderContent() {
@@ -118,6 +119,8 @@ export default class PortfolioOrchestrator {
     this._renderProjects();
     this._renderAchievements();
     this._applyI18n();
+    this._entranceObserved = false;
+    this._observeEntrance();
   }
 
   _applyI18n() {
@@ -231,6 +234,27 @@ export default class PortfolioOrchestrator {
         }
       });
     });
+  }
+
+  _observeEntrance() {
+    if (this._entranceObserved) return;
+    this._entranceObserved = true;
+    let statsCounted = false;
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('entered');
+          obs.unobserve(entry.target);
+        }
+      });
+      // Trigger stats animation once when any stat-item appears
+      if (!statsCounted && entries.some(e => e.target.classList.contains('stat-item') && e.isIntersecting)) {
+        statsCounted = true;
+        this._animateStatsCount();
+      }
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.career-item, .project-card, .achievement-item, .stat-item')
+      .forEach(el => obs.observe(el));
   }
 
   _animateStatsCount() {
@@ -597,6 +621,16 @@ export default class PortfolioOrchestrator {
           document.getElementById('page404').style.display = 'none';
         }
       }
+      // Smooth scroll for business mode anchor links (e.g. #stats, #projects)
+      if (h && !handled && document.documentElement.getAttribute('data-mode') === 'business') {
+        const targetId = h.replace('#', '');
+        const target = document.getElementById(targetId);
+        if (target) {
+          document.getElementById('page404').style.display = 'none';
+          setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+          return;
+        }
+      }
       if (h && !handled) {
         document.getElementById('page404').style.display = 'flex';
         this._applyI18n();
@@ -604,6 +638,21 @@ export default class PortfolioOrchestrator {
       }
     };
     window.addEventListener('hashchange', checkHash);
+
+    // Smooth scroll on nav link click (business mode)
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('[data-scroll-to]');
+      if (!link) return;
+      if (document.documentElement.getAttribute('data-mode') !== 'business') return;
+      e.preventDefault();
+      const targetId = link.getAttribute('data-scroll-to');
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.pushState(null, '', `#${targetId}`);
+      }
+    });
+
     checkHash();
   }
 
