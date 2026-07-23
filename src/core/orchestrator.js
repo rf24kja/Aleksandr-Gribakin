@@ -252,7 +252,7 @@ export default class PortfolioOrchestrator {
         statsCounted = true;
         this._animateStatsCount();
       }
-    }, { threshold: 0.1 });
+    }, { threshold: 0 });
     document.querySelectorAll('.career-item, .project-card, .achievement-item, .stat-item')
       .forEach(el => obs.observe(el));
   }

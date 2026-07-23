@@ -8,3 +8,5 @@ Thumbs.db
 .cache/
 
 .vercel
+check_site.cjs
+screenshot_*.png
