@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { validateForm, animateSubmission } from '../lib/validation.js';
 import { startAmbient, fadeTo as audioFadeTo, initOnUserGesture } from '../lib/synthAudio.js';
 import { renderProjectPage, renderCareerPage, renderAchievementPage, setProjectLocale, closeProjectDetail } from '../lib/projectDetail.js';
+import { CAREER_DETAIL } from '../data/projects.js';
 
 export default class PortfolioOrchestrator {
   constructor() {
@@ -145,15 +146,19 @@ export default class PortfolioOrchestrator {
   _renderCareer() {
     const list = document.getElementById('careerList');
     if (!list) return;
-    list.innerHTML = this._l().CAREER.map((c, i) =>
-      `<div class="career-item" data-career="${i}">
+    const lang = this.s.lang;
+    list.innerHTML = this._l().CAREER.map((c, i) => {
+      const detail = (CAREER_DETAIL[lang] || CAREER_DETAIL.EN)?.[i];
+      const topAch = detail?.keyAchievements?.slice(0, 3) || [];
+      return `<div class="career-item" data-career="${i}">
         <div class="period">${c.period}</div>
         <div class="info">
           <div class="role-company">${c.role} <span class="company">@ ${c.company}</span></div>
           <div class="desc">${c.desc}</div>
+          ${topAch.length ? `<div class="career-achs">${topAch.map(a => `<div class="career-ach">▸ ${a}</div>`).join('')}</div>` : ''}
         </div>
-      </div>`
-    ).join('');
+      </div>`;
+    }).join('');
   }
 
   _renderCategoryTabs() {

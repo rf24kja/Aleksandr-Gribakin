@@ -1159,6 +1159,24 @@
       line-height: 1.6;
       color: var(--b-text);
       opacity: .5;
+      margin-bottom: 6px;
+    }
+    [data-mode="business"] .career-achs {
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    [data-mode="business"] .career-ach {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--b-text-dim);
+      opacity: .7;
+      padding-left: 2px;
+    }
+    [data-mode="business"] .career-ach:hover {
+      color: var(--b-accent);
+      opacity: 1;
     }
 
     /* Category Tabs */
@@ -1201,6 +1219,7 @@
       padding: 0;
     }
     [data-mode="business"] .project-card {
+      position: relative;
       padding: 0;
       background: var(--b-bg2);
       border-radius: var(--b-radius);
@@ -1209,6 +1228,7 @@
       opacity: 1;
       transform: none;
       transition: border-color .2s;
+      overflow: hidden;
     }
     [data-mode="business"] .project-card.visible {
       opacity: 1;
@@ -1218,6 +1238,23 @@
       border-color: rgba(233,84,32,.2);
       box-shadow: none;
     }
+    /* Category accent stripes */
+    [data-mode="business"] .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      border-radius: var(--b-radius) 0 0 var(--b-radius);
+      opacity: .5;
+    }
+    [data-mode="business"] .project-card[data-cat="Fintech"]::before { background: #e95420; }
+    [data-mode="business"] .project-card[data-cat="ML/AI"]::before { background: #00aa33; }
+    [data-mode="business"] .project-card[data-cat="Infrastructure"]::before { background: #326ce5; }
+    [data-mode="business"] .project-card[data-cat="Open Source"]::before { background: #8b5cf6; }
+    [data-mode="business"] .project-card[data-cat="Web3"]::before { background: #ec4899; }
+    [data-mode="business"] .project-card[data-cat="Platform"]::before { background: #14b8a6; }
     [data-mode="business"] .project-card .card-inner {
       padding: 18px 20px;
       background: transparent;
