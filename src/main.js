@@ -387,6 +387,12 @@ document.addEventListener('click', (e) => {
     const target = document.getElementById(scrollBtn.dataset.scrollTo);
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+  const themeBtn = e.target.closest('[data-theme-switch]');
+  if (themeBtn) {
+    const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = cur === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+  }
 });
 
 if (sceneManager) {

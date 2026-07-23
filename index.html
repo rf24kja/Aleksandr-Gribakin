@@ -921,6 +921,31 @@
     [data-mode="business"] .mode-toggle:hover {
       opacity: .8;
     }
+    [data-mode="business"] .theme-toggle {
+      position: fixed !important;
+      bottom: 62px !important;
+      right: 20px !important;
+      z-index: 100 !important;
+      background: none;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      opacity: .35;
+      transition: opacity .2s;
+      color: var(--b-text);
+      line-height: 1;
+      display: flex !important;
+      align-items: center;
+    }
+    [data-mode="business"] .theme-toggle:hover {
+      opacity: .7;
+    }
+    [data-mode="desktop"] .theme-toggle { display: none !important; }
+    [data-mode="business"][data-theme="light"] .theme-toggle {
+      border-color: rgba(0,0,0,.12);
+    }
 
     /* Intro */
     [data-mode="business"] .intro-text {
@@ -1807,6 +1832,7 @@
     </div>
     <button class="lang-toggle" data-lang-switch></button>
     <button class="mode-toggle" data-mode-switch title="Switch mode">🖥</button>
+    <button class="theme-toggle" data-theme-switch title="Toggle theme">☀</button>
     <div class="coffee-egg" id="coffeeEgg" title="☕">☕</div>
   </div>
 

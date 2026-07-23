@@ -410,10 +410,6 @@ export default class PortfolioOrchestrator {
 
   // --- Language ---
   _detectLocale() {
-    try {
-      const lang = navigator.language?.slice(0, 2).toUpperCase();
-      if (lang === 'RU') return 'RU';
-    } catch {}
     return 'EN';
   }
   _updateLangToggleText() { const b = document.querySelector('[data-lang-switch]'); if (b) { b.textContent = this.s.lang === 'EN' ? 'RU / EN' : 'EN / RU'; b.setAttribute('aria-current', 'true'); } }
