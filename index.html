@@ -1112,10 +1112,22 @@
 
     /* Career */
     [data-mode="business"] .career-list {
+      position: relative;
       max-width: 100%;
       padding: 0;
     }
+    /* Timeline vertical line */
+    [data-mode="business"] .career-list::before {
+      content: '';
+      position: absolute;
+      left: 148px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(233,84,32,.15);
+    }
     [data-mode="business"] .career-item {
+      position: relative;
       display: grid;
       grid-template-columns: 120px 1fr;
       gap: 16px;
@@ -1128,6 +1140,20 @@
       transform: none;
       cursor: default;
       transition: border-color .2s;
+    }
+    /* Timeline dot */
+    [data-mode="business"] .career-item::before {
+      content: '';
+      position: absolute;
+      left: 144px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--b-accent);
+      border: 2px solid var(--b-bg2);
+      transform: translateY(-50%);
+      z-index: 1;
     }
     [data-mode="business"] .career-item:hover {
       border-color: rgba(233,84,32,.3);
@@ -1451,7 +1477,7 @@
       color: var(--b-accent);
       margin-bottom: 10px;
       opacity: 0;
-      transition: opacity .5s;
+      transition: opacity .4s ease;
     }
     [data-mode="business"] .terminal-form button[type="submit"] {
       width: 100%;
@@ -1510,11 +1536,13 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity .3s;
+      transition: opacity .25s ease, transform .25s ease;
+      transform: scale(0.96) translateY(12px);
     }
     [data-mode="business"] #projectDetail.active {
       opacity: 1;
       pointer-events: auto;
+      transform: scale(1) translateY(0);
     }
     [data-mode="business"] .pd-backdrop {
       position: absolute;
@@ -1538,6 +1566,26 @@
       flex-direction: column;
       box-shadow: 0 20px 60px rgba(0,0,0,.5);
     }
+    /* Detail panel content stagger */
+    [data-mode="business"] #projectDetail.active .pd-para,
+    [data-mode="business"] #projectDetail.active .pd-chart-item,
+    [data-mode="business"] #projectDetail.active .pd-feature-item,
+    [data-mode="business"] #projectDetail.active .pd-stack-tag,
+    [data-mode="business"] #projectDetail.active .pd-ach-item {
+      animation: pd-fade-in .35s ease-out backwards;
+    }
+    [data-mode="business"] #projectDetail.active .pd-para:nth-child(1) { animation-delay: 0.05s; }
+    [data-mode="business"] #projectDetail.active .pd-para:nth-child(2) { animation-delay: 0.1s; }
+    [data-mode="business"] #projectDetail.active .pd-para:nth-child(3) { animation-delay: 0.15s; }
+    [data-mode="business"] #projectDetail.active .pd-chart-item { animation-delay: 0.2s; }
+    [data-mode="business"] #projectDetail.active .pd-feature-item { animation-delay: 0.25s; }
+    [data-mode="business"] #projectDetail.active .pd-stack-tag { animation-delay: 0.3s; }
+    [data-mode="business"] #projectDetail.active .pd-ach-item { animation-delay: 0.35s; }
+    @keyframes pd-fade-in {
+      0%   { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
     [data-mode="business"] .pd-header {
       display: flex;
       align-items: center;
@@ -1758,6 +1806,10 @@
         grid-template-columns: 1fr;
         gap: 6px;
       }
+      [data-mode="business"] .career-list::before,
+      [data-mode="business"] .career-item::before {
+        display: none;
+      }
       [data-mode="business"] .achievements-grid {
         grid-template-columns: 1fr;
       }
@@ -1773,6 +1825,28 @@
         right: 12px !important;
         font-size: 12px;
         padding: 5px 10px;
+      }
+      [data-mode="business"] .stat-value {
+        font-size: 24px;
+      }
+      [data-mode="business"] .intro-text h1 {
+        font-size: 28px !important;
+      }
+      [data-mode="business"] .intro-text .tagline {
+        font-size: 8px;
+      }
+      [data-mode="business"] .project-card .card-inner {
+        padding: 14px 16px;
+      }
+      [data-mode="business"] .career-item {
+        padding: 12px 16px;
+      }
+      [data-mode="business"] .achievement-item {
+        padding: 14px 16px;
+      }
+      [data-mode="business"] .section-title {
+        font-size: 10px !important;
+        margin-bottom: 16px !important;
       }
     }
 
