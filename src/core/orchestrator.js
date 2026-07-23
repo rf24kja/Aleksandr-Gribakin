@@ -250,6 +250,8 @@ export default class PortfolioOrchestrator {
   }
 
   _animateSectionEntry(el) {
+    // ponytail: business mode CSS handles all visibility
+    if (document.documentElement.getAttribute('data-mode') === 'business') return;
     const title = el.querySelector('.section-title');
     if (title) {
       gsap.fromTo(title, { y: -12, opacity: 0 }, { y: 0, opacity: .8, duration: .6, ease: 'power2.out', clearProps: 'transform' });
@@ -316,6 +318,8 @@ export default class PortfolioOrchestrator {
 
   _animateItems(selector, p, lo, hi, stagger, mode) {
     if (p < lo || p >= hi) return;
+    // ponytail: business mode CSS handles all transitions — skip inline styles
+    if (document.documentElement.getAttribute('data-mode') === 'business') return;
     const local = (p - lo) / (hi - lo);
     const isCard = selector === '.project-card';
     const theme = isCard ? (document.documentElement.getAttribute('data-theme') || 'dark') : null;

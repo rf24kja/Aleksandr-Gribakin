@@ -131,18 +131,21 @@ gsap.timeline({
       orchestrator.s.set('progress', p);
       orchestrator._resolveScene(p);
       orchestrator.s.setScene(orchestrator.currentScene, p);
-      const spBar = document.getElementById('spBar');
-      const spDot = document.getElementById('spDot');
-      if (spBar) spBar.style.width = `${p * 100}%`;
-      if (spDot) spDot.style.left = `${p * 100}%`;
+      // ponytail: business mode hides these — skip DOM updates
+      if (!IS_BUSINESS) {
+        const spBar = document.getElementById('spBar');
+        const spDot = document.getElementById('spDot');
+        if (spBar) spBar.style.width = `${p * 100}%`;
+        if (spDot) spDot.style.left = `${p * 100}%`;
 
-      if (sceneLabel) {
-        const lang = orchestrator.s.lang;
-        const idx = orchestrator.currentScene;
-        const newLabel = idx >= 0 ? sceneNames[lang]?.[idx] || '' : '';
-        if (sceneLabel.textContent !== newLabel) {
-          sceneLabel.style.opacity = '0';
-          setTimeout(() => { sceneLabel.textContent = newLabel; sceneLabel.style.opacity = '1'; }, 200);
+        if (sceneLabel) {
+          const lang = orchestrator.s.lang;
+          const idx = orchestrator.currentScene;
+          const newLabel = idx >= 0 ? sceneNames[lang]?.[idx] || '' : '';
+          if (sceneLabel.textContent !== newLabel) {
+            sceneLabel.style.opacity = '0';
+            setTimeout(() => { sceneLabel.textContent = newLabel; sceneLabel.style.opacity = '1'; }, 200);
+          }
         }
       }
 

@@ -5,10 +5,15 @@ const COLOR = {};
 function _r() {
   const s = getComputedStyle(document.documentElement);
   const c = (v) => s.getPropertyValue(v).trim();
-  COLOR.bg = c('--bg2') || '#0d0d14'; COLOR.surface = c('--bg3') || '#12121c';
-  COLOR.accent = c('--accent'); COLOR.accent2 = c('--accent2'); COLOR.accent3 = c('--accent3');
-  COLOR.text = c('--text'); COLOR.dim = `color-mix(in srgb, ${c('--text')} 40%, transparent)`;
-  COLOR.border = c('--border');
+  const b = document.documentElement.getAttribute('data-mode') === 'business';
+  COLOR.bg = c(b ? '--b-bg2' : '--bg2') || '#0d0d14';
+  COLOR.surface = c(b ? '--b-bg3' : '--bg3') || '#12121c';
+  COLOR.accent = c(b ? '--b-accent' : '--accent');
+  COLOR.accent2 = c(b ? '--b-accent2' : '--accent2');
+  COLOR.accent3 = c(b ? '--b-accent3' : '--accent3');
+  COLOR.text = c(b ? '--b-text' : '--text');
+  COLOR.dim = `color-mix(in srgb, ${COLOR.text} 40%, transparent)`;
+  COLOR.border = c(b ? '--b-border' : '--border');
 }
 _r();
 
