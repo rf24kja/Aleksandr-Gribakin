@@ -15,9 +15,8 @@ export function setMode(mode) {
 
 export function initMode() {
   const saved = localStorage.getItem('portfolio-mode')
-  if (saved && MODES.includes(saved)) {
-    document.documentElement.setAttribute('data-mode', saved)
-  }
+  const mode = (saved && MODES.includes(saved)) ? saved : 'business'
+  document.documentElement.setAttribute('data-mode', mode)
 }
 
 export { MODES }
