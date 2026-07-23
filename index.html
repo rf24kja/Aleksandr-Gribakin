@@ -41,7 +41,7 @@
   <title>Aleksandr Gribakin — Lead Engineer | 15 Years Building at Scale</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;500;600&family=JetBrains+Mono:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;500;600&family=JetBrains+Mono:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Special+Elite&family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <style>
     html { background: #08080c; scrollbar-width: thin; }
     html::-webkit-scrollbar { width: 6px; }
@@ -383,6 +383,8 @@
     @keyframes btn-spin { to { transform: rotate(360deg); } }
 
     /* Coffee Easter Egg */
+    .mode-toggle { font-size:16px;opacity:.35;transition:opacity .3s;background:none;border:none;cursor:pointer;line-height:1;padding:4px;font-family:inherit;color:inherit }
+    .mode-toggle:hover { opacity:.7 }
     .coffee-egg {
       position: fixed; bottom: 20px; right: 20px; font-size: 18px; cursor: pointer; z-index: 101;
       opacity: .3; transition: opacity .4s, transform .3s; user-select: none; line-height: 1;
@@ -784,6 +786,92 @@
       .coffee-egg { animation: none !important; }
       .intro-text { transition: opacity .5s; }
     }
+    /* ========== UBUNTU DESKTOP THEME ========== */
+    [data-mode="desktop"] {
+      --ubuntu-bg: #2d2d2d;
+      --ubuntu-taskbar: #3c3b37;
+      --ubuntu-accent: #e95420;
+      --ubuntu-accent-hover: #ff7a45;
+      --ubuntu-text: #eeeeee;
+      --ubuntu-window-bg: #3c3c3c;
+      --ubuntu-window-title: #2e3436;
+      --ubuntu-window-title-active: #3c3b37;
+      --ubuntu-window-border: #555;
+      --ubuntu-icon-label: #ffffff;
+      --ubuntu-start-bg: #3c3c3c;
+      --ubuntu-purple: #5e2750;
+    }
+    [data-mode="desktop"] canvas#webgl,
+    [data-mode="desktop"] #scanlines,
+    [data-mode="desktop"] #portrait-wrap,
+    [data-mode="desktop"] .intro-text,
+    [data-mode="desktop"] .section-overlay,
+    [data-mode="desktop"] #scrollProgress,
+    [data-mode="desktop"] .hud-top,
+    [data-mode="desktop"] #scene-label,
+    [data-mode="desktop"] .form-section,
+    [data-mode="desktop"] #preloader,
+    [data-mode="desktop"] #projectDetail,
+    [data-mode="desktop"] #page404,
+    [data-mode="desktop"] .coffee-egg,
+    [data-mode="desktop"] .coffee-popup,
+    [data-mode="desktop"] #mainContent,
+    [data-mode="desktop"] #ui-overlay { display: none !important; }
+    #desktop-shell { display:none;position:fixed;inset:0;z-index:100;background:var(--ubuntu-bg);font-family:'Ubuntu','Noto Sans',system-ui,sans-serif;color:var(--ubuntu-text);overflow:hidden;user-select:none;flex-direction:column }
+    [data-mode="desktop"] #desktop-shell { display:flex }
+    #desktop-wallpaper { flex:1;background:radial-gradient(ellipse at 30% 30%,#5e2750 0%,#3a3a3a 50%,#2d2d2d 100%);position:relative;overflow:hidden }
+    #desktop-wallpaper::before { content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 80%,rgba(233,84,32,.08) 0%,transparent 60%);pointer-events:none }
+    #desktop-icons { position:absolute;top:16px;left:16px;display:flex;flex-direction:column;flex-wrap:wrap;gap:4px;max-height:calc(100% - 60px) }
+    .desk-icon { display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;width:80px;cursor:pointer;border-radius:6px;transition:background .15s }
+    .desk-icon:hover { background:rgba(255,255,255,.08) }
+    .desk-icon:active { background:rgba(255,255,255,.12) }
+    .desk-icon-icon { width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.04);transition:background .2s }
+    .desk-icon:hover .desk-icon-icon { background:rgba(233,84,32,.15) }
+    .desk-icon-label { font-size:11px;color:var(--ubuntu-icon-label);text-align:center;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.8);word-break:break-word;max-width:72px }
+    #taskbar { height:42px;background:var(--ubuntu-taskbar);display:flex;align-items:center;padding:0 4px;gap:2px;flex-shrink:0;border-top:none;z-index:200;position:relative;box-shadow:0 -1px 0 rgba(0,0,0,.3) }
+    #start-btn { font-family:'Ubuntu','Noto Sans',system-ui,sans-serif;font-size:13px;font-weight:500;color:var(--ubuntu-text);background:transparent;border:none;padding:4px 14px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;height:34px;transition:all .15s }
+    #start-btn:hover { background:rgba(255,255,255,.1) }
+    #start-btn:active { background:var(--ubuntu-accent);color:#fff }
+    #start-btn .start-logo { font-size:16px;line-height:1 }
+    #taskbar-windows { flex:1;display:flex;align-items:center;gap:2px;overflow:hidden;padding:0 4px }
+    .tb-window-btn { font-family:'Ubuntu','Noto Sans',system-ui,sans-serif;font-size:12px;color:var(--ubuntu-text);background:rgba(255,255,255,.06);border:none;padding:4px 14px;border-radius:4px;cursor:pointer;height:32px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:all .15s }
+    .tb-window-btn:hover { background:rgba(255,255,255,.12) }
+    .tb-window-btn.active { background:rgba(255,255,255,.15);border-left:2px solid var(--ubuntu-accent) }
+    #system-tray { display:flex;align-items:center;gap:6px;padding:0 10px }
+    #tray-clock { font-size:12px;color:var(--ubuntu-text);white-space:nowrap;opacity:.85 }
+    .tray-btn { font-size:14px;background:transparent;border:none;color:var(--ubuntu-text);cursor:pointer;padding:4px 6px;border-radius:4px;line-height:1;opacity:.7;transition:all .15s }
+    .tray-btn:hover { opacity:1;background:rgba(255,255,255,.1) }
+    #start-menu { position:absolute;bottom:46px;left:4px;background:var(--ubuntu-start-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px 8px 0 0;padding:8px;min-width:240px;display:none;z-index:300;box-shadow:0 -4px 24px rgba(0,0,0,.5) }
+    #start-menu.open { display:block }
+    .start-app-item { display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:all .15s;font-size:13px;color:var(--ubuntu-text) }
+    .start-app-item:hover { background:rgba(233,84,32,.15) }
+    .start-app-item .sai-icon { font-size:20px;width:28px;text-align:center;opacity:.8 }
+    #desktop-windows { position:absolute;inset:0 0 42px;pointer-events:none }
+    .desk-window { position:absolute;background:var(--ubuntu-window-bg);border:1px solid var(--ubuntu-window-border);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;pointer-events:auto;box-shadow:0 8px 32px rgba(0,0,0,.5);min-width:200px;min-height:100px }
+    .desk-window.dragging { opacity:.9;transition:none }
+    .window-titlebar { display:flex;align-items:center;padding:0 8px;height:34px;background:var(--ubuntu-window-title);cursor:move;flex-shrink:0;border-radius:7px 7px 0 0 }
+    .desk-window:not(.dragging) { transition:width .2s,height .2s,left .2s,top .2s }
+    .window-titlebar .wt-actions { display:flex;gap:6px;margin-right:10px;order:-1 }
+    .wt-btn { width:14px;height:14px;border-radius:50%;border:none;cursor:pointer;transition:filter .15s;position:relative;display:flex;align-items:center;justify-content:center;font-size:0 }
+    .wt-btn:hover { filter:brightness(1.3) }
+    .wt-close { background:#e95420 }
+    .wt-close:hover { background:#ff7a45 }
+    .wt-minimize { background:#fbbb2d }
+    .wt-minimize:hover { background:#fccf5e }
+    .window-titlebar .wt-label { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ubuntu-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;opacity:.85 }
+    .window-body { flex:1;overflow-y:auto;padding:16px;font-size:13px;color:#ddd;line-height:1.6;background:var(--ubuntu-window-bg) }
+    .window-body::-webkit-scrollbar { width:6px }
+    .window-body::-webkit-scrollbar-track { background:transparent }
+    .window-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,.15);border-radius:3px }
+    .window-body::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,.25) }
+    .wb-title { font-size:18px;font-weight:600;margin-bottom:4px;color:#fff }
+    .wb-sub { font-size:12px;opacity:.6;margin-bottom:16px }
+    .wb-text { opacity:.85;margin-bottom:12px;line-height:1.6 }
+    .wb-text a { color:var(--ubuntu-accent);text-decoration:none }
+    .wb-text a:hover { text-decoration:underline }
+    .wb-section { margin-bottom:16px }
+    .wb-section-title { font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ubuntu-accent);margin-bottom:8px;font-weight:500 }
+    .wb-divider { border:none;border-top:1px solid rgba(255,255,255,.08);margin:12px 0 }
   </style>
 </head>
 <body>
@@ -816,6 +904,7 @@
       <button class="theme-btn" data-theme="steampunk" title="Steampunk">⚙</button>
     </div>
     <button class="lang-toggle" data-lang-switch></button>
+    <button class="mode-toggle" data-mode-switch title="Switch mode">🖥</button>
     <div class="coffee-egg" id="coffeeEgg" title="☕">☕</div>
   </div>
 
@@ -900,6 +989,21 @@
     <div data-i18n="_PAGE_404.TITLE" style="font-size:14px;color:var(--text-bright);"></div>
     <div data-i18n="_PAGE_404.SUB" style="font-size:11px;color:var(--text-dim);"></div>
     <button data-i18n="_PAGE_404.CTA" style="margin-top:8px;padding:8px 20px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:var(--font-mono);cursor:pointer;" onclick="window.location.hash=''">Return Home</button>
+  </div>
+  <!-- Desktop OS Shell -->
+  <div id="desktop-shell">
+    <div id="desktop-wallpaper">
+      <div id="desktop-icons"></div>
+      <div id="desktop-windows"></div>
+    </div>
+    <div id="start-menu"></div>
+    <div id="taskbar">
+      <button id="start-btn"><span class="start-logo">⬟</span> Activities</button>
+      <div id="taskbar-windows"></div>
+      <div id="system-tray">
+        <span id="tray-clock"></span>
+      </div>
+    </div>
   </div>
   <script type="module" src="/src/main.js"></script>
 </body>

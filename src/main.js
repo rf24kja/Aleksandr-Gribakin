@@ -5,6 +5,8 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import PONYTAIL from './config/ponytail.config.js';
+import { initMode, getMode, setMode } from './themes/themeManager.js';
+import { initDesktop } from './themes/desktop/desktop.js';
 import PortfolioOrchestrator from './core/orchestrator.js';
 import SceneManager from './core/SceneManager.js';
 import SceneIntro from './scenes/SceneIntro.js';
@@ -14,6 +16,7 @@ import SceneAchievements from './scenes/SceneAchievements.js';
 import SceneCTA from './scenes/SceneCTA.js';
 
 gsap.registerPlugin(ScrollTrigger);
+initMode();
 
 // --- Renderer ---
 const canvas = document.getElementById('webgl');
@@ -342,10 +345,27 @@ document.addEventListener('click', (e) => {
   if (btn && btn.dataset.theme !== document.documentElement.getAttribute('data-theme')) {
     applyTheme(btn.dataset.theme);
   }
+  const modeBtn = e.target.closest('[data-mode-switch]');
+  if (modeBtn) {
+    const modes = ['business', 'desktop'];
+    const cur = document.documentElement.getAttribute('data-mode') || 'business';
+    const next = modes[(modes.indexOf(cur) + 1) % modes.length];
+    setMode(next);
+  }
 });
 
 sceneManager.listen();
 sceneManager.update(0, 0);
+
+if (getMode() === 'desktop') {
+  initDesktop(orchestrator.s);
+}
+
+document.addEventListener('mode:change', (e) => {
+  if (e.detail.to === 'desktop') {
+    initDesktop(orchestrator.s);
+  }
+});
 
 console.log(`[Portfolio] ${PONYTAIL.LOCALE.EN.PROJECTS.length} projects, ${PONYTAIL.SCENES.length} scenes`);
 
