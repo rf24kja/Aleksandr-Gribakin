@@ -18,55 +18,60 @@ import SceneCTA from './scenes/SceneCTA.js';
 gsap.registerPlugin(ScrollTrigger);
 initMode();
 
-// --- Renderer ---
-const canvas = document.getElementById('webgl');
-const renderer = new THREE.WebGLRenderer({
-  canvas, antialias: true, alpha: false, powerPreference: 'high-performance',
-});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+const IS_BUSINESS = (document.documentElement.getAttribute('data-mode') || 'business') === 'business';
 
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  document.documentElement.setAttribute('data-reduced-motion', '')
-  document.dispatchEvent(new CustomEvent('fx:quality', { detail: { level: 'low' } }))
-}
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x08080c);
-scene.fog = new THREE.FogExp2(0x08080c, 0.012);
-
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 0, 12);
-
-const world = new THREE.Group();
-scene.add(world);
-
-// --- Composer ---
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.4, 0.85);
-bloomPass.threshold = 0.4; bloomPass.strength = 0.8; bloomPass.radius = 0.5;
-composer.addPass(bloomPass);
-
+// --- Renderer (skip in business mode) ---
+let renderer = null, scene = null, camera = null, composer = null, bloomPass = null, world = null;
 const bloomConfigs = {
   high: { threshold: 0.3, strength: 1.2, radius: 0.5 },
   medium: { threshold: 0.5, strength: 0.6, radius: 0.3 },
   low: { threshold: 1.0, strength: 0, radius: 0 },
 };
 
-// --- Lights ---
-const ambientLight = new THREE.AmbientLight(0x222244, 0.6);
-scene.add(ambientLight);
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-dirLight.position.set(5, 5, 5);
-scene.add(dirLight);
-const rimLight = new THREE.DirectionalLight(0x00d4ff, 0.6);
-rimLight.position.set(-3, 1, -5);
-scene.add(rimLight);
+if (!IS_BUSINESS) {
+  const canvas = document.getElementById('webgl');
+  renderer = new THREE.WebGLRenderer({
+    canvas, antialias: true, alpha: false, powerPreference: 'high-performance',
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.setAttribute('data-reduced-motion', '')
+    document.dispatchEvent(new CustomEvent('fx:quality', { detail: { level: 'low' } }))
+  }
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x08080c);
+  scene.fog = new THREE.FogExp2(0x08080c, 0.012);
+
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 12);
+
+  world = new THREE.Group();
+  scene.add(world);
+
+  // --- Composer ---
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+
+  bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.4, 0.85);
+  bloomPass.threshold = 0.4; bloomPass.strength = 0.8; bloomPass.radius = 0.5;
+  composer.addPass(bloomPass);
+
+  // --- Lights ---
+  const ambientLight = new THREE.AmbientLight(0x222244, 0.6);
+  scene.add(ambientLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+  dirLight.position.set(5, 5, 5);
+  scene.add(dirLight);
+  const rimLight = new THREE.DirectionalLight(0x00d4ff, 0.6);
+  rimLight.position.set(-3, 1, -5);
+  scene.add(rimLight);
+}
 
 // --- Scene Labels ---
 const sceneNames = {
@@ -90,7 +95,7 @@ try {
   console.error('[Portfolio] Init failed:', e);
 }
 
-sceneLabel.textContent = sceneNames[orchestrator.s.lang]?.[orchestrator.currentScene] || '';
+if (sceneLabel) sceneLabel.textContent = sceneNames[orchestrator.s.lang]?.[orchestrator.currentScene] || '';
 
 // --- FPS Display ---
 const fpsEl = document.getElementById('fpsCounter');
@@ -101,21 +106,25 @@ orchestrator.s.on('fps:tick', ({ fps, throttled }) => {
   }
 });
 
-// --- Scene Manager ---
-const sceneManager = new SceneManager(world, orchestrator.s);
-sceneManager.register('intro', new SceneIntro(world, orchestrator.s));
-sceneManager.register('chronicle', new SceneChronicle(world, orchestrator.s));
-sceneManager.register('projects', new SceneTechStack(world, orchestrator.s));
-sceneManager.register('achievements', new SceneAchievements(world, orchestrator.s));
-sceneManager.register('cta', new SceneCTA(world, orchestrator.s));
-orchestrator.sceneManager = sceneManager;
+// --- Scene Manager (only with 3D) ---
+let sceneManager = null;
+if (!IS_BUSINESS && world) {
+  sceneManager = new SceneManager(world, orchestrator.s);
+  sceneManager.register('intro', new SceneIntro(world, orchestrator.s));
+  sceneManager.register('chronicle', new SceneChronicle(world, orchestrator.s));
+  sceneManager.register('projects', new SceneTechStack(world, orchestrator.s));
+  sceneManager.register('achievements', new SceneAchievements(world, orchestrator.s));
+  sceneManager.register('cta', new SceneCTA(world, orchestrator.s));
+  orchestrator.sceneManager = sceneManager;
+}
 
 // --- Scroll Timeline ---
+const has3D = !IS_BUSINESS;
 gsap.timeline({
   scrollTrigger: {
-    trigger: '#scrollSpacer',
+    trigger: has3D ? '#scrollSpacer' : '#mainContent',
     start: 'top top',
-    end: 'bottom bottom',
+    end: has3D ? 'bottom bottom' : 'bottom top',
     scrub: PONYTAIL.SCRUB,
     onUpdate: (self) => {
       const p = self.progress;
@@ -127,98 +136,113 @@ gsap.timeline({
       if (spBar) spBar.style.width = `${p * 100}%`;
       if (spDot) spDot.style.left = `${p * 100}%`;
 
-      const lang = orchestrator.s.lang;
-      const idx = orchestrator.currentScene;
-      const newLabel = idx >= 0 ? sceneNames[lang]?.[idx] || '' : '';
-      if (sceneLabel.textContent !== newLabel) {
-        sceneLabel.style.opacity = '0';
-        setTimeout(() => { sceneLabel.textContent = newLabel; sceneLabel.style.opacity = '1'; }, 200);
+      if (sceneLabel) {
+        const lang = orchestrator.s.lang;
+        const idx = orchestrator.currentScene;
+        const newLabel = idx >= 0 ? sceneNames[lang]?.[idx] || '' : '';
+        if (sceneLabel.textContent !== newLabel) {
+          sceneLabel.style.opacity = '0';
+          setTimeout(() => { sceneLabel.textContent = newLabel; sceneLabel.style.opacity = '1'; }, 200);
+        }
       }
 
-      sceneManager.update(p, orchestrator.currentScene);
+      if (sceneManager) sceneManager.update(p, orchestrator.currentScene);
 
-      const activeIdx = Math.max(0, Math.min(PONYTAIL.SCENES.length - 1, idx >= 0 ? idx : 0));
-      const sceneCfg = PONYTAIL.SCENES[activeIdx];
-      if (sceneCfg) {
-        const [sP, eP] = sceneCfg.range;
-        const local = (p - sP) / (eP - sP);
-        const camCfg = sceneCfg.camera;
-        const ease = 1 - Math.pow(1 - Math.max(0, Math.min(1, local)), 2);
-        camera.position.set(
-          THREE.MathUtils.lerp(camCfg.position.from[0], camCfg.position.to[0], ease),
-          THREE.MathUtils.lerp(camCfg.position.from[1], camCfg.position.to[1], ease),
-          THREE.MathUtils.lerp(camCfg.position.from[2], camCfg.position.to[2], ease),
-        );
-        camera.fov = THREE.MathUtils.lerp(camCfg.fov.from, camCfg.fov.to, ease);
-        camera.updateProjectionMatrix();
+      if (camera) {
+        const idx = orchestrator.currentScene;
+        const activeIdx = Math.max(0, Math.min(PONYTAIL.SCENES.length - 1, idx >= 0 ? idx : 0));
+        const sceneCfg = PONYTAIL.SCENES[activeIdx];
+        if (sceneCfg) {
+          const [sP, eP] = sceneCfg.range;
+          const local = (p - sP) / (eP - sP);
+          const camCfg = sceneCfg.camera;
+          const ease = 1 - Math.pow(1 - Math.max(0, Math.min(1, local)), 2);
+          camera.position.set(
+            THREE.MathUtils.lerp(camCfg.position.from[0], camCfg.position.to[0], ease),
+            THREE.MathUtils.lerp(camCfg.position.from[1], camCfg.position.to[1], ease),
+            THREE.MathUtils.lerp(camCfg.position.from[2], camCfg.position.to[2], ease),
+          );
+          camera.fov = THREE.MathUtils.lerp(camCfg.fov.from, camCfg.fov.to, ease);
+          camera.updateProjectionMatrix();
+        }
       }
     },
   },
 });
 
-// --- Resize ---
-let _resizeTimer;
-window.addEventListener('resize', () => {
-  cancelAnimationFrame(_resizeTimer);
-  _resizeTimer = requestAnimationFrame(() => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    composer.setSize(window.innerWidth, window.innerHeight);
+// --- Resize (3D only) ---
+if (!IS_BUSINESS && renderer && camera && composer) {
+  let _resizeTimer;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(_resizeTimer);
+    _resizeTimer = requestAnimationFrame(() => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    });
   });
-});
-
-// --- Mouse Parallax ---
-let _mx = 0, _my = 0;
-document.addEventListener('mousemove', (e) => {
-  _mx = (e.clientX / window.innerWidth - 0.5) * 2;
-  _my = (e.clientY / window.innerHeight - 0.5) * 2;
-});
-let _px = 0, _py = 0;
-function updateParallax() {
-  _px += (_mx * 0.02 - _px) * 0.03;
-  _py += (-_my * 0.02 - _py) * 0.03;
-  scene.position.x = _px;
-  scene.position.y = _py;
-}
-updateParallax();
-
-// --- Quality ---
-const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 768;
-if (isMobile) {
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-  bloomPass.threshold = 0.6; bloomPass.strength = 0.3; bloomPass.radius = 0.3;
-  renderer.toneMappingExposure = 0.7;
 }
 
-if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-  setTimeout(() => {
-    document.dispatchEvent(new CustomEvent('fx:quality', { detail: { level: 'medium' } }))
-  }, 1000)
+// --- Mouse Parallax (3D only) ---
+if (!IS_BUSINESS) {
+  let _mx = 0, _my = 0;
+  document.addEventListener('mousemove', (e) => {
+    _mx = (e.clientX / window.innerWidth - 0.5) * 2;
+    _my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+  let _px = 0, _py = 0;
+  function updateParallax() {
+    _px += (_mx * 0.02 - _px) * 0.03;
+    _py += (-_my * 0.02 - _py) * 0.03;
+    scene.position.x = _px;
+    scene.position.y = _py;
+  }
+  updateParallax();
 }
 
-document.addEventListener('fx:quality', (e) => {
-  const { quality } = e.detail;
-  renderer.setPixelRatio(quality === 'high' ? Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2) : quality === 'medium' ? 1 : 0.75);
-  const bc = bloomConfigs[quality] || bloomConfigs.low;
-  bloomPass.threshold = bc.threshold; bloomPass.strength = bc.strength; bloomPass.radius = bc.radius;
-  renderer.toneMappingExposure = quality === 'high' ? 1.0 : quality === 'medium' ? 0.8 : 0.6;
-});
+// --- Quality (3D only) ---
+if (!IS_BUSINESS) {
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 768;
+  if (isMobile && renderer && bloomPass) {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    bloomPass.threshold = 0.6; bloomPass.strength = 0.3; bloomPass.radius = 0.3;
+    renderer.toneMappingExposure = 0.7;
+  }
 
-// --- Mobile 3D Fallback ---
-if (window.innerWidth < 768) {
-  setTimeout(() => {
-    const fpsText = document.getElementById('fpsCounter')?.textContent || ''
-    const fps = Number(fpsText.split(' ')[0])
-    if (fps > 0 && fps < 30) {
-      renderer.setAnimationLoop(null)
-      document.querySelector('canvas#webgl').style.display = 'none'
+  if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    setTimeout(() => {
+      document.dispatchEvent(new CustomEvent('fx:quality', { detail: { level: 'medium' } }))
+    }, 1000)
+  }
+
+  document.addEventListener('fx:quality', (e) => {
+    const { quality } = e.detail;
+    if (renderer && bloomPass) {
+      renderer.setPixelRatio(quality === 'high' ? Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2) : quality === 'medium' ? 1 : 0.75);
+      const bc = bloomConfigs[quality] || bloomConfigs.low;
+      bloomPass.threshold = bc.threshold; bloomPass.strength = bc.strength; bloomPass.radius = bc.radius;
+      renderer.toneMappingExposure = quality === 'high' ? 1.0 : quality === 'medium' ? 0.8 : 0.6;
     }
-  }, 5000)
+  });
+
+  // --- Mobile 3D Fallback ---
+  if (window.innerWidth < 768) {
+    setTimeout(() => {
+      const fpsText = document.getElementById('fpsCounter')?.textContent || ''
+      const fps = Number(fpsText.split(' ')[0])
+      if (fps > 0 && fps < 30 && renderer) {
+        renderer.setAnimationLoop(null)
+        document.querySelector('canvas#webgl').style.display = 'none'
+      }
+    }, 5000)
+  }
 }
 
-// --- Render Loop ---
-(function animate() { requestAnimationFrame(animate); updateParallax(); if (!document.hidden) composer.render(); })();
+// --- Render Loop (3D only) ---
+if (!IS_BUSINESS && composer) {
+  (function animate() { requestAnimationFrame(animate); if (typeof updateParallax === 'function') updateParallax(); if (!document.hidden) composer.render(); })();
+}
 
 // --- Locale Change ---
 document.addEventListener('locale:change', () => {
@@ -229,14 +253,16 @@ document.addEventListener('locale:change', () => {
     document.documentElement.lang = lang.toLowerCase();
     document.querySelector('link[rel="canonical"]')?.setAttribute('href', `https://dev24.pro/${lang.toLowerCase()}`);
   }
-  const intro = sceneManager.scenes.get('intro');
-  if (intro && intro._entered) {
-    intro._entered = false;
-    intro.dispose();
-    sceneManager.scenes.set('intro', new SceneIntro(world, orchestrator.s));
+  if (sceneManager) {
+    const intro = sceneManager.scenes.get('intro');
+    if (intro && intro._entered) {
+      intro._entered = false;
+      intro.dispose();
+      sceneManager.scenes.set('intro', new SceneIntro(world, orchestrator.s));
+    }
   }
   const idx = orchestrator.currentScene;
-  if (idx >= 0) sceneLabel.textContent = sceneNames[orchestrator.s.lang]?.[idx] || '';
+  if (idx >= 0 && sceneLabel) sceneLabel.textContent = sceneNames[orchestrator.s.lang]?.[idx] || '';
 });
 
 // --- Theme Switcher ---
@@ -265,12 +291,12 @@ function applyTheme(theme, anim = true) {
   if (metaTheme) metaTheme.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0c0a09';
   document.querySelectorAll('.theme-btn').forEach((b) => b.classList.toggle('active', b.dataset.theme === theme));
   const cfg = themeConfigs[theme] || themeConfigs.dark;
-  scene.background = new THREE.Color(cfg.bg);
-  scene.fog = new THREE.FogExp2(cfg.bg, cfg.fog);
-  renderer.setClearColor(cfg.bg, 1);
-  bloomPass.threshold = cfg.bloom.threshold;
-  bloomPass.strength = cfg.bloom.strength;
-  bloomPass.radius = cfg.bloom.radius;
+  if (scene) {
+    scene.background = new THREE.Color(cfg.bg);
+    scene.fog = new THREE.FogExp2(cfg.bg, cfg.fog);
+  }
+  if (renderer) renderer.setClearColor(cfg.bg, 1);
+  if (bloomPass) { bloomPass.threshold = cfg.bloom.threshold; bloomPass.strength = cfg.bloom.strength; bloomPass.radius = cfg.bloom.radius; }
   document.dispatchEvent(new CustomEvent('theme:change', { detail: { theme } }));
 }
 let savedTheme = 'dark'; try { savedTheme = localStorage.getItem('theme') || 'dark'; } catch {} finally { savedTheme = savedTheme || 'dark'; }
@@ -293,13 +319,12 @@ applyTheme(savedTheme);
 
   // Cinematic reveal — starts as preloader fades
   setTimeout(() => {
-    const pw = document.getElementById('portrait-wrap');
+    const pw = !IS_BUSINESS ? document.getElementById('portrait-wrap') : null;
     const intro = document.getElementById('introText');
-    if (!pw && !intro) return;
 
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-    // Phase 1: Portrait bloom-in (blur → sharp + glow)
+    // Phase 1: Portrait bloom-in (skip in business mode)
     if (pw) {
       pw.classList.add('visible');
       const img = document.getElementById('portrait');
@@ -326,16 +351,18 @@ applyTheme(savedTheme);
     }
 
     // Phase 3: Stats cascade
-    const so = document.getElementById('statsOverlay');
-    if (so) {
-      const sectionTitle = so.querySelector('.section-title');
-      const items = so.querySelectorAll('.stat-item');
-      so.classList.add('visible');
-      if (sectionTitle) tl.from(sectionTitle, { y: -10, opacity: 0, duration: 0.3, clearProps: 'transform' }, 0.9);
-      items.forEach((item, i) => {
-        tl.from(item, { y: 15, opacity: 0, duration: 0.35, clearProps: 'transform' }, 1.0 + i * 0.08);
-      });
-      tl.call(() => { if (!orchestrator._statsCounted) orchestrator._animateStatsCount(); }, [], 1.5);
+    if (!IS_BUSINESS) {
+      const so = document.getElementById('statsOverlay');
+      if (so) {
+        const sectionTitle = so.querySelector('.section-title');
+        const items = so.querySelectorAll('.stat-item');
+        so.classList.add('visible');
+        if (sectionTitle) tl.from(sectionTitle, { y: -10, opacity: 0, duration: 0.3, clearProps: 'transform' }, 0.9);
+        items.forEach((item, i) => {
+          tl.from(item, { y: 15, opacity: 0, duration: 0.35, clearProps: 'transform' }, 1.0 + i * 0.08);
+        });
+        tl.call(() => { if (!orchestrator._statsCounted) orchestrator._animateStatsCount(); }, [], 1.5);
+      }
     }
   }, 2000);
 })();
@@ -352,10 +379,17 @@ document.addEventListener('click', (e) => {
     const next = modes[(modes.indexOf(cur) + 1) % modes.length];
     setMode(next);
   }
+  const scrollBtn = e.target.closest('[data-scroll-to]');
+  if (scrollBtn) {
+    const target = document.getElementById(scrollBtn.dataset.scrollTo);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 });
 
-sceneManager.listen();
-sceneManager.update(0, 0);
+if (sceneManager) {
+  sceneManager.listen();
+  sceneManager.update(0, 0);
+}
 
 if (getMode() === 'desktop') {
   initDesktop(orchestrator.s);
@@ -364,6 +398,9 @@ if (getMode() === 'desktop') {
 document.addEventListener('mode:change', (e) => {
   if (e.detail.to === 'desktop') {
     initDesktop(orchestrator.s);
+  }
+  if (e.detail.to === 'business') {
+    ScrollTrigger.refresh();
   }
 });
 
