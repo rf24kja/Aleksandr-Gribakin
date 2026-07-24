@@ -271,9 +271,6 @@ document.addEventListener('locale:change', () => {
 // --- Theme Switcher ---
 const themeConfigs = {
   dark: { bg: 0x0c0a09, fog: 0.010, bloom: { threshold: 0.5, strength: 0.6, radius: 0.4 } },
-  cyber: { bg: 0x08080c, fog: 0.012, bloom: { threshold: 0.3, strength: 1.2, radius: 0.5 } },
-  terminal: { bg: 0x0a0a0a, fog: 0.015, bloom: { threshold: 0.4, strength: 0.6, radius: 0.3 } },
-  steampunk: { bg: 0x1a1410, fog: 0.010, bloom: { threshold: 0.5, strength: 0.4, radius: 0.25 } },
 };
 function applyTheme(theme, anim = true) {
   if (anim) {
@@ -287,12 +284,9 @@ function applyTheme(theme, anim = true) {
     }, 150);
   }
   document.documentElement.setAttribute('data-theme', theme);
-  document.querySelectorAll('.theme-btn').forEach(b => b.removeAttribute('aria-current'))
-  document.querySelector(`.theme-btn[data-theme="${theme}"]`)?.setAttribute('aria-current', 'true')
   try { localStorage.setItem('theme', theme); } catch {}
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) metaTheme.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0c0a09';
-  document.querySelectorAll('.theme-btn').forEach((b) => b.classList.toggle('active', b.dataset.theme === theme));
   const cfg = themeConfigs[theme] || themeConfigs.dark;
   if (scene) {
     scene.background = new THREE.Color(cfg.bg);
@@ -302,7 +296,7 @@ function applyTheme(theme, anim = true) {
   if (bloomPass) { bloomPass.threshold = cfg.bloom.threshold; bloomPass.strength = cfg.bloom.strength; bloomPass.radius = cfg.bloom.radius; }
   document.dispatchEvent(new CustomEvent('theme:change', { detail: { theme } }));
 }
-let savedTheme = 'dark'; try { savedTheme = localStorage.getItem('theme') || 'dark'; } catch {} finally { savedTheme = savedTheme || 'dark'; }
+let savedTheme = 'dark'; try { savedTheme = localStorage.getItem('theme') || 'dark'; } catch {} finally { if (!['dark','light'].includes(savedTheme)) savedTheme = 'dark'; }
 applyTheme(savedTheme);
 // --- Preloader + Cinematic Reveal ---
 (function() {

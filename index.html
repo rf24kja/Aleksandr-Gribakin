@@ -68,61 +68,7 @@
       --shadow: 0 4px 40px rgba(0,0,0,.5), 0 0 60px var(--glow);
       --theme-icon: '◆';
     }
-    [data-theme="cyber"] {
-      --radius: 8px; --radius-lg: 16px;
-      --bg: #08080c; --bg2: #0d0d14; --bg3: #111118;
-      --text: #e0e0e8; --text-dim: rgba(224,224,232,.4); --text-bright: #ffffff;
-      --accent: #00d4ff; --accent2: #00ff88; --accent3: #ff6b6b;
-      --border: rgba(0,212,255,.12); --border-light: rgba(0,212,255,.06);
-      --glow: rgba(0,212,255,.15); --glow-strong: rgba(0,212,255,.3);
-      --font: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-      --scanline-color: rgba(0,0,0,.02);
-      --dot-color: rgba(0,212,255,.03);
-      --section-bg: rgba(10,10,15,.4); --card-bg: rgba(10,10,15,.6);
-      --card-border: rgba(0,212,255,.05);
-      --gradient-title: linear-gradient(90deg, var(--accent), var(--accent2));
-      --gradient-name: linear-gradient(135deg, var(--text-bright) 60%, var(--accent));
-      --gradient-card: linear-gradient(135deg, rgba(0,212,255,.08), rgba(0,255,136,.04));
-      --shadow: 0 0 40px var(--glow), 0 0 80px rgba(0,212,255,.05);
-      --theme-icon: '◈';
-    }
-    [data-theme="terminal"] {
-      --bg: #0a0a0a; --bg2: #0d0d0d; --bg3: #111111;
-      --text: #c4f0c4; --text-dim: rgba(0,255,65,.3); --text-bright: #00ff41;
-      --accent: #00ff41; --accent2: #ffb000; --accent3: #ff0040;
-      --border: rgba(0,255,65,.15); --border-light: rgba(0,255,65,.06);
-      --glow: rgba(0,255,65,.12); --glow-strong: rgba(0,255,65,.25);
-      --font: 'JetBrains Mono', 'Fira Code', monospace;
-      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-      --scanline-color: rgba(0,255,65,.008);
-      --dot-color: rgba(0,255,65,.025);
-      --section-bg: rgba(0,20,0,.35); --card-bg: rgba(0,20,0,.5);
-      --card-border: rgba(0,255,65,.06);
-      --gradient-title: linear-gradient(90deg, var(--accent), var(--accent2));
-      --gradient-name: linear-gradient(135deg, var(--text-bright) 60%, var(--accent2));
-      --gradient-card: linear-gradient(135deg, rgba(0,255,65,.06), rgba(255,176,0,.03));
-      --shadow: 0 0 30px var(--glow);
-      --theme-icon: '⎔';
-    }
-    [data-theme="steampunk"] {
-      --bg: #1a1410; --bg2: #221c16; --bg3: #2a221c;
-      --text: #d4c9a8; --text-dim: rgba(180,160,120,.4); --text-bright: #f0e6c0;
-      --accent: #c8782a; --accent2: #b8860b; --accent3: #8b2500;
-      --border: rgba(200,120,42,.2); --border-light: rgba(200,120,42,.08);
-      --glow: rgba(200,120,42,.12); --glow-strong: rgba(200,120,42,.25);
-      --font: 'Playfair Display', Georgia, serif;
-      --font-mono: 'Special Elite', 'Courier New', monospace;
-      --scanline-color: rgba(120,80,40,.015);
-      --dot-color: rgba(200,120,42,.02);
-      --section-bg: rgba(30,22,16,.5); --card-bg: rgba(34,28,22,.6);
-      --card-border: rgba(200,120,42,.06);
-      --gradient-title: linear-gradient(90deg, var(--accent), var(--accent2));
-      --gradient-name: linear-gradient(135deg, var(--text-bright) 60%, var(--accent));
-      --gradient-card: linear-gradient(135deg, rgba(200,120,42,.06), rgba(184,134,11,.03));
-      --shadow: 0 0 30px var(--glow);
-      --theme-icon: '⚙';
-    }
+
     html { scroll-behavior: auto; overflow-x: hidden; background: var(--bg); color: var(--text); font-family: var(--font); touch-action: manipulation; transition: background .6s ease, color .6s ease; }
     body { overflow-x: hidden; min-height: 100vh; background: var(--bg); -webkit-tap-highlight-color: transparent; transition: background .6s ease; }
     ::selection { background: var(--accent); color: var(--bg); }
@@ -150,12 +96,10 @@
 
     canvas#webgl { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
     #scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, var(--scanline-color) 0px, var(--scanline-color) 1px, transparent 1px, transparent 3px); }
-    [data-theme="dark"] #scanlines,
-    [data-theme="cyber"] #scanlines {
+    [data-theme="dark"] #scanlines {
       background: transparent !important;
     }
-    [data-theme="dark"] #scanlines::after,
-    [data-theme="cyber"] #scanlines::after {
+    [data-theme="dark"] #scanlines::after {
       display: none !important;
     }
     #ui-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
@@ -293,12 +237,7 @@
     /* Scanline overlay on hover */
     #portrait-wrap:hover #portrait { opacity: .25; filter: grayscale(.3) contrast(1.1) brightness(.9); }
     #portrait-wrap:hover::before { opacity: .6; }
-    [data-theme="cyber"] #portrait { filter: grayscale(1) contrast(1.4) brightness(.5); opacity: .12; }
-    [data-theme="cyber"] #portrait-wrap::before { background: linear-gradient(135deg, #00d4ff, #00ff88, #00d4ff, #00ff88) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
-    [data-theme="terminal"] #portrait { filter: grayscale(1) contrast(1.6) brightness(.3); opacity: .08; }
-    [data-theme="terminal"] #portrait-wrap::before { background: linear-gradient(135deg, #33ff33, #66ff66, #33ff33, #00cc00) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
-    [data-theme="steampunk"] #portrait { filter: sepia(.6) grayscale(.4) contrast(1.2) brightness(.6); opacity: .08; }
-    [data-theme="steampunk"] #portrait-wrap::before { background: linear-gradient(135deg, #b8860b, #d4a017, #8b6508, #c49a1a) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+
     /* Hologram glitch line animation */
     @keyframes hologram-scan { 0% { opacity: 0; transform: translateY(-50%) translateX(0); } 50% { opacity: .15; } 100% { opacity: 0; transform: translateY(-50%) translateX(4px); } }
     #portrait-wrap::before { animation: hologram-border 4s ease-in-out infinite; }
@@ -388,8 +327,6 @@
     @keyframes btn-spin { to { transform: rotate(360deg); } }
 
     /* Coffee Easter Egg */
-    .mode-toggle { font-size:16px;opacity:.35;transition:opacity .3s;background:none;border:none;cursor:pointer;line-height:1;padding:4px;font-family:inherit;color:inherit }
-    .mode-toggle:hover { opacity:.7 }
     .coffee-egg {
       position: fixed; bottom: 20px; right: 20px; font-size: 18px; cursor: pointer; z-index: 101;
       opacity: .3; transition: opacity .4s, transform .3s; user-select: none; line-height: 1;
@@ -567,110 +504,7 @@
       color: var(--text);
     }
 
-    /* Theme Switcher */
-    .theme-switcher { position: fixed; top: 24px; left: 24px; z-index: 100; display: flex; gap: 6px; pointer-events: auto; }
-    .theme-btn {
-      width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
-      background: var(--section-bg); backdrop-filter: blur(8px); cursor: pointer;
-      font-size: 12px; display: flex; align-items: center; justify-content: center;
-      transition: all .3s; color: var(--text-dim); position: relative;
-    }
-    .theme-btn:hover { border-color: var(--accent); color: var(--accent); transform: scale(1.1); }
-    .theme-btn.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px var(--glow); animation: theme-activate .4s ease; }
-    @keyframes theme-activate {
-      0% { box-shadow: 0 0 0 var(--glow); }
-      50% { box-shadow: 0 0 24px var(--glow-strong), 0 0 48px var(--glow); }
-      100% { box-shadow: 0 0 12px var(--glow); }
-    }
-    .theme-btn[data-theme="cyber"] { font-size: 14px; }
-    .theme-btn[data-theme="terminal"] { font-size: 14px; }
-    .theme-btn[data-theme="steampunk"] { font-size: 14px; }
-
-    /* === THEME-SPECIFIC DECORATIONS === */
-
-    /* Terminal — CRT + matrix pulse + terminal prefixes */
-    [data-theme="terminal"] { font-family: var(--font-mono); }
-    [data-theme="terminal"] .section-overlay .section-title { text-shadow: 0 0 10px var(--glow-strong); }
-    [data-theme="terminal"] .stat-item .stat-value { text-shadow: 0 0 8px var(--glow); }
-    [data-theme="terminal"] .stat-item .stat-label { letter-spacing: .15em; }
-    [data-theme="terminal"] .career-item .period::before { content: '> '; }
-    [data-theme="terminal"] .career-item .desc { opacity: .6; }
-    [data-theme="terminal"] .project-card .card-tag { letter-spacing: .15em; }
-    [data-theme="terminal"] .project-card .card-tag::before { content: '#'; }
-    [data-theme="terminal"] .project-card .metric::before { content: '$ '; }
-    [data-theme="terminal"] .project-card .metric { border-top-color: color-mix(in srgb, var(--accent) 15%, transparent); }
-    [data-theme="terminal"] .achievement-item .ach-year { opacity: .7; }
-    [data-theme="terminal"] .achievement-item .ach-title { color: var(--accent2); }
-    [data-theme="terminal"] .coffee-egg { border-color: var(--accent); box-shadow: 0 0 8px var(--glow); }
-    [data-theme="terminal"] #preloader { background: #000; }
-    /* CRT scan lines visible ambient overlay + matrix vignette */
-    [data-theme="terminal"] #scanlines {
-      background: repeating-linear-gradient(0deg, var(--scanline-color) 0px, var(--scanline-color) 2px, transparent 2px, transparent 4px);
-    }
-    @keyframes terminalFlicker { 0%,100% { opacity: .025; } 50% { opacity: .045; } 3%,30% { opacity: .015; } }
-    [data-theme="terminal"] #scanlines::after {
-      content: ''; position: fixed; inset: 0; z-index: 2; pointer-events: none;
-      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,255,65,.04) 100%);
-      animation: terminalFlicker 4s ease-in-out infinite;
-    }
-    /* Terminal data stream decoration on intro */
-    [data-theme="terminal"] .intro-text h1::after {
-      content: '█'; display: inline-block; margin-left: 4px; font-size: clamp(20px,3vw,36px);
-      animation: cursorBlink .8s step-end infinite; vertical-align: middle;
-      color: var(--accent);
-    }
-    @keyframes cursorBlink { 50% { opacity: 0; } }
-
-    /* Steampunk — ornamental borders + vintage texture + warm serif */
-    [data-theme="steampunk"] .section-overlay .section-title { letter-spacing: .35em; font-style: italic; font-family: var(--font-mono); font-weight: 400; font-size: 11px; }
-    [data-theme="steampunk"] .stat-item { border: 1px solid var(--accent); box-shadow: inset 0 0 30px rgba(0,0,0,.25); background: color-mix(in srgb, var(--section-bg) 80%, #000); }
-    [data-theme="steampunk"] .stat-item .stat-value { font-family: var(--font); font-weight: 700; font-style: italic; color: var(--accent2); }
-    [data-theme="steampunk"] .stat-item .stat-label { letter-spacing: .15em; color: var(--text); opacity: .6; }
-    [data-theme="steampunk"] .project-card { background: color-mix(in srgb, var(--card-bg) 80%, #000); }
-    [data-theme="steampunk"] .project-card .card-inner { border-left: 2px solid var(--accent); background: color-mix(in srgb, var(--card-bg) 70%, #000); }
-    [data-theme="steampunk"] .project-card .card-tag { font-style: italic; letter-spacing: .15em; border-color: var(--accent); border-radius: 0; }
-    [data-theme="steampunk"] .project-card h3 { font-family: var(--font); font-weight: 700; background: none; -webkit-text-fill-color: var(--text-bright); color: var(--text-bright); }
-    [data-theme="steampunk"] .project-card .stack { opacity: .55; }
-    [data-theme="steampunk"] .project-card .metric { border-top-color: var(--accent); opacity: .5; }
-    [data-theme="steampunk"] .achievement-item { border-left: 2px solid var(--accent2); background: color-mix(in srgb, var(--section-bg) 80%, #000); }
-    [data-theme="steampunk"] .achievement-item .ach-title { font-family: var(--font); font-weight: 700; }
-    [data-theme="steampunk"] .achievement-item .ach-desc { opacity: .55; }
-    [data-theme="steampunk"] .career-item { background: color-mix(in srgb, var(--section-bg) 80%, #000); }
-    [data-theme="steampunk"] .career-item .period { border-right: 1px solid var(--accent); padding-right: 16px; }
-    [data-theme="steampunk"] .career-item .role-company { font-family: var(--font); font-weight: 700; }
-    [data-theme="steampunk"] .career-item .desc { opacity: .6; }
-    [data-theme="steampunk"] .intro-text .sub { font-style: italic; font-size: clamp(13px,1.5vw,17px); font-family: var(--font); }
-    [data-theme="steampunk"] .intro-text .tagline { font-family: var(--font); font-style: italic; letter-spacing: .2em; }
-    [data-theme="steampunk"] .terminal-form { border: 1px solid var(--accent); background: color-mix(in srgb, var(--bg) 95%, #000); }
-    [data-theme="steampunk"] .section-title { font-family: var(--font); font-style: italic; }
-    [data-theme="steampunk"] .cat-tab { border-color: var(--accent); }
-    [data-theme="steampunk"] .cat-tab.active { background: color-mix(in srgb, var(--accent) 15%, transparent); }
-    [data-theme="steampunk"] #preloader { background: #1a1410; }
-    [data-theme="steampunk"] .year-label { font-family: var(--font); font-style: italic; opacity: .18; }
-    /* Steampunk sectional vignette overlay */
-    @keyframes vignettePulse { 0%,100% { opacity: .25; } 50% { opacity: .4; } }
-    [data-theme="steampunk"] #scanlines::after {
-      content: ''; position: fixed; inset: 0; z-index: 2; pointer-events: none;
-      background: radial-gradient(ellipse at center, transparent 50%, rgba(30,20,10,.3) 100%);
-      animation: vignettePulse 6s ease-in-out infinite;
-    }
-    [data-theme="steampunk"] .intro-text h1 { font-family: var(--font); font-weight: 700; letter-spacing: .04em; }
-    [data-theme="steampunk"] .coffee-egg { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); box-shadow: 0 0 12px var(--glow); }
-    /* Steampunk ornamental title dividers */
-    [data-theme="steampunk"] .section-overlay .section-title::before,
-    [data-theme="steampunk"] .section-overlay .section-title::after {
-      content: '✦'; display: inline-block; margin: 0 12px; font-size: 8px; opacity: .5;
-    }
-    /* Steampunk stat corner decorations */
-    [data-theme="steampunk"] .stat-item { position: relative; }
-    [data-theme="steampunk"] .stat-item::before,
-    [data-theme="steampunk"] .stat-item::after {
-      content: '◆'; position: absolute; font-size: 6px; color: var(--accent2); opacity: .3;
-    }
-    [data-theme="steampunk"] .stat-item::before { top: 4px; left: 6px; }
-    [data-theme="steampunk"] .stat-item::after { bottom: 4px; right: 6px; }
-    /* Steampunk gear spinner on intro */
-    [data-theme="steampunk"] .intro-text h1::after { content: ' ⚙'; display: inline-block; font-size: clamp(16px,2vw,24px); animation: gearSpin 8s linear infinite; vertical-align: middle; margin-left: 6px; filter: sepia(.5); }
+    @keyframes gearSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @keyframes gearSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* === PER-THEME PROJECT CARD DECORATIONS === */
@@ -710,114 +544,7 @@
       box-shadow: 0 0 30px var(--glow-strong), 0 0 60px var(--glow);
     }
 
-    /* Cyber — Circuit Board */
-    [data-theme="cyber"] .project-card {
-      border: 1px dashed var(--accent); border-radius: var(--radius);
-      background: rgba(0,0,0,.25); padding: 0; overflow: hidden;
-    }
-    [data-theme="cyber"] .project-card::before {
-      content: ''; position: absolute; inset: 0;
-      background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,212,255,.015) 1px, rgba(0,212,255,.015) 2px);
-      pointer-events: none;
-    }
-    [data-theme="cyber"] .project-card .card-inner {
-      background: transparent; backdrop-filter: none; border: none;
-      border-radius: var(--radius);
-      border-bottom: 1px solid var(--accent);
-      box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 6%, transparent);
-    }
-    [data-theme="cyber"] .project-card .card-tag {
-      background: color-mix(in srgb, var(--accent) 12%, transparent);
-      border: 1px solid var(--accent); border-radius: 4px; color: var(--accent);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 15%, transparent);
-    }
-    [data-theme="cyber"] .project-card h3 {
-      color: var(--accent); font-weight: 500;
-      background: none; -webkit-text-fill-color: initial;
-    }
-    [data-theme="cyber"] .project-card .metric { border-top-color: color-mix(in srgb, var(--accent) 15%, transparent); }
-    [data-theme="cyber"] .project-card .metric::before { content: '≈ '; }
-    [data-theme="cyber"] .project-card:hover { border-style: solid; }
-    [data-theme="cyber"] .project-card:hover .card-inner { box-shadow: 0 0 30px var(--glow-strong); }
 
-    /* Terminal — CRT Scan */
-    [data-theme="terminal"] .project-card {
-      border: 1px solid var(--accent); border-radius: 0;
-      transform: none; background: rgba(0,10,0,.3); padding: 0;
-      position: relative;
-    }
-    [data-theme="terminal"] .project-card::before {
-      content: '├──'; position: absolute; top: 0; left: 0;
-      font-family: var(--font-mono); font-size: 9px;
-      color: var(--accent); opacity: .35; line-height: 1; pointer-events: none;
-    }
-    [data-theme="terminal"] .project-card::after {
-      content: '──┤'; position: absolute; bottom: 0; right: 0;
-      font-family: var(--font-mono); font-size: 9px;
-      color: var(--accent); opacity: .3; line-height: 1; pointer-events: none;
-    }
-    [data-theme="terminal"] .project-card .card-inner {
-      background: transparent; backdrop-filter: none;
-      border: none; border-radius: 0;
-    }
-    [data-theme="terminal"] .project-card .card-tag {
-      border: none; border-radius: 0; padding-left: 0;
-      color: var(--accent2); background: transparent;
-    }
-    [data-theme="terminal"] .project-card .card-tag::before { content: ''; }
-    [data-theme="terminal"] .project-card .card-tag::after {
-      content: '█'; display: inline-block; margin-left: 2px;
-      animation: cursorBlink .8s step-end infinite;
-    }
-    [data-theme="terminal"] .project-card h3 {
-      color: var(--text-bright); background: none; -webkit-text-fill-color: initial;
-      font-weight: 400;
-    }
-    [data-theme="terminal"] .project-card .metric {
-      border-top-color: color-mix(in srgb, var(--accent) 15%, transparent);
-    }
-    [data-theme="terminal"] .project-card .metric::before { content: '$ '; }
-    [data-theme="terminal"] .project-card .stack { opacity: .55; }
-    [data-theme="terminal"] .project-card:hover {
-      box-shadow: 0 0 20px var(--glow-strong), 0 0 40px var(--glow);
-    }
-    [data-theme="terminal"] .project-card:hover .card-tag::after { animation-duration: .3s; }
-
-    /* Steampunk — Brass Automaton */
-    [data-theme="steampunk"] .project-card {
-      background: linear-gradient(135deg, rgba(30,22,16,.7), rgba(26,20,16,.4));
-      border: 1px solid var(--accent); border-radius: 0; padding: 0;
-      box-shadow: inset 0 0 20px rgba(0,0,0,.3);
-      position: relative;
-    }
-    [data-theme="steampunk"] .project-card::before {
-      content: '✦'; position: absolute; top: 4px; left: 6px;
-      font-size: 7px; color: var(--accent2); opacity: .4; pointer-events: none;
-    }
-    [data-theme="steampunk"] .project-card::after {
-      content: '✦'; position: absolute; bottom: 4px; right: 6px;
-      font-size: 7px; color: var(--accent2); opacity: .3; pointer-events: none;
-    }
-    [data-theme="steampunk"] .project-card .card-inner {
-      background: transparent; backdrop-filter: none;
-      border: none; border-radius: 0;
-    }
-    [data-theme="steampunk"] .project-card .card-tag {
-      font-style: italic; letter-spacing: .15em;
-      border: 1px solid var(--accent); border-radius: 0;
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
-      color: var(--accent2);
-    }
-    [data-theme="steampunk"] .project-card h3 {
-      font-family: var(--font); font-weight: 700; font-style: italic;
-      background: none; -webkit-text-fill-color: initial; color: var(--text-bright);
-    }
-    [data-theme="steampunk"] .project-card .stack { opacity: .55; }
-    [data-theme="steampunk"] .project-card .metric { border-top-color: var(--accent); opacity: .5; }
-    [data-theme="steampunk"] .project-card .desc { opacity: .55; }
-    [data-theme="steampunk"] .project-card:hover {
-      box-shadow: 0 8px 30px rgba(0,0,0,.5), 0 0 20px var(--glow);
-    }
 
     @media (max-width: 768px) {
       .section-overlay { padding: 20px 16px; }
@@ -829,8 +556,6 @@
       .career-item .period { min-width: auto; }
       .terminal-form { margin: 20px; padding: 28px 20px; }
       .terminal-form input, .terminal-form textarea { font-size: 16px; }
-      .theme-switcher { top: 18px; left: 12px; gap: 4px; }
-      .theme-btn { width: 40px; height: 40px; font-size: 12px; }
       .lang-toggle { top: 18px; right: 12px; padding: 10px 16px; font-size: 12px; }
       .coffee-egg { width: 44px; height: 44px; }
       #portrait { width: 200px; right: 0; opacity: .06; }
@@ -968,7 +693,6 @@
     [data-mode="business"] .scroll-progress,
     [data-mode="business"] .spacer,
     [data-mode="business"] .year-label,
-    [data-mode="business"] .theme-switcher,
     [data-mode="business"] .coffee-egg,
     [data-mode="business"] .coffee-popup,
     [data-mode="business"] .hud-top,
@@ -1028,58 +752,7 @@
     [data-mode="business"] .lang-toggle:hover {
       opacity: 1;
     }
-    /* Mode toggle always visible */
-    [data-mode="business"] .mode-toggle {
-      position: fixed !important;
-      bottom: 20px !important;
-      right: 20px !important;
-      top: auto !important;
-      left: auto !important;
-      z-index: 100 !important;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-size: 14px;
-      opacity: .4;
-      transition: opacity .2s;
-      color: var(--b-text);
-      font-family: var(--b-font);
-      pointer-events: auto;
-      display: flex !important;
-      align-items: center;
-      gap: 6px;
-      line-height: 1;
-    }
-    [data-mode="business"] .mode-toggle:hover {
-      opacity: .8;
-    }
-    [data-mode="business"] .theme-toggle {
-      position: fixed !important;
-      bottom: 62px !important;
-      right: 20px !important;
-      z-index: 100 !important;
-      background: none;
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 6px;
-      padding: 6px 10px;
-      cursor: pointer;
-      font-size: 13px;
-      opacity: .35;
-      transition: opacity .2s;
-      color: var(--b-text);
-      line-height: 1;
-      display: flex !important;
-      align-items: center;
-    }
-    [data-mode="business"] .theme-toggle:hover {
-      opacity: .7;
-    }
-    [data-mode="desktop"] .theme-toggle { display: none !important; }
-    [data-mode="business"][data-theme="light"] .theme-toggle {
-      border-color: rgba(0,0,0,.12);
-    }
+
 
     /* Intro */
     [data-mode="business"] .intro-text {
@@ -1363,16 +1036,6 @@
       color: var(--b-text-dim);
       cursor: pointer;
       transition: all .2s;
-    }
-    [data-mode="business"] .cat-tab.active::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: var(--b-accent);
-      transition: opacity .2s;
     }
     [data-mode="business"] .cat-tab:hover {
       border-color: var(--b-accent);
@@ -1908,10 +1571,6 @@
     [data-mode="business"][data-theme="light"] .lang-toggle {
       border-color: rgba(0,0,0,.12);
     }
-    [data-mode="business"][data-theme="light"] .mode-toggle {
-      background: rgba(0,0,0,.04);
-      border-color: rgba(0,0,0,.08);
-    }
     [data-mode="business"][data-theme="light"] .settings-card {
       background: #fff;
       border-color: rgba(0,0,0,.12);
@@ -1963,12 +1622,6 @@
       [data-mode="business"] .terminal-form input,
       [data-mode="business"] .terminal-form textarea {
         font-size: 16px;
-      }
-      [data-mode="business"] .mode-toggle {
-        bottom: 12px !important;
-        right: 12px !important;
-        font-size: 12px;
-        padding: 5px 10px;
       }
       [data-mode="business"] .stat-value {
         font-size: 24px;
