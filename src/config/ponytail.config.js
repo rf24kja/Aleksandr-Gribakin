@@ -94,6 +94,9 @@ const EN = {
     SUB: 'This route does not exist.',
     CTA: 'Return Home',
   },
+  BIO: 'Architecting distributed systems for 15 years. Fintech, ML fraud detection, real-time infrastructure. Go, Rust, Python, Kubernetes.',
+  STATS_DESC: 'Proven track record in fintech, ML systems, and distributed architectures.',
+  ABOUT: 'About', CAREER_TITLE: 'Career', PROJECTS_TITLE: 'Projects', ACHIEVEMENTS_TITLE: 'Achievements', SETTINGS: 'Settings', SETTINGS_LANG: 'Language', MAIL: 'Mail',
   COFFEE: { TITLE: '☕ Buy me a coffee', NETWORK: 'USDT TRC-20', COPY: 'Copy Address', DONE: '✓ Copied', CLOSE: 'Close' },
   DETAIL: { BACK: 'Back', BACK_CAREER: 'Back to Career', BACK_ACH: 'Back to Achievements', NOT_FOUND: 'not found', KEY_METRICS: 'Key Metrics', FEATURES: 'Features', TECH_STACK: 'Tech Stack', KEY_ACH: 'Key Achievements', TYPE_PROJECT: 'Project', TYPE_CAREER: 'Career', TYPE_ACH: 'Achievement' },
 };
@@ -186,6 +189,9 @@ const RU = {
     SUB: 'Этот маршрут не существует.',
     CTA: 'Вернуться на главную',
   },
+  BIO: 'Проектирую распределенные системы 15 лет. Fintech, ML, real-time инфраструктура. Go, Rust, Python, Kubernetes.',
+  STATS_DESC: 'Проверенный опыт в fintech, ML-системах и распределенных архитектурах.',
+  ABOUT: 'О себе', CAREER_TITLE: 'Карьера', PROJECTS_TITLE: 'Проекты', ACHIEVEMENTS_TITLE: 'Достижения', SETTINGS: 'Настройки', SETTINGS_LANG: 'Язык', MAIL: 'Почта',
   COFFEE: { TITLE: '☕ Угостить кофе', NETWORK: 'USDT TRC-20', COPY: 'Скопировать адрес', DONE: '✓ Скопировано', CLOSE: 'Закрыть' },
   DETAIL: { BACK: 'Назад', BACK_CAREER: 'Назад к карьере', BACK_ACH: 'Назад к достижениям', NOT_FOUND: 'не найден', KEY_METRICS: 'Ключевые метрики', FEATURES: 'Возможности', TECH_STACK: 'Технологии', KEY_ACH: 'Ключевые достижения', TYPE_PROJECT: 'Проект', TYPE_CAREER: 'Карьера', TYPE_ACH: 'Достижение' },
 };
