@@ -9,4 +9,6 @@ Thumbs.db
 
 .vercel
 check_site.cjs
+check_animations.cjs
+check_panel.cjs
 screenshot_*.png

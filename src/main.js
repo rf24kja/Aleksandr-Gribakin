@@ -377,10 +377,12 @@ document.addEventListener('click', (e) => {
   }
   const modeBtn = e.target.closest('[data-mode-switch]');
   if (modeBtn) {
-    const modes = ['business', 'desktop'];
+    const modes = ['business', 'desktop', 'terminal'];
     const cur = document.documentElement.getAttribute('data-mode') || 'business';
     const next = modes[(modes.indexOf(cur) + 1) % modes.length];
     setMode(next);
+    // Populate terminal intro with browser data when switching to terminal
+    if (next === 'terminal') _populateTerminalIntro();
   }
   const scrollBtn = e.target.closest('[data-scroll-to]');
   if (scrollBtn) {
@@ -400,8 +402,27 @@ if (sceneManager) {
   sceneManager.update(0, 0);
 }
 
+function _populateTerminalIntro() {
+  const ipEl = document.getElementById('ti-ip');
+  const uaEl = document.getElementById('ti-ua');
+  const tsEl = document.getElementById('ti-ts');
+  if (ipEl) ipEl.textContent = 'unknown'; // IP not available client-side
+  if (uaEl) {
+    const ua = navigator.userAgent;
+    const browser = ua.includes('Chrome') ? 'Chrome' : ua.includes('Firefox') ? 'Firefox' : ua.includes('Safari') ? 'Safari' : 'Unknown';
+    const os = ua.includes('Windows') ? 'Windows' : ua.includes('Mac') ? 'macOS' : ua.includes('Linux') ? 'Linux' : 'Unknown';
+    uaEl.textContent = browser + ' / ' + os;
+  }
+  if (tsEl) {
+    tsEl.textContent = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  }
+}
+
 if (getMode() === 'desktop') {
   initDesktop(orchestrator.s);
+}
+if (getMode() === 'terminal') {
+  _populateTerminalIntro();
 }
 
 document.addEventListener('mode:change', (e) => {
@@ -410,6 +431,9 @@ document.addEventListener('mode:change', (e) => {
   }
   if (e.detail.to === 'business') {
     ScrollTrigger.refresh();
+  }
+  if (e.detail.to === 'terminal') {
+    _populateTerminalIntro();
   }
 });
 

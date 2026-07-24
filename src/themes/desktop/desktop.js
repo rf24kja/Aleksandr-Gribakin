@@ -90,7 +90,7 @@ function initModeSwitch() {
   btn.textContent = '⇄'
   btn.style.color = 'var(--ubuntu-accent)'
   btn.addEventListener('click', () => {
-    const modes = MODES.filter(m => m !== 'terminal')
+    const modes = MODES
     const cur = getMode()
     const next = modes[(modes.indexOf(cur) + 1) % modes.length]
     setMode(next)
@@ -190,7 +190,7 @@ function renderSettings() {
     <div class="wb-section">
       <div class="wb-section-title">Mode</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        ${MODES.filter(m => m !== 'terminal').map(m => `
+        ${MODES.map(m => `
           <button class="stg-mode-btn" data-mode="${m}" style="padding:6px 14px;background:${cur === m ? 'var(--ubuntu-accent)' : 'rgba(255,255,255,.08)'};border:none;border-radius:4px;color:inherit;font-family:inherit;font-size:11px;cursor:pointer;transition:background .15s">${m.charAt(0).toUpperCase() + m.slice(1)}</button>
         `).join('')}
       </div>
