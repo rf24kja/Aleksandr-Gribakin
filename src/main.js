@@ -370,30 +370,68 @@ applyTheme(savedTheme);
   }, 2000);
 })();
 
+function openSettings() {
+  const popup = document.getElementById('settingsPopup');
+  updateSettingsUI();
+  popup.style.display = 'flex';
+}
+
+function closeSettings() {
+  document.getElementById('settingsPopup').style.display = 'none';
+}
+
+function updateSettingsUI() {
+  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const mode = document.documentElement.getAttribute('data-mode') || 'business';
+  // Theme buttons
+  document.querySelectorAll('[data-stheme]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.stheme === theme);
+    btn.disabled = mode !== 'business';
+  });
+  // Mode buttons
+  document.querySelectorAll('[data-smode]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.smode === mode);
+  });
+}
+
 document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.theme-btn');
-  if (btn && btn.dataset.theme !== document.documentElement.getAttribute('data-theme')) {
-    applyTheme(btn.dataset.theme);
+  // Settings gear click
+  if (e.target.closest('.settings-gear')) {
+    openSettings();
+    return;
   }
-  const modeBtn = e.target.closest('[data-mode-switch]');
-  if (modeBtn) {
-    const modes = ['business', 'desktop', 'terminal'];
-    const cur = document.documentElement.getAttribute('data-mode') || 'business';
-    const next = modes[(modes.indexOf(cur) + 1) % modes.length];
-    setMode(next);
-    // Populate terminal intro with browser data when switching to terminal
-    if (next === 'terminal') _populateTerminalIntro();
+  // Settings popup interactions
+  if (document.getElementById('settingsPopup').style.display !== 'none') {
+    // Theme option
+    const themeOpt = e.target.closest('[data-stheme]');
+    if (themeOpt) {
+      const theme = themeOpt.dataset.stheme;
+      const mode = document.documentElement.getAttribute('data-mode') || 'business';
+      if (mode === 'business') applyTheme(theme);
+      updateSettingsUI();
+      return;
+    }
+    // Mode option
+    const modeOpt = e.target.closest('[data-smode]');
+    if (modeOpt) {
+      const mode = modeOpt.dataset.smode;
+      setMode(mode);
+      if (mode === 'terminal') _populateTerminalIntro();
+      updateSettingsUI();
+      return;
+    }
+    // Close button or backdrop
+    if (e.target.closest('#settingsClose') || e.target.closest('#settingsBackdrop')) {
+      closeSettings();
+      return;
+    }
+    return; // block other clicks while popup is open
   }
+  // Scroll-to (CTA button etc.)
   const scrollBtn = e.target.closest('[data-scroll-to]');
   if (scrollBtn) {
     const target = document.getElementById(scrollBtn.dataset.scrollTo);
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  const themeBtn = e.target.closest('[data-theme-switch]');
-  if (themeBtn) {
-    const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-    const next = cur === 'light' ? 'dark' : 'light';
-    applyTheme(next);
   }
 });
 
@@ -446,6 +484,13 @@ window.addEventListener('hashchange', () => {
   if (hash.startsWith('/project/') || hash.startsWith('/career/') || hash.startsWith('/achievement/')) return;
   if (!document.getElementById(hash.replace(/^\//, ''))) {
     location.hash = '';
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const popup = document.getElementById('settingsPopup');
+    if (popup.style.display !== 'none') closeSettings();
   }
 });
 
