@@ -83,8 +83,17 @@ async function main() {
   });
   check('Theme buttons disabled in terminal mode', themeDisabled);
 
-  // Close via Close button
-  await bizPage.click('#settingsClose');
+  // Popup auto-closes after mode switch
+  const autoClosed = await bizPage.evaluate(() => document.getElementById('settingsPopup').style.display);
+  check('Popup auto-closes on mode switch', autoClosed === 'none');
+
+  // Open again and close via Close button
+  await bizPage.click('#ui-overlay .settings-gear', { force: true });
+  await bizPage.waitForTimeout(300);
+  const reopened = await bizPage.evaluate(() => document.getElementById('settingsPopup').style.display);
+  check('Popup reopens in terminal mode', reopened === 'flex');
+
+  await bizPage.click('#settingsClose', { force: true });
   await bizPage.waitForTimeout(200);
   const closed = await bizPage.evaluate(() => document.getElementById('settingsPopup').style.display);
   check('Popup closes on Close button', closed === 'none');

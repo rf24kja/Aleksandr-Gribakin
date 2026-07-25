@@ -406,6 +406,9 @@
       padding: 6px;
       color: var(--accent);
       opacity: .6;
+      position: absolute;
+      top: 12px;
+      left: 12px;
     }
     [data-mode="terminal"] .settings-gear:hover { opacity: 1; }
 
@@ -1671,7 +1674,8 @@
     [data-mode="terminal"] #scrollProgress,
     [data-mode="terminal"] #scene-label,
     [data-mode="terminal"] #spBar,
-    [data-mode="terminal"] #spDot { display: none !important; }
+    [data-mode="terminal"] #spDot,
+    [data-mode="terminal"] #fpsCounter { display: none !important; }
     [data-mode="terminal"] #introText { display: none !important; }
     [data-mode="terminal"] #mainContent { display: block !important; }
 
@@ -2205,6 +2209,44 @@
     /* No entrance animation in terminal mode */
     @keyframes t-blink { 50% { opacity: 0; } }
 
+    /* ========== TERMINAL MODE — MOBILE ========== */
+    @media (max-width: 768px) {
+      [data-mode="terminal"] #terminalIntro { padding: 20px; }
+      [data-mode="terminal"] .ti-box { font-size: 11px; }
+      [data-mode="terminal"] .ti-logo { font-size: 8px; }
+      [data-mode="terminal"] .section-overlay {
+        padding: 40px 20px;
+        max-width: 100%;
+      }
+      [data-mode="terminal"] .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+      [data-mode="terminal"] .project-card {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+      [data-mode="terminal"] .project-card .card-tag { grid-row: auto; }
+      [data-mode="terminal"] .achievement-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+      [data-mode="terminal"] .career-item .period { font-size: 9px; }
+      [data-mode="terminal"] .form-section {
+        padding: 40px 20px 80px;
+        max-width: 100%;
+      }
+      [data-mode="terminal"] .terminal-form input,
+      [data-mode="terminal"] .terminal-form textarea { font-size: 16px; }
+      [data-mode="terminal"] .settings-card { max-width: 94%; }
+    }
+
+    /* ========== TERMINAL MODE — COMPACT PHONES ========== */
+    @media (max-width: 480px) {
+      [data-mode="terminal"] .ti-logo { font-size: 6px; }
+      [data-mode="terminal"] .ti-box { font-size: 10px; }
+    }
+
     /* ========== UBUNTU DESKTOP THEME ========== */
     [data-mode="desktop"] {
       --ubuntu-bg: #2d2d2d;
@@ -2295,6 +2337,78 @@
     .wb-section { margin-bottom:16px }
     .wb-section-title { font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ubuntu-accent);margin-bottom:8px;font-weight:500 }
     .wb-divider { border:none;border-top:1px solid rgba(255,255,255,.08);margin:12px 0 }
+
+    /* ========== DESKTOP MODE — MOBILE ========== */
+    @media (max-width: 768px) {
+      [data-mode="desktop"] #desktop-icons {
+        flex-direction: row;
+        flex-wrap: wrap;
+        top: 8px;
+        left: 8px;
+        gap: 2px;
+        max-height: none;
+      }
+      [data-mode="desktop"] .desk-icon {
+        width: 60px;
+        padding: 4px 6px;
+        gap: 2px;
+      }
+      [data-mode="desktop"] .desk-icon-icon {
+        width: 36px;
+        height: 36px;
+      }
+      [data-mode="desktop"] .desk-icon-label {
+        font-size: 9px;
+        max-width: 56px;
+      }
+      [data-mode="desktop"] .desk-window {
+        left: 4% !important;
+        top: 8% !important;
+        width: 92% !important;
+        height: 84% !important;
+        min-width: 0;
+      }
+      [data-mode="desktop"] .window-body {
+        padding: 12px;
+        font-size: 12px;
+      }
+      [data-mode="desktop"] #taskbar {
+        height: 36px;
+      }
+      [data-mode="desktop"] #start-btn {
+        font-size: 11px;
+        padding: 2px 10px;
+        height: 28px;
+      }
+      [data-mode="desktop"] .tb-window-btn {
+        font-size: 10px;
+        padding: 2px 8px;
+        height: 28px;
+        max-width: 120px;
+      }
+      [data-mode="desktop"] #system-tray {
+        gap: 4px;
+        padding: 0 6px;
+      }
+      [data-mode="desktop"] #tray-clock {
+        font-size: 10px;
+      }
+      [data-mode="desktop"] .tray-btn {
+        font-size: 12px;
+        padding: 2px 4px;
+      }
+      [data-mode="desktop"] #start-menu {
+        min-width: 180px;
+        left: 4px;
+      }
+      [data-mode="desktop"] .start-app-item {
+        font-size: 11px;
+        padding: 6px 8px;
+      }
+      [data-mode="desktop"] .settings-card {
+        max-width: 94%;
+      }
+    }
   </style>
 </head>
 <body>

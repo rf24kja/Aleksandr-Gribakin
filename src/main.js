@@ -412,6 +412,7 @@ document.addEventListener('click', (e) => {
       setMode(mode);
       if (mode === 'terminal') _populateTerminalIntro();
       updateSettingsUI();
+      closeSettings(); // auto-close popup — new mode has different layout
       return;
     }
     // Close button or backdrop
