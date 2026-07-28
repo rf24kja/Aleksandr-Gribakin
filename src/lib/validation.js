@@ -4,7 +4,7 @@ const VALIDATION = Object.freeze({
       required: true,
       min: 2,
       max: 64,
-      pattern: /^[\p{L}\s'.\-]+$/u,
+      pattern: /^[\p{L}\s'.-]+$/u,
     },
     email: {
       required: true,

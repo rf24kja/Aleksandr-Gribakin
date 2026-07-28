@@ -20,7 +20,11 @@
   <link rel="alternate" hreflang="x-default" href="https://dev24.pro" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
-  <meta property="og:image" content="https://dev24.pro/favicon.svg" />
+  <meta property="og:image" content="https://dev24.pro/og-cover.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Aleksandr Gribakin — Lead Full Stack Engineer" />
+  <meta name="twitter:image" content="https://dev24.pro/og-cover.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Aleksandr Gribakin — Lead Full Stack Engineer" />
   <meta name="twitter:description" content="15 years architecting systems at scale. Fintech $4B+, ML 8K TPS, distributed 12M+ users." />
@@ -32,16 +36,15 @@
     "familyName":"Gribakin",
     "email":"RF24KRSK@gmail.com",
     "url":"https://dev24.pro",
-    "image":"https://dev24.pro/img_2025_12_23.png",
+    "image":"https://dev24.pro/og-cover.jpg",
     "jobTitle":"Lead Full Stack Engineer",
     "knowsAbout":["Fintech","Machine Learning","Distributed Systems","System Architecture","Go","Rust","Python","Kubernetes"],
-    "sameAs":["https://github.com/RF24KRSK","https://linkedin.com/in/aleksandr-gribakin"],
-    "worksFor":{"@type":"Organization","name":"Self-Employed"}
+        "worksFor":{"@type":"Organization","name":"Self-Employed"}
   }</script>
   <title>Aleksandr Gribakin — Lead Engineer | 15 Years Building at Scale</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;500;600&family=JetBrains+Mono:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Special+Elite&family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;500;600&family=JetBrains+Mono:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <style>
     html { background: #08080c; scrollbar-width: thin; }
     html::-webkit-scrollbar { width: 6px; }
@@ -284,7 +287,7 @@
     .project-card .card-inner { padding: 16px; background: var(--card-bg); backdrop-filter: blur(12px); border-radius: calc(var(--radius) - 1px); transition: transform .3s cubic-bezier(.4,0,.2,1); }
     .project-card:hover .card-inner { background: color-mix(in srgb, var(--bg2) 80%, transparent); }
     .project-card .card-tag { display: inline-block; font-family: var(--font-mono); font-size: 8px; letter-spacing: .12em; color: var(--accent2); border: 1px solid color-mix(in srgb, var(--accent2) 20%, transparent); border-radius: 3px; padding: 1px 6px; margin-bottom: 8px; }
-    .project-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 5px; font-family: var(--font-mono); background: var(--gradient-name); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .project-card .card-title { font-size: 13px; font-weight: 600; margin-bottom: 5px; font-family: var(--font-mono); background: var(--gradient-name); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .project-card .stack { font-family: var(--font-mono); font-size: 8px; color: var(--accent); opacity: .4; letter-spacing: .04em; margin-bottom: 6px; }
     .project-card .metric { font-family: var(--font-mono); font-size: 9px; color: var(--accent); opacity: .35; margin-bottom: 6px; padding: 3px 0; border-top: 1px solid color-mix(in srgb, var(--text-bright) 5%, transparent); }
     .project-card .desc { font-size: 11px; line-height: 1.5; color: var(--text); opacity: .45; }
@@ -539,7 +542,7 @@
       -webkit-text-fill-color: var(--bg);
       letter-spacing: .15em; padding: 2px 10px;
     }
-    [data-theme="dark"] .project-card h3 {
+    [data-theme="dark"] .project-card .card-title {
       font-family: var(--font); font-weight: 700; font-size: 15px;
     }
     [data-theme="dark"] .project-card:hover { box-shadow: none; }
@@ -558,7 +561,10 @@
       .achievements-grid { grid-template-columns: 1fr; }
       .career-item { flex-direction: column; gap: 4px; }
       .career-item .period { min-width: auto; }
-      .terminal-form { margin: 20px; padding: 28px 20px; }
+      /* `width: 100%` (line ~315) plus a 20px margin per side pushed the form
+         40px past the viewport. `width: auto` lets the margin do its job. */
+      .terminal-form { margin: 20px; padding: 28px 20px; width: auto; }
+      /* 16px minimum stops iOS Safari zooming the page on focus. */
       .terminal-form input, .terminal-form textarea { font-size: 16px; }
       .lang-toggle { top: 18px; right: 12px; padding: 10px 16px; font-size: 12px; }
       .coffee-egg { width: 44px; height: 44px; }
@@ -1118,7 +1124,7 @@
       text-transform: uppercase;
       opacity: .7;
     }
-    [data-mode="business"] .project-card h3 {
+    [data-mode="business"] .project-card .card-title {
       font-size: 14px;
       font-weight: 500;
       margin-bottom: 6px;
@@ -1216,6 +1222,10 @@
     [data-mode="business"] .terminal-form {
       width: 100%;
       max-width: 100%;
+      /* The mobile rule adds a 20px margin for the dark-mode card treatment.
+         Business mode has no card and its section is already padded, so that
+         margin combined with width:100% pushed the form off-screen. */
+      margin: 0;
       padding: 0;
       background: transparent;
       backdrop-filter: none;
@@ -1633,9 +1643,19 @@
       [data-mode="business"] .intro-text h1 {
         font-size: 28px !important;
       }
+      /* Was 8px — the type got *smaller* on the smaller screen. */
       [data-mode="business"] .intro-text .tagline {
-        font-size: 8px;
+        font-size: 11px;
       }
+      /* Card body text is content, not decoration: 8-9px is not readable on a
+         phone, and every project card carries three lines of it. */
+      [data-mode="business"] .project-card .card-tag { font-size: 10px; }
+      [data-mode="business"] .project-card .stack,
+      [data-mode="business"] .project-card .metric { font-size: 11px; }
+      [data-mode="business"] .project-card .desc { font-size: 12px; }
+      [data-mode="business"] .pdash-tech-title,
+      [data-mode="business"] .pdash-title { font-size: 10px; }
+      [data-mode="business"] .achievement-item .ach-year { font-size: 11px; }
       [data-mode="business"] .project-card .card-inner {
         padding: 14px 16px;
       }
@@ -1924,7 +1944,7 @@
     }
     [data-mode="terminal"] .project-card .card-tag::before { content: '['; }
     [data-mode="terminal"] .project-card .card-tag::after { content: ']'; }
-    [data-mode="terminal"] .project-card h3 {
+    [data-mode="terminal"] .project-card .card-title {
       font-size: 13px;
       font-weight: 400;
       color: var(--t-text);
@@ -2243,7 +2263,6 @@
 
     /* ========== TERMINAL MODE — COMPACT PHONES ========== */
     @media (max-width: 480px) {
-      [data-mode="terminal"] .ti-logo { font-size: 6px; }
       [data-mode="terminal"] .ti-box { font-size: 10px; }
     }
 
@@ -2409,6 +2428,517 @@
         max-width: 94%;
       }
     }
+
+    /* ==================================================================
+       INTERACTIVE STATISTICS
+       Shared by all three modes. Colours resolve through --sb-* which each
+       mode remaps, so one set of rules covers dark, business and terminal.
+       ================================================================== */
+    :root {
+      --sb-accent: var(--accent);
+      --sb-text: var(--text);
+      --sb-dim: var(--text-dim);
+      --sb-surface: var(--card-bg);
+      --sb-border: var(--border);
+      --sb-track: rgba(255,255,255,.07);
+      --sb-radius: var(--radius);
+    }
+    [data-mode="business"] {
+      --sb-accent: var(--b-accent);
+      --sb-text: var(--b-text);
+      --sb-dim: var(--b-text-dim);
+      --sb-surface: var(--b-bg2);
+      --sb-border: rgba(255,255,255,.06);
+      --sb-track: rgba(255,255,255,.06);
+      --sb-radius: var(--b-radius);
+    }
+    [data-mode="business"][data-theme="light"] {
+      --sb-border: rgba(0,0,0,.08);
+      --sb-track: rgba(0,0,0,.07);
+    }
+
+    /* Project / career / achievement cards became <button>s so the keyboard
+       can reach them. Buttons only allow phrasing content, so their former
+       <div> children are now <span>s and need block layout restored. */
+    .project-card .card-inner,
+    .project-card .card-tag,
+    .project-card .card-title,
+    .project-card .stack,
+    .project-card .metric,
+    .project-card .desc,
+    .career-item .period,
+    .career-item .info,
+    .career-item .role-company,
+    .career-item .desc,
+    .career-item .career-achs,
+    .career-item .career-ach,
+    .achievement-item .ach-year,
+    .achievement-item .ach-title,
+    .achievement-item .ach-desc {
+      display: block;
+    }
+    .project-card .card-tag { display: inline-block; }
+    .career-item .role-company .company { display: inline; }
+
+    /* --- Buttons that used to be divs: strip the UA chrome ------------ */
+    .stat-trigger,
+    .cat-tab,
+    .pdash-sort-btn {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+      text-align: inherit;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    /* These three keep their existing background/border rules — only the
+       button defaults that would override them are reset. */
+    .project-card,
+    .career-item,
+    .achievement-item {
+      font: inherit;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .project-card:focus-visible,
+    .career-item:focus-visible,
+    .achievement-item:focus-visible,
+    .cat-tab:focus-visible {
+      outline: 2px solid var(--sb-accent);
+      outline-offset: 3px;
+    }
+
+    /* --- Stat cards --------------------------------------------------- */
+    .stat-item { position: relative; }
+    .stat-trigger {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      padding: 0;
+      text-align: center;
+      transition: transform .18s ease;
+    }
+    .stat-trigger:hover { transform: translateY(-2px); }
+    .stat-trigger:focus-visible { outline: 2px solid var(--sb-accent); outline-offset: 4px; border-radius: 6px; }
+    .stat-hint {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.4;
+      color: var(--sb-dim);
+      opacity: .85;
+      margin-top: 6px;
+      max-width: 22ch;
+    }
+    .stat-chevron {
+      display: block;
+      width: 0; height: 0;
+      margin-top: 10px;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid var(--sb-accent);
+      opacity: .5;
+      transition: transform .25s ease, opacity .2s ease;
+    }
+    .stat-trigger:hover .stat-chevron { opacity: 1; }
+    .stat-item.open .stat-chevron { transform: rotate(180deg); opacity: 1; }
+
+    /* An open card takes the whole grid row. A stat tile is ~160px wide, which
+       leaves no room at all for label + bar + value — the bar track collapsed
+       to 0px. Expanding to full width gives the breakdown a readable area. */
+    .stat-item.open { grid-column: 1 / -1; }
+
+    .stat-panel {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--sb-border);
+      text-align: left;
+      max-width: 640px;
+      margin-inline: auto;
+    }
+    .stat-panel[hidden] { display: none; }
+
+    /* --- Generic bar list (stat panels + dashboard) ------------------- */
+    .sb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+    .sb-row {
+      display: grid;
+      grid-template-columns: minmax(0, 8.5em) 1fr auto;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+    .sb-compact .sb-row { grid-template-columns: minmax(0, 7em) 1fr auto; font-size: 9.5px; }
+    .sb-label {
+      color: var(--sb-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .02em;
+    }
+    .sb-track {
+      display: block;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--sb-track);
+      overflow: hidden;
+    }
+    .sb-fill {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: 3px;
+      background: var(--sb-accent);
+      transition: width .55s cubic-bezier(.22,.75,.3,1);
+    }
+    .sb-value {
+      color: var(--sb-text);
+      font-variant-numeric: tabular-nums;
+      min-width: 3.2em;
+      text-align: right;
+    }
+    .sb-value em { font-style: normal; color: var(--sb-dim); font-size: .85em; }
+
+    /* --- Projects dashboard ------------------------------------------ */
+    .projects-dash {
+      margin: 0 0 20px;
+      padding: 16px 18px;
+      background: var(--sb-surface);
+      border: 1px solid var(--sb-border);
+      border-radius: var(--sb-radius);
+    }
+    .pdash-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .pdash-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--sb-dim);
+    }
+    .pdash-sort { display: flex; gap: 4px; }
+    .pdash-sort-btn {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      color: var(--sb-dim);
+      border: 1px solid transparent;
+      transition: color .18s, border-color .18s, background .18s;
+    }
+    .pdash-sort-btn:hover { color: var(--sb-text); }
+    .pdash-sort-btn.active {
+      color: var(--sb-accent);
+      border-color: var(--sb-accent);
+      background: color-mix(in srgb, var(--sb-accent) 10%, transparent);
+    }
+    .pdash-sort-btn:focus-visible { outline: 2px solid var(--sb-accent); outline-offset: 2px; }
+    .pdash-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .pdash-tile { display: flex; flex-direction: column; gap: 2px; }
+    .pdash-num {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--sb-accent);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+    .pdash-cap {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--sb-dim);
+    }
+    .pdash-tech-title {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--sb-dim);
+      margin-bottom: 8px;
+    }
+
+    /* --- Project detail: key metrics ---------------------------------- */
+    .pd-charts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+      gap: 12px;
+    }
+    .pm-item {
+      padding: 14px;
+      background: var(--sb-surface);
+      border: 1px solid var(--sb-border);
+      border-radius: var(--sb-radius);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .4s ease, transform .4s ease;
+    }
+    .pm-item.pd-visible { opacity: 1; transform: none; }
+    .pm-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--sb-dim);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+    }
+    .pm-dir { font-size: 11px; opacity: .75; }
+    .pm-dir-up { color: #2ecc71; }
+    .pm-dir-down { color: #4b9fe1; }
+    .pm-track {
+      display: block;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--sb-track);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .pm-fill {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: 3px;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--sb-accent) 55%, transparent), var(--sb-accent));
+      transition: width .7s cubic-bezier(.22,.75,.3,1);
+    }
+    .pm-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .pm-value {
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--sb-text);
+      font-variant-numeric: tabular-nums;
+    }
+    .pm-rank {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--sb-accent);
+      opacity: .8;
+    }
+    .pm-rank em { font-style: normal; color: var(--sb-dim); }
+    .pm-gauge { display: flex; flex-direction: column; align-items: center; }
+    .pm-gauge .pm-label { justify-content: center; text-align: center; }
+    .pm-dial { width: 64px; height: 64px; transform: rotate(-90deg); }
+    .pm-dial-track { fill: none; stroke: var(--sb-track); stroke-width: 5; }
+    .pm-dial-fill {
+      fill: none;
+      stroke: var(--sb-accent);
+      stroke-width: 5;
+      stroke-linecap: round;
+      transition: stroke-dashoffset .8s cubic-bezier(.22,.75,.3,1);
+    }
+    .pm-gauge .pm-value { margin-top: 8px; }
+    .pm-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--sb-text);
+      background: color-mix(in srgb, var(--sb-accent) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--sb-accent) 30%, transparent);
+    }
+    .pm-badge-yes { color: #2ecc71; border-color: rgba(46,204,113,.35); background: rgba(46,204,113,.1); }
+    .pm-flag, .pm-text { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+    /* --- Private repo badge + reference-architecture note --------------- */
+    .pd-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: .03em;
+      color: var(--sb-dim);
+      background: var(--sb-track);
+      border: 1px solid var(--sb-border);
+    }
+    .pd-badge svg { flex: none; opacity: .8; }
+    .pd-disclaimer {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      line-height: 1.6;
+      color: var(--sb-dim);
+      margin: 14px 0 4px;
+      padding-left: 10px;
+      border-left: 2px solid var(--sb-border);
+      max-width: 64ch;
+    }
+    .pd-metrics-note {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      line-height: 1.6;
+      color: var(--sb-dim);
+      margin-top: 10px;
+      max-width: 62ch;
+    }
+
+    /* --- Desktop-mode About window stats ------------------------------ */
+    .wb-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .wb-stat {
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .wb-stat-num { font-size: 20px; font-weight: 500; color: var(--ubuntu-accent, #e95420); line-height: 1.2; }
+    .wb-stat-label { font-size: 11px; opacity: .8; margin-top: 2px; }
+    .wb-stat-hint { font-size: 10px; opacity: .45; margin-top: 3px; line-height: 1.4; }
+
+    /* --- Terminal-mode ASCII stats ------------------------------------ */
+    .ts-block { margin-bottom: 18px; }
+    .ts-head { color: var(--t-accent, #33ff66); font-size: 12px; letter-spacing: .05em; }
+    .ts-num { font-weight: 700; }
+    .ts-hint { opacity: .45; font-size: 10px; margin: 2px 0 6px; }
+    .ts-rows { white-space: pre; font-size: 10px; line-height: 1.5; }
+    /* inline-block is required — `width` has no effect on an inline span. */
+    .ts-key { display: inline-block; width: 16ch; overflow: hidden; white-space: nowrap; opacity: .7; }
+    .ts-bar + .ts-val { display: inline-block; }
+    .ts-bar { color: var(--t-accent, #33ff66); opacity: .85; }
+    .ts-val { margin-left: 8px; opacity: .8; }
+
+    /* ==================================================================
+       MOBILE
+       ================================================================== */
+    @media (max-width: 640px) {
+      /* Breakdown rows: the label column was ~65px on a phone, so
+         "Infrastructure & Cloud" rendered as an ellipsis. Stack the label
+         above its bar instead of squeezing three columns onto one line. */
+      .sb-row {
+        grid-template-columns: 1fr auto;
+        grid-template-areas: "label value" "track track";
+        row-gap: 4px;
+        font-size: 11px;
+      }
+      .sb-label { grid-area: label; white-space: normal; }
+      .sb-value { grid-area: value; }
+      .sb-track { grid-area: track; }
+
+      .pd-charts { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
+      .pdash-num { font-size: 18px; }
+
+      /* ASCII bars are fixed-width monospace; let them scroll rather than
+         run off the edge where the clipped part is unreachable. */
+      .ts-rows {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+      }
+      .ts-key { width: 11ch; }
+      .ts-block { font-size: 10px; }
+    }
+
+    /* --- Touch targets: 44px minimum ---------------------------------- */
+    @media (pointer: coarse), (max-width: 768px) {
+      .settings-gear {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .cat-tab { min-height: 44px; min-width: 44px; padding-block: 10px; font-size: 12px; }
+      .pdash-sort-btn { min-height: 44px; padding: 12px 14px; font-size: 11px; }
+      .lang-toggle { min-height: 44px; min-width: 44px; }
+      .intro-cta { min-height: 48px; padding: 14px 28px; }
+      .skip-link { min-height: 44px; display: inline-flex; align-items: center; }
+      .stat-trigger { padding-block: 4px; }
+      .pd-back, .pd-nav-btn { min-height: 44px; min-width: 44px; }
+      .coffee-btn { min-height: 44px; }
+      .settings-opt, .settings-close { min-height: 44px; }
+      .terminal-form input,
+      .terminal-form textarea,
+      .terminal-form button[type="submit"] { min-height: 48px; }
+
+      /* Sub-11px type is unreadable on a phone; nudge the smallest labels up. */
+      .tagline { font-size: 11px; }
+      .sb-value em { font-size: 10px; }
+      .stat-hint, .stat-label, .sb-label, .sb-value,
+      .pdash-cap, .pm-label, .pd-metrics-note, .pd-disclaimer { font-size: 11px; }
+      .pm-value { font-size: 18px; }
+    }
+
+    /* --- Terminal mode on a phone -------------------------------------
+       `.ti-box` is `white-space: pre`, so its lines cannot wrap. Centred in a
+       flex container with 40px padding, the boxes ran ~70px past a 320px
+       viewport and the clipped part was unreachable. Each box now scrolls on
+       its own axis and the column starts at the top instead of centring. */
+    @media (max-width: 640px) {
+      [data-mode="terminal"] #terminalIntro {
+        padding: 24px 12px;
+        align-items: flex-start;
+        justify-content: flex-start;
+        flex-direction: column;
+        gap: 4px;
+        /* dvh tracks the collapsing mobile URL bar; vh is the fallback. */
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+      [data-mode="terminal"] .ti-box {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      /* Was 6px — smaller than the body text and effectively unreadable. */
+      [data-mode="terminal"] .ti-logo { font-size: 9px; line-height: 1.15; }
+      /* Terminal sections sit inside a permanent scale(0.96), so a 44px box
+         renders at 42.2px. 46px lands on 44 after the transform. */
+      [data-mode="terminal"] .cat-tab { min-height: 46px; min-width: 46px; }
+      [data-mode="terminal"] .pdash-sort-btn { min-height: 46px; }
+
+      /* --- Desktop-mode chrome on touch -----------------------------
+         The window controls were 14x14, so a window could not be closed
+         with a finger at all. The taskbar and tray were similarly small. */
+      [data-mode="desktop"] .wt-btn {
+        min-width: 32px;
+        min-height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+      }
+      [data-mode="desktop"] #start-btn,
+      [data-mode="desktop"] .tb-window-btn,
+      [data-mode="desktop"] .tray-btn,
+      [data-mode="desktop"] .settings-gear { min-height: 40px; min-width: 40px; }
+      [data-mode="desktop"] #taskbar { min-height: 48px; }
+      [data-mode="desktop"] .stg-mode-btn,
+      [data-mode="desktop"] .stg-lang-btn { min-height: 40px; padding: 10px 16px !important; }
+      [data-mode="desktop"] .start-app-item { min-height: 44px; display: flex; align-items: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sb-fill, .pm-fill, .pm-dial-fill, .stat-trigger, .stat-chevron, .pm-item { transition: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -2424,13 +2954,18 @@
   <canvas id="webgl"></canvas>
   <div id="scanlines"></div>
   <div id="portrait-wrap">
-    <img id="portrait"
-      src="/img_2025_12_23.png"
-      srcset="/img_2025_12_23.png 1x, /img_2025_12_23@2x.png 2x"
-      alt="Aleksandr Gribakin"
-      fetchpriority="high"
-      decoding="async" />
-
+    <!-- Was a 6.1 MB PNG with a srcset pointing at /img_2025_12_23@2x.png,
+         which does not exist and 404'd on every retina display. -->
+    <picture>
+      <source type="image/webp" srcset="/portrait@1x.webp 512w, /portrait.webp 1024w"
+              sizes="(max-width: 768px) 60vw, 40vw" />
+      <img id="portrait"
+        src="/portrait.jpg"
+        width="1024" height="1109"
+        alt="Aleksandr Gribakin"
+        fetchpriority="high"
+        decoding="async" />
+    </picture>
   </div>
 
   <div id="ui-overlay">
@@ -2488,6 +3023,10 @@
       <span class="ti-ok">[  OK  ]</span> Session started: <span id="ti-ts">detecting...</span><br>
       <span class="ti-info">[ INFO ]</span> Target: <span data-i18n="ROLE">Principal Engineer</span><br>
       ──────────────────────────────────<br>
+      <span class="ti-prompt">visitor@portfolio:~$</span> stats --breakdown
+    </div>
+    <div class="ti-box ti-stats" id="terminalStats"></div>
+    <div class="ti-box">
       <span class="ti-prompt">visitor@portfolio:~$</span><span class="ti-cursor"></span>
     </div>
   </div>
@@ -2495,7 +3034,10 @@
   <!-- Stats -->
   <div class="section-overlay" id="statsOverlay">
     <div class="section-title" data-i18n="SECTION_TITLES.STATS">Impact By The Numbers</div>
-    <div class="stats-grid" id="statsGrid" aria-live="polite" aria-label="Statistics"></div>
+    <!-- No aria-live here: the count-up used to announce every intermediate
+         number. Each card is a button whose accessible name carries the final
+         value instead. -->
+    <div class="stats-grid" id="statsGrid" aria-label="Statistics"></div>
   </div>
 
   <!-- Career -->
@@ -2508,6 +3050,7 @@
   <div class="section-overlay" id="projectsOverlay">
     <div class="section-title" data-i18n="SECTION_TITLES.PROJECTS">Projects &amp; Impact</div>
     <div class="cat-tabs" id="catTabs"></div>
+    <div class="projects-dash" id="projectsDash"></div>
     <div class="projects-grid" id="projectsGrid"></div>
   </div>
 
@@ -2539,7 +3082,10 @@
     <div class="coffee-popup" id="coffeePopup">
       <div class="coffee-popup-body">
         <div class="coffee-popup-title" data-i18n="COFFEE.TITLE">☕ Buy me a coffee</div>
-        <img class="coffee-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=TWTCH2ZhyKvzZU1ph6h1d4vTHpHyJDkN5i" alt="QR" loading="lazy" />
+        <!-- Generated locally. Was fetched from api.qrserver.com, which sent
+             every visitor's IP to a third party and broke the page offline. -->
+        <img class="coffee-qr" src="/coffee-qr.png" width="180" height="180"
+             alt="USDT TRC-20 wallet QR code" loading="lazy" />
         <div class="coffee-popup-addr">TWTCH2ZhyKvzZU1ph6h1d4vTHpHyJDkN5i</div>
         <div class="coffee-popup-sub" data-i18n="COFFEE.NETWORK">USDT TRC-20</div>
         <div class="coffee-popup-actions">

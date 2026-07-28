@@ -1,5 +1,7 @@
 import PONYTAIL from '../../config/ponytail.config.js'
 import { getMode, setMode, MODES } from '../themeManager.js'
+import { computeStats } from '../../lib/stats.js'
+import { renderStatsForDesktop } from '../../lib/statsUI.js'
 import WindowManager from './windowManager.js'
 
 const apps = []
@@ -106,6 +108,7 @@ function renderAbout() {
     <div class="wb-text">${_('BIO') || 'Lead Full Stack Engineer & System Architect with 15 years of experience building at scale.'}</div>
     <div class="wb-section-title">${_('SECTION_TITLES.STATS')}</div>
     <div class="wb-text">${_('STATS_DESC') || 'Proven track record in fintech, ML systems, and distributed architectures.'}</div>
+    ${renderStatsForDesktop(computeStats(state?.lang || 'EN'))}
   `
 }
 
@@ -245,7 +248,27 @@ export function initDesktop(appState) {
     else wm.restore(id)
   })
 
-  document.getElementById('desktop-icons')?.addEventListener('dblclick', (e) => {
+  // Desktop convention is double-click, but on a touch screen that is either
+  // unreliable or gets eaten by the browser's double-tap zoom — which left the
+  // icons completely dead on a phone.
+  //
+  // `pointer: coarse` alone is not enough: hybrid devices and some mobile
+  // browsers report `fine`. Checked at event time rather than at init so a
+  // resize or an orientation change is picked up.
+  const icons = document.getElementById('desktop-icons')
+  const tapToOpen = () =>
+    window.matchMedia('(pointer: coarse)').matches ||
+    window.innerWidth <= 768 ||
+    navigator.maxTouchPoints > 0
+
+  icons?.addEventListener('dblclick', (e) => {
+    if (tapToOpen()) return // the click listener below already handled it
+    const icon = e.target.closest('.desk-icon')
+    if (icon) openApp(icon.dataset.app)
+  })
+
+  icons?.addEventListener('click', (e) => {
+    if (!tapToOpen()) return
     const icon = e.target.closest('.desk-icon')
     if (icon) openApp(icon.dataset.app)
   })

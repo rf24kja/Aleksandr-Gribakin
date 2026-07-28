@@ -75,11 +75,11 @@ const SUPER = (() => {
 
     // --- Language ---
     get lang() { return _state.get('active_language'); },
+    // A setter's return value is discarded — returning `this` here was a no-op.
     set lang(locale) {
-      if (locale !== 'EN' && locale !== 'RU') return this;
+      if (locale !== 'EN' && locale !== 'RU') return;
       this.set('active_language', locale);
       document.documentElement.lang = locale.toLowerCase();
-      return this;
     },
     toggleLang() {
       this.lang = this.lang === 'EN' ? 'RU' : 'EN';

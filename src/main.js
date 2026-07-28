@@ -1,19 +1,12 @@
-import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import PONYTAIL from './config/ponytail.config.js';
 import { initMode, getMode, setMode } from './themes/themeManager.js';
 import { initDesktop } from './themes/desktop/desktop.js';
+import { computeStats } from './lib/stats.js';
+import { renderStatsAscii } from './lib/statsUI.js';
 import PortfolioOrchestrator from './core/orchestrator.js';
 import SceneManager from './core/SceneManager.js';
-import SceneIntro from './scenes/SceneIntro.js';
-import SceneChronicle from './scenes/SceneChronicle.js';
-import SceneTechStack from './scenes/SceneTechStack.js';
-import SceneAchievements from './scenes/SceneAchievements.js';
-import SceneCTA from './scenes/SceneCTA.js';
 
 gsap.registerPlugin(ScrollTrigger);
 initMode();
@@ -22,6 +15,12 @@ const IS_BUSINESS = (document.documentElement.getAttribute('data-mode') || 'busi
 
 // --- Renderer (skip in business mode) ---
 let renderer = null, scene = null, camera = null, composer = null, bloomPass = null, world = null;
+// Three.js and the scene classes are ~473 KB of the bundle and are useless in
+// business mode, which is the default. Loading them on demand keeps that cost
+// off the critical path for most visitors.
+let THREE = null;
+let SceneIntro, SceneChronicle, SceneTechStack, SceneAchievements, SceneCTA;
+
 const bloomConfigs = {
   high: { threshold: 0.3, strength: 1.2, radius: 0.5 },
   medium: { threshold: 0.5, strength: 0.6, radius: 0.3 },
@@ -29,6 +28,29 @@ const bloomConfigs = {
 };
 
 if (!IS_BUSINESS) {
+  const [three, composerMod, renderPassMod, bloomMod, intro, chronicle, techStack, achievements, cta] =
+    await Promise.all([
+      import('three'),
+      import('three/addons/postprocessing/EffectComposer.js'),
+      import('three/addons/postprocessing/RenderPass.js'),
+      import('three/addons/postprocessing/UnrealBloomPass.js'),
+      import('./scenes/SceneIntro.js'),
+      import('./scenes/SceneChronicle.js'),
+      import('./scenes/SceneTechStack.js'),
+      import('./scenes/SceneAchievements.js'),
+      import('./scenes/SceneCTA.js'),
+    ]);
+
+  THREE = three;
+  const { EffectComposer } = composerMod;
+  const { RenderPass } = renderPassMod;
+  const { UnrealBloomPass } = bloomMod;
+  SceneIntro = intro.default;
+  SceneChronicle = chronicle.default;
+  SceneTechStack = techStack.default;
+  SceneAchievements = achievements.default;
+  SceneCTA = cta.default;
+
   const canvas = document.getElementById('webgl');
   renderer = new THREE.WebGLRenderer({
     canvas, antialias: true, alpha: false, powerPreference: 'high-performance',
@@ -41,7 +63,8 @@ if (!IS_BUSINESS) {
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.documentElement.setAttribute('data-reduced-motion', '')
-    document.dispatchEvent(new CustomEvent('fx:quality', { detail: { level: 'low' } }))
+    // The listener reads detail.quality — `level` was silently ignored.
+    document.dispatchEvent(new CustomEvent('fx:quality', { detail: { quality: 'low' } }))
   }
 
   scene = new THREE.Scene();
@@ -188,6 +211,11 @@ if (!IS_BUSINESS && renderer && camera && composer) {
 }
 
 // --- Mouse Parallax (3D only) ---
+// `updateParallax` used to be a function declaration inside this if-block.
+// Module code is strict, so it was block-scoped and invisible to the render
+// loop below — the `typeof ... === 'function'` guard there quietly swallowed
+// it and the parallax never ran. Hoisted to module scope.
+let updateParallax = null;
 if (!IS_BUSINESS) {
   let _mx = 0, _my = 0;
   document.addEventListener('mousemove', (e) => {
@@ -195,12 +223,12 @@ if (!IS_BUSINESS) {
     _my = (e.clientY / window.innerHeight - 0.5) * 2;
   });
   let _px = 0, _py = 0;
-  function updateParallax() {
+  updateParallax = () => {
     _px += (_mx * 0.02 - _px) * 0.03;
     _py += (-_my * 0.02 - _py) * 0.03;
     scene.position.x = _px;
     scene.position.y = _py;
-  }
+  };
   updateParallax();
 }
 
@@ -215,7 +243,7 @@ if (!IS_BUSINESS) {
 
   if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
     setTimeout(() => {
-      document.dispatchEvent(new CustomEvent('fx:quality', { detail: { level: 'medium' } }))
+      document.dispatchEvent(new CustomEvent('fx:quality', { detail: { quality: 'medium' } }))
     }, 1000)
   }
 
@@ -244,7 +272,7 @@ if (!IS_BUSINESS) {
 
 // --- Render Loop (3D only) ---
 if (!IS_BUSINESS && composer) {
-  (function animate() { requestAnimationFrame(animate); if (typeof updateParallax === 'function') updateParallax(); if (!document.hidden) composer.render(); })();
+  (function animate() { requestAnimationFrame(animate); if (updateParallax) updateParallax(); if (!document.hidden) composer.render(); })();
 }
 
 // --- Locale Change ---
@@ -266,11 +294,16 @@ document.addEventListener('locale:change', () => {
   }
   const idx = orchestrator.currentScene;
   if (idx >= 0 && sceneLabel) sceneLabel.textContent = sceneNames[orchestrator.s.lang]?.[idx] || '';
+  if (getMode() === 'terminal') _populateTerminalIntro();
 });
 
 // --- Theme Switcher ---
 const themeConfigs = {
   dark: { bg: 0x0c0a09, fog: 0.010, bloom: { threshold: 0.5, strength: 0.6, radius: 0.4 } },
+  // Light is a business-mode-only theme today, so this never runs — but the
+  // lookup used to fall through to `dark` and paint a dark 3D scene behind a
+  // light page if that ever changed.
+  light: { bg: 0xf5f3f0, fog: 0.006, bloom: { threshold: 0.8, strength: 0.25, radius: 0.3 } },
 };
 function applyTheme(theme, anim = true) {
   if (anim) {
@@ -422,12 +455,9 @@ document.addEventListener('click', (e) => {
     }
     return; // block other clicks while popup is open
   }
-  // Scroll-to (CTA button etc.)
-  const scrollBtn = e.target.closest('[data-scroll-to]');
-  if (scrollBtn) {
-    const target = document.getElementById(scrollBtn.dataset.scrollTo);
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+  // [data-scroll-to] is handled once, in orchestrator._wireHashRouter — a
+  // second handler here made every click scroll twice and push two history
+  // entries in business mode.
 });
 
 if (sceneManager) {
@@ -449,6 +479,9 @@ function _populateTerminalIntro() {
   if (tsEl) {
     tsEl.textContent = new Date().toISOString().replace('T', ' ').slice(0, 19);
   }
+  // Same derived figures as the other modes, rendered as ASCII bars.
+  const statsEl = document.getElementById('terminalStats');
+  if (statsEl) statsEl.innerHTML = renderStatsAscii(computeStats(orchestrator.s.lang));
 }
 
 if (getMode() === 'desktop') {
