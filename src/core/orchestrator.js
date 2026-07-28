@@ -661,6 +661,11 @@ export default class PortfolioOrchestrator {
       if (project) { this._showSkeleton(); renderProjectPage(project[1]); handled = true; }
       else if (career) { this._showSkeleton(); renderCareerPage(parseInt(career[1])); handled = true; }
       else if (achievement) { this._showSkeleton(); renderAchievementPage(parseInt(achievement[1])); handled = true; }
+
+      // Only the not-handled branch used to hide this, so going straight from
+      // an unknown route to a valid one rendered the detail behind a 404 that
+      // was still on screen.
+      if (handled) document.getElementById('page404').style.display = 'none';
       if (!handled) {
         const pd = document.getElementById('projectDetail');
         if (pd) {
