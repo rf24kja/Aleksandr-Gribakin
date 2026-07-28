@@ -407,16 +407,46 @@
     [data-mode="desktop"] .settings-gear:hover { color: #fff; }
 
     /* Terminal mode — gear replaces old theme buttons */
-    [data-mode="terminal"] .settings-gear {
-      font-size: 18px;
-      padding: 6px;
-      color: var(--accent);
+    /* Terminal mode puts these controls inside the shell's title bar
+       (see terminal.js), so the floating overlay copy is hidden — it sat under
+       the fixed window and was unreachable. */
+    [data-mode="terminal"] #ui-overlay { display: none !important; }
+    .tsh-ctl {
+      flex: none;
+      font-family: var(--t-font, monospace);
+      background: transparent;
+      cursor: pointer;
       opacity: .6;
-      position: absolute;
-      top: 12px;
-      left: 12px;
+      transition: opacity .15s, border-color .15s;
     }
-    [data-mode="terminal"] .settings-gear:hover { opacity: 1; }
+    .tsh-ctl:hover { opacity: 1; }
+    .tsh-ctl:focus-visible { outline: 2px solid var(--t-accent, #00ff41); outline-offset: 2px; }
+    button.lang-toggle.tsh-ctl {
+      position: static;
+      top: auto; right: auto; left: auto;
+      font-size: 10px;
+      letter-spacing: .06em;
+      padding: 4px 8px;
+      color: var(--t-accent, #00ff41);
+      border: 1px solid rgba(0,255,65,.28);
+      border-radius: 3px;
+      box-shadow: none;
+      min-height: 0; min-width: 0;
+    }
+    button.settings-gear.tsh-ctl {
+      position: static;
+      top: auto; right: auto; left: auto;
+      font-size: 15px;
+      line-height: 1;
+      padding: 4px 6px;
+      color: var(--t-accent, #00ff41);
+      border: none;
+      min-height: 0; min-width: 0;
+    }
+    @media (pointer: coarse), (max-width: 768px) {
+      button.lang-toggle.tsh-ctl { min-height: 34px; padding: 6px 10px; }
+      button.settings-gear.tsh-ctl { min-height: 34px; min-width: 34px; }
+    }
 
     /* Settings Popup */
     .settings-popup {
@@ -569,7 +599,9 @@
       .terminal-form { margin: 20px; padding: 28px 20px; width: auto; }
       /* 16px minimum stops iOS Safari zooming the page on focus. */
       .terminal-form input, .terminal-form textarea { font-size: 16px; }
-      .lang-toggle { top: 18px; right: 12px; padding: 10px 16px; font-size: 12px; }
+      /* Excludes terminal mode, which parks this control in its title bar —
+         a global `right` here was overriding that placement. */
+      html:not([data-mode="terminal"]) .lang-toggle { top: 18px; right: 12px; padding: 10px 16px; font-size: 12px; }
       .coffee-egg { width: 44px; height: 44px; }
       #portrait { width: 200px; right: 0; opacity: .06; }
       .pd-scroll { padding: 20px 16px; }
@@ -2833,6 +2865,167 @@
     .wb-stat-label { font-size: 11px; opacity: .8; margin-top: 2px; }
     .wb-stat-hint { font-size: 10px; opacity: .45; margin-top: 3px; line-height: 1.4; }
 
+    /* ==================================================================
+       INTERACTIVE TERMINAL
+       Terminal mode is command-driven: the shell is the interface, so the
+       scroll sections are hidden and everything is reached from the prompt.
+       ================================================================== */
+    #terminalShell { display: none; }
+    [data-mode="terminal"] #terminalShell { display: block; }
+    [data-mode="terminal"] #terminalIntro,
+    [data-mode="terminal"] .section-overlay,
+    [data-mode="terminal"] .form-section,
+    [data-mode="terminal"] .year-label { display: none !important; }
+    [data-mode="terminal"] [data-scroll-container] { height: auto; overflow: hidden; }
+    [data-mode="terminal"] body { overflow: hidden; }
+
+    .tsh-window {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--t-bg, #0a0a0a);
+      font-family: var(--t-font, 'JetBrains Mono', monospace);
+      z-index: 5;
+    }
+    /* Faint CRT wash. Kept under 4% so text stays crisp. */
+    .tsh-window::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(0,255,65,.035) 0 1px, transparent 1px 3px);
+    }
+
+    .tsh-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 14px;
+      background: #111;
+      border-bottom: 1px solid rgba(0,255,65,.18);
+      flex: none;
+    }
+    .tsh-dots { display: flex; gap: 6px; }
+    .tsh-dots i { width: 11px; height: 11px; border-radius: 50%; background: #333; display: block; }
+    .tsh-dots i:nth-child(1) { background: #ff5f57; }
+    .tsh-dots i:nth-child(2) { background: #febc2e; }
+    .tsh-dots i:nth-child(3) { background: #28c840; }
+    .tsh-title { flex: 1; text-align: center; font-size: 12px; color: #7a7a7a; letter-spacing: .04em; }
+    .tsh-clock { font-size: 11px; color: #555; font-variant-numeric: tabular-nums; }
+
+    .tsh-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 18px 20px 8px;
+      cursor: text;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,255,65,.3) transparent;
+      position: relative;
+      z-index: 1;
+    }
+    .tsh-body::-webkit-scrollbar { width: 8px; height: 8px; }
+    .tsh-body::-webkit-scrollbar-thumb { background: rgba(0,255,65,.25); border-radius: 4px; }
+
+    .tsh-line {
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--t-text, #c0c0c0);
+      white-space: pre;
+      min-height: 1.55em;
+    }
+    .tsh-logo   { color: var(--t-accent, #00ff41); text-shadow: 0 0 8px rgba(0,255,65,.45); }
+    .tsh-accent { color: var(--t-accent, #00ff41); }
+    .tsh-head   { color: rgba(0,255,65,.45); }
+    .tsh-ok     { color: var(--t-accent, #00ff41); }
+    .tsh-warn   { color: var(--t-warn, #ffb000); }
+    .tsh-err    { color: #ff5f57; }
+    .tsh-dim    { color: #6a6a6a; }
+    .tsh-kv     { color: #d0d0d0; }
+    .tsh-bar    { color: var(--t-accent, #00ff41); }
+    .tsh-row    { color: #b8b8b8; }
+    .tsh-cmdrow { color: #d0d0d0; }
+    .tsh-hintline { color: rgba(0,255,65,.4); }
+    .tsh-echo   { color: #d0d0d0; white-space: pre-wrap; }
+    .tsh-echo .tsh-prompt { color: var(--t-accent, #00ff41); }
+
+    .tsh-inputline {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 13px;
+      line-height: 1.55;
+      padding-bottom: 14px;
+    }
+    .tsh-prompt { color: var(--t-accent, #00ff41); white-space: nowrap; }
+    .tsh-field { position: relative; flex: 1; min-width: 0; }
+    .tsh-mirror { color: #e6e6e6; white-space: pre; }
+    .tsh-caret {
+      display: inline-block;
+      width: 8px;
+      height: 1.05em;
+      background: var(--t-accent, #00ff41);
+      vertical-align: text-bottom;
+      animation: tsh-blink 1.05s steps(1) infinite;
+    }
+    @keyframes tsh-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+    /* The real input sits on top, invisible: it owns focus and the mobile
+       keyboard, while the mirror span draws the text and the block caret. */
+    #tshInput {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font: inherit;
+      color: transparent;
+      caret-color: transparent;
+      padding: 0;
+    }
+    #tshInput::selection { background: rgba(0,255,65,.3); }
+
+    .tsh-hints {
+      flex: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 14px;
+      background: #0d0d0d;
+      border-top: 1px solid rgba(0,255,65,.14);
+      position: relative;
+      z-index: 1;
+    }
+    .tsh-chip {
+      font-family: inherit;
+      font-size: 11px;
+      padding: 7px 12px;
+      background: transparent;
+      color: rgba(0,255,65,.75);
+      border: 1px solid rgba(0,255,65,.25);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .tsh-chip:hover { background: rgba(0,255,65,.12); color: #00ff41; border-color: rgba(0,255,65,.55); }
+    .tsh-chip:focus-visible { outline: 2px solid var(--t-accent, #00ff41); outline-offset: 2px; }
+
+    @media (max-width: 640px) {
+      .tsh-body { padding: 14px 12px 6px; }
+      .tsh-line, .tsh-inputline { font-size: 12px; }
+      /* Taller prompt row so tapping the line itself is comfortable — the
+         invisible input is stretched to fill it. */
+      .tsh-inputline { padding-block: 10px 20px; }
+      .tsh-title { font-size: 11px; }
+      .tsh-chip { min-height: 40px; font-size: 12px; }
+      .tsh-hints { padding: 8px 10px; gap: 5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tsh-caret { animation: none; }
+      .tsh-window::after { display: none; }
+    }
+
     /* --- Terminal-mode ASCII stats ------------------------------------ */
     .ts-block { margin-bottom: 18px; }
     .ts-head { color: var(--t-accent, #33ff66); font-size: 12px; letter-spacing: .05em; }
@@ -3024,7 +3217,11 @@
     <button class="intro-cta" data-scroll-to="ctaSection" data-i18n="FORM.SUBMIT">Initiate Consult</button>
   </div>
 
-  <!-- Terminal Intro (shown when data-mode=terminal) -->
+  <!-- Interactive shell — built by src/themes/terminal/terminal.js -->
+  <div id="terminalShell"></div>
+
+  <!-- Legacy static boot block. Superseded by #terminalShell; kept hidden so
+       nothing that still queries #ti-ip / #terminalStats throws. -->
   <div id="terminalIntro" style="display:none">
     <div class="ti-box">
       <div class="ti-logo">

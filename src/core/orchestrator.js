@@ -477,7 +477,15 @@ export default class PortfolioOrchestrator {
   _detectLocale() {
     return 'EN';
   }
-  _updateLangToggleText() { const b = document.querySelector('[data-lang-switch]'); if (b) { b.textContent = this.s.lang === 'EN' ? 'RU / EN' : 'EN / RU'; b.setAttribute('aria-current', 'true'); } }
+  // All of them: terminal mode renders a second toggle inside its title bar,
+  // and querySelector only ever labelled the first one.
+  _updateLangToggleText() {
+    const label = this.s.lang === 'EN' ? 'RU / EN' : 'EN / RU';
+    document.querySelectorAll('[data-lang-switch]').forEach((b) => {
+      b.textContent = label;
+      b.setAttribute('aria-current', 'true');
+    });
+  }
 
   _wireLanguageToggle() {
     document.addEventListener('click', (e) => {

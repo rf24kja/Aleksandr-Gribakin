@@ -3,8 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import PONYTAIL from './config/ponytail.config.js';
 import { initMode, getMode, setMode } from './themes/themeManager.js';
 import { initDesktop } from './themes/desktop/desktop.js';
-import { computeStats } from './lib/stats.js';
-import { renderStatsAscii } from './lib/statsUI.js';
+import { initTerminal, refreshTerminalLocale } from './themes/terminal/terminal.js';
 import PortfolioOrchestrator from './core/orchestrator.js';
 import SceneManager from './core/SceneManager.js';
 
@@ -303,7 +302,7 @@ document.addEventListener('locale:change', () => {
   }
   const idx = orchestrator.currentScene;
   if (idx >= 0 && sceneLabel) sceneLabel.textContent = sceneNames[orchestrator.s.lang]?.[idx] || '';
-  if (getMode() === 'terminal') _populateTerminalIntro();
+  if (getMode() === 'terminal') { refreshTerminalLocale(); _bootTerminal(); }
 });
 
 // --- Theme Switcher ---
@@ -452,7 +451,7 @@ document.addEventListener('click', (e) => {
     if (modeOpt) {
       const mode = modeOpt.dataset.smode;
       setMode(mode);
-      if (mode === 'terminal') _populateTerminalIntro();
+      if (mode === 'terminal') _bootTerminal();
       updateSettingsUI();
       closeSettings(); // auto-close popup — new mode has different layout
       return;
@@ -474,30 +473,17 @@ if (sceneManager) {
   sceneManager.update(0, 0);
 }
 
-function _populateTerminalIntro() {
-  const ipEl = document.getElementById('ti-ip');
-  const uaEl = document.getElementById('ti-ua');
-  const tsEl = document.getElementById('ti-ts');
-  if (ipEl) ipEl.textContent = 'unknown'; // IP not available client-side
-  if (uaEl) {
-    const ua = navigator.userAgent;
-    const browser = ua.includes('Chrome') ? 'Chrome' : ua.includes('Firefox') ? 'Firefox' : ua.includes('Safari') ? 'Safari' : 'Unknown';
-    const os = ua.includes('Windows') ? 'Windows' : ua.includes('Mac') ? 'macOS' : ua.includes('Linux') ? 'Linux' : 'Unknown';
-    uaEl.textContent = browser + ' / ' + os;
-  }
-  if (tsEl) {
-    tsEl.textContent = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  }
-  // Same derived figures as the other modes, rendered as ASCII bars.
-  const statsEl = document.getElementById('terminalStats');
-  if (statsEl) statsEl.innerHTML = renderStatsAscii(computeStats(orchestrator.s.lang));
+// Terminal mode is now a real shell: everything is reached from the prompt.
+// The old static boot block is hidden in CSS and no longer populated here.
+function _bootTerminal() {
+  initTerminal(orchestrator.s);
 }
 
 if (getMode() === 'desktop') {
   initDesktop(orchestrator.s);
 }
 if (getMode() === 'terminal') {
-  _populateTerminalIntro();
+  _bootTerminal();
 }
 
 document.addEventListener('mode:change', (e) => {
@@ -508,7 +494,7 @@ document.addEventListener('mode:change', (e) => {
     ScrollTrigger.refresh();
   }
   if (e.detail.to === 'terminal') {
-    _populateTerminalIntro();
+    _bootTerminal();
   }
 });
 
