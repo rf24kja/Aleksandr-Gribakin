@@ -8,7 +8,23 @@ Thumbs.db
 .cache/
 
 .vercel
-check_site.cjs
-check_animations.cjs
-check_panel.cjs
+
+# Local dev / debug harnesses — not part of the site
+check_*.cjs
+test-bot*.mjs
+start-bot.ps1
+stop-bot.ps1
 screenshot_*.png
+
+# Telegram control-bot runtime state (contains chat/session identifiers)
+bot.offset
+bot.pid
+bot.session
+
+# Agent tooling vendored into the repo — not portfolio source
+.agents/
+.superpowers/
+skills-lock.json
+
+# Duplicate of public/img_2025_12_23.png — public/ is the one Vite serves
+/img_2025_12_23.png

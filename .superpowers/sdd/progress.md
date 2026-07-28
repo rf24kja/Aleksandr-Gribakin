@@ -1,6 +1,0 @@
-﻿Task 2: complete (commits f29d385..2883bdf, review clean)
-Task 2: complete (commits f29d385..2883bdf, review clean)
-Task 3: complete (commits 2883bdf..998f442, review clean)
-Task 4: complete (commits 998f442..1813e40, review clean)
-Task 5: complete (commits 1813e40..b59d239, review clean)
-Task 6: complete (build OK, review clean)
