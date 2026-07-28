@@ -1,5 +1,7 @@
 import PONYTAIL from '../config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../data/projects.js';
+import { buildMetricScale } from './stats.js';
+import { renderMetricGrid, animateMetricGrid } from './statsUI.js';
 
 const COLOR = {};
 function _r() {
@@ -20,7 +22,13 @@ _r();
 function l() { return PONYTAIL.LOCALE[PONYTAIL_LOCALE]; }
 let PONYTAIL_LOCALE = 'EN';
 
+// Portfolio-wide metric ranges, so an individual chart bar can be positioned
+// against comparable numbers from every other project. Rebuilt on locale change
+// because the highlight labels (and therefore some unit parsing) differ.
+let METRIC_SCALE = buildMetricScale('EN');
+
 export function setProjectLocale(locale) {
+  if (locale !== PONYTAIL_LOCALE) METRIC_SCALE = buildMetricScale(locale);
   PONYTAIL_LOCALE = locale;
 }
 
@@ -68,8 +76,10 @@ export function renderProjectPage(projectId) {
           <span class="pd-tag">${p.tag} / ${p.cat}</span>
           <h1 class="pd-title">${p.name}</h1>
           <div class="pd-stack">${p.stack}</div>
-          ${_renderLinks(detail.links)}
+          ${_renderLinks(detail.links, detail)}
         </div>
+
+        <p class="pd-disclaimer">${l().DETAIL.REFERENCE_NOTE}</p>
 
         <div class="pd-screenshot">${_renderScreenshot(p, detail)}</div>
 
@@ -80,8 +90,9 @@ export function renderProjectPage(projectId) {
         <div class="pd-metrics">
           <h3 class="pd-section-title">${l().DETAIL.KEY_METRICS}</h3>
           <div class="pd-charts" data-pd-charts>
-            ${detail.highlights.map((h, i) => _renderChartItem(h, i)).join('')}
+            ${renderMetricGrid(detail.highlights, METRIC_SCALE, l().METRIC || {})}
           </div>
+          <p class="pd-metrics-note">${(l().METRIC || {}).SCALE_NOTE || ''}</p>
         </div>
 
         <div class="pd-features">
@@ -105,38 +116,24 @@ export function renderProjectPage(projectId) {
   }, 50);
 }
 
-function _renderLinks(links) {
+function _renderLinks(links, detail) {
   const items = [];
-  if (links.github) items.push(`<a href="${links.github}" target="_blank" rel="noopener" class="pd-link">GitHub ↗</a>`);
-  if (links.demo) items.push(`<a href="${links.demo}" target="_blank" rel="noopener" class="pd-link">Demo ↗</a>`);
-  if (links.docs) items.push(`<a href="${links.docs}" target="_blank" rel="noopener" class="pd-link">Docs ↗</a>`);
+  // Closed-source work gets a badge, not a dead link. A repository the reader
+  // cannot open is better stated plainly than linked to a 404.
+  if (detail?.access === 'private') {
+    items.push(`<span class="pd-badge pd-badge-private">
+      <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/>
+      </svg>
+      ${l().DETAIL.PRIVATE_REPO}
+    </span>`);
+  }
+  if (links?.github) items.push(`<a href="${links.github}" target="_blank" rel="noopener" class="pd-link">GitHub ↗</a>`);
+  if (links?.demo) items.push(`<a href="${links.demo}" target="_blank" rel="noopener" class="pd-link">Demo ↗</a>`);
+  if (links?.docs) items.push(`<a href="${links.docs}" target="_blank" rel="noopener" class="pd-link">Docs ↗</a>`);
   return items.length ? `<div class="pd-links">${items.join('')}</div>` : '';
 }
 
-function _renderChartItem(h, i) {
-  const pct = typeof h.value === 'number' ? Math.min(Math.round(h.value), 100) : 80;
-  const isBool = h.value === true;
-  const displayVal = isBool ? '✓' : (typeof h.value === 'number' ? (h.unit ? `${h.value}${h.unit}` : `${h.value}`) : h.value);
-
-  if (isBool) {
-    return `<div class="pd-chart-item" data-pd-animate>
-      <div class="pd-chart-label">${h.label}</div>
-      <div class="pd-chart-bool">
-        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="${COLOR.border}" stroke-width="3"/><circle cx="20" cy="20" r="16" fill="none" stroke="${COLOR.accent2}" stroke-width="3" stroke-dasharray="100.5" stroke-dashoffset="0" opacity="0"/><path d="M12 20l6 6 10-10" fill="none" stroke="${COLOR.accent2}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0"/></svg>
-      </div>
-    </div>`;
-  }
-
-  const isLarge = h.label.length > 15;
-
-  return `<div class="pd-chart-item ${isLarge ? 'pd-chart-wide' : ''}" data-pd-animate>
-    <div class="pd-chart-label">${h.label}</div>
-    <div class="pd-chart-bar-wrap">
-      <div class="pd-chart-bar-fill" style="width:0%" data-pd-bar="${pct}"></div>
-    </div>
-    <div class="pd-chart-val" data-pd-count="${typeof h.value === 'number' ? h.value : 0}">${displayVal}</div>
-  </div>`;
-}
 
 function _renderScreenshot(p, detail) {
   const type = detail.screenshotType || 'dashboard';
@@ -357,10 +354,7 @@ function closeProjectDetail() {
 export { closeProjectDetail };
 
 export function animateCharts() {
-  document.querySelectorAll('[data-pd-bar]').forEach((el) => {
-    const target = parseFloat(el.dataset.pdBar);
-    setTimeout(() => { el.style.width = target + '%'; }, 200);
-  });
+  animateMetricGrid(document.getElementById('projectDetail') || document);
 }
 
 export function renderCareerPage(idx) {
@@ -392,7 +386,7 @@ export function renderCareerPage(idx) {
         <div class="pd-metrics">
           <h3 class="pd-section-title">${l().DETAIL.KEY_METRICS}</h3>
           <div class="pd-charts" data-pd-charts>
-            ${detail.highlights.map((h, i) => _renderCareerChartItem(h, i)).join('')}
+            ${renderMetricGrid(detail.highlights, METRIC_SCALE, l().METRIC || {})}
           </div>
         </div>
 
@@ -420,16 +414,6 @@ export function renderCareerPage(idx) {
   });
 }
 
-function _renderCareerChartItem(h, i) {
-  const pct = typeof h.value === 'number' ? Math.min(h.value, 100) : 80;
-  const dl = String(h.value).length;
-  const isWide = dl > 6 || h.label.length > 18;
-  return `<div class="pd-chart-item ${isWide ? 'pd-chart-wide' : ''}" data-pd-animate>
-    <div class="pd-chart-label">${h.label}</div>
-    <div class="pd-chart-bar-wrap"><div class="pd-chart-bar-fill" style="width:0%" data-pd-bar="${pct}"></div></div>
-    <div class="pd-chart-val">${h.value}${h.unit ? ' ' + h.unit : ''}</div>
-  </div>`;
-}
 
 export function renderAchievementPage(idx) {
   _r(); const achievements = l().ACHIEVEMENTS;
@@ -481,6 +465,11 @@ function _wireGenericDetail() {
   });
   document.removeEventListener('keydown', _pdKeyHandler);
   document.addEventListener('keydown', _pdKeyHandler);
+  // Career and achievement pages have no prev/next. Without clearing these,
+  // ←/→ still navigated to whichever project was opened before, jumping the
+  // reader out of the page they are on.
+  const pd = document.getElementById('projectDetail');
+  if (pd) { pd.dataset.pdPrev = ''; pd.dataset.pdNext = ''; }
   const scrollContainer = document.querySelector('[data-scroll-container]');
   if (scrollContainer) scrollContainer.style.overflow = 'hidden';
 }

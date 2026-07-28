@@ -5,6 +5,11 @@ import { validateForm, animateSubmission } from '../lib/validation.js';
 import { startAmbient, fadeTo as audioFadeTo, initOnUserGesture } from '../lib/synthAudio.js';
 import { renderProjectPage, renderCareerPage, renderAchievementPage, setProjectLocale, closeProjectDetail } from '../lib/projectDetail.js';
 import { CAREER_DETAIL } from '../data/projects.js';
+import { computeStats, computeProjectAggregates, projectSortValue } from '../lib/stats.js';
+import {
+  renderStatCards, wireStatCards, animateStatValues,
+  renderDashboard, animateDashboard,
+} from '../lib/statsUI.js';
 
 export default class PortfolioOrchestrator {
   constructor() {
@@ -14,6 +19,8 @@ export default class PortfolioOrchestrator {
     this.currentScene = -1;
     this._rendered = false;
     this._activeCat = null;
+    this._sortMode = 'default';
+    this._entranceObserver = null;
   }
 
   async init() {
@@ -140,10 +147,12 @@ export default class PortfolioOrchestrator {
     const grid = document.getElementById('statsGrid');
     if (!grid) return;
     this._statsCounted = false;
-    const stats = this._l().STATS;
-    grid.innerHTML = stats.map((s) =>
-      `<div class="stat-item"><div class="stat-value" data-target="${s.value}">0</div><div class="stat-label">${s.label}</div></div>`
-    ).join('');
+    // Numbers come from stats.js, computed off the project/career content —
+    // there is no hardcoded STATS array to fall out of sync any more.
+    this._stats = computeStats(this.s.lang);
+    const labels = this._l().STATS_LABELS || {};
+    renderStatCards(grid, this._stats, labels);
+    wireStatCards(grid, labels);
   }
 
   _renderCareer() {
@@ -153,14 +162,14 @@ export default class PortfolioOrchestrator {
     list.innerHTML = this._l().CAREER.map((c, i) => {
       const detail = (CAREER_DETAIL[lang] || CAREER_DETAIL.EN)?.[i];
       const topAch = detail?.keyAchievements?.slice(0, 3) || [];
-      return `<div class="career-item" data-career="${i}">
-        <div class="period">${c.period}</div>
-        <div class="info">
-          <div class="role-company">${c.role} <span class="company">@ ${c.company}</span></div>
-          <div class="desc">${c.desc}</div>
-          ${topAch.length ? `<div class="career-achs">${topAch.map(a => `<div class="career-ach">▸ ${a}</div>`).join('')}</div>` : ''}
-        </div>
-      </div>`;
+      return `<button type="button" class="career-item" data-career="${i}">
+        <span class="period">${c.period}</span>
+        <span class="info">
+          <span class="role-company">${c.role} <span class="company">@ ${c.company}</span></span>
+          <span class="desc">${c.desc}</span>
+          ${topAch.length ? `<span class="career-achs">${topAch.map(a => `<span class="career-ach">▸ ${a}</span>`).join('')}</span>` : ''}
+        </span>
+      </button>`;
     }).join('');
   }
 
@@ -170,7 +179,7 @@ export default class PortfolioOrchestrator {
     const cats = this._l().CATEGORIES;
     const labels = this._l().CATEGORY_LABELS || cats;
     container.innerHTML = cats.map((cat, i) =>
-      `<span class="cat-tab${cat === this._activeCat ? ' active' : ''}" data-cat="${cat}">${labels[i]}</span>`
+      `<button type="button" class="cat-tab${cat === this._activeCat ? ' active' : ''}" data-cat="${cat}" aria-pressed="${cat === this._activeCat}">${labels[i]}</button>`
     ).join('');
     if (!container.dataset.wired) {
       container.dataset.wired = '1';
@@ -178,30 +187,67 @@ export default class PortfolioOrchestrator {
         const tab = e.target.closest('.cat-tab');
         if (!tab) return;
         this._activeCat = tab.dataset.cat;
-        container.querySelectorAll('.cat-tab').forEach((t) => t.classList.toggle('active', t.dataset.cat === this._activeCat));
+        container.querySelectorAll('.cat-tab').forEach((t) => {
+          const on = t.dataset.cat === this._activeCat;
+          t.classList.toggle('active', on);
+          t.setAttribute('aria-pressed', String(on));
+        });
         this._renderProjects();
       });
     }
   }
 
+  /** Projects matching the active category, in the active sort order. */
+  _visibleProjects() {
+    const all = this._l().PROJECTS;
+    const filtered = this._activeCat === this._l().CATEGORIES[0]
+      ? [...all]
+      : all.filter((p) => p.cat === this._activeCat);
+    if (this._sortMode === 'default') return filtered;
+    const lang = this.s.lang;
+    return filtered.sort(
+      (a, b) => projectSortValue(lang, b, this._sortMode) - projectSortValue(lang, a, this._sortMode),
+    );
+  }
+
   _renderProjects() {
     const grid = document.getElementById('projectsGrid');
     if (!grid) return;
-    const filtered = this._activeCat === this._l().CATEGORIES[0]
-      ? this._l().PROJECTS
-      : this._l().PROJECTS.filter((p) => p.cat === this._activeCat);
-    grid.innerHTML = filtered.map((p, i) =>
-      `<div class="project-card" data-project="${i}" data-cat="${p.cat}">
-        <div class="card-inner">
+    const filtered = this._visibleProjects();
+
+    // Cards are buttons: the whole grid was previously unreachable by keyboard.
+    grid.innerHTML = filtered.map((p) =>
+      `<button type="button" class="project-card" data-project-id="${p.id}" data-cat="${p.cat}">
+        <span class="card-inner">
           <span class="card-tag">${p.tag}</span>
-          <h3>${p.name}</h3>
-          <div class="stack">${p.stack}</div>
-          <div class="metric">△ ${p.metric}</div>
-          <div class="desc">${p.desc}</div>
-        </div>
-      </div>`
+          <span class="card-title">${p.name}</span>
+          <span class="stack">${p.stack}</span>
+          <span class="metric">△ ${p.metric}</span>
+          <span class="desc">${p.desc}</span>
+        </span>
+      </button>`
     ).join('');
+
+    this._renderDashboard(filtered);
     this._wireCardTilt();
+  }
+
+  _renderDashboard(visible) {
+    const panel = document.getElementById('projectsDash');
+    if (!panel) return;
+    const agg = computeProjectAggregates(this.s.lang, visible);
+    panel.innerHTML = renderDashboard(agg, this._l().DASHBOARD || {}, this._sortMode);
+    animateDashboard(panel);
+
+    if (!panel.dataset.wired) {
+      panel.dataset.wired = '1';
+      panel.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-sort]');
+        if (!btn) return;
+        this._sortMode = btn.dataset.sort;
+        this._renderProjects();
+      });
+    }
   }
 
   _wireCardTilt() {
@@ -239,6 +285,9 @@ export default class PortfolioOrchestrator {
   _observeEntrance() {
     if (this._entranceObserved) return;
     this._entranceObserved = true;
+    // A language switch re-renders everything and calls this again — drop the
+    // previous observer instead of leaking one per switch.
+    this._entranceObserver?.disconnect();
     let statsCounted = false;
     const obs = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -253,29 +302,16 @@ export default class PortfolioOrchestrator {
         this._animateStatsCount();
       }
     }, { threshold: 0 });
+    this._entranceObserver = obs;
     document.querySelectorAll('.career-item, .project-card, .achievement-item, .stat-item')
       .forEach(el => obs.observe(el));
   }
 
   _animateStatsCount() {
-    const els = document.querySelectorAll('.stat-value[data-target]');
-    if (!els.length) return;
+    const grid = document.getElementById('statsGrid');
+    if (!grid) return;
     this._statsCounted = true;
-    els.forEach((el) => {
-      const target = el.dataset.target;
-      const num = parseFloat(target);
-      if (isNaN(num)) { el.textContent = target; return; }
-      const suffix = target.slice(String(num).length);
-      const duration = 1200;
-      const start = performance.now();
-      const tick = (now) => {
-        const t = Math.min((now - start) / duration, 1);
-        const ease = 1 - Math.pow(1 - t, 3);
-        el.textContent = Math.round(ease * num) + suffix;
-        if (t < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    });
+    animateStatValues(grid);
   }
 
   _animateSectionEntry(el) {
@@ -301,11 +337,11 @@ export default class PortfolioOrchestrator {
     const grid = document.getElementById('achievementsGrid');
     if (!grid) return;
     grid.innerHTML = this._l().ACHIEVEMENTS.map((a, i) =>
-      `<div class="achievement-item" data-ach="${i}">
-        <div class="ach-year">${a.year}</div>
-        <div class="ach-title">${a.title}</div>
-        <div class="ach-desc">${a.desc}</div>
-      </div>`
+      `<button type="button" class="achievement-item" data-ach="${i}">
+        <span class="ach-year">${a.year}</span>
+        <span class="ach-title">${a.title}</span>
+        <span class="ach-desc">${a.desc}</span>
+      </button>`
     ).join('');
   }
 
@@ -567,17 +603,14 @@ export default class PortfolioOrchestrator {
     document.addEventListener('click', (e) => {
       const card = e.target.closest('.project-card');
       if (!card) return;
-      const idx = parseInt(card.dataset.project);
-      if (isNaN(idx)) return;
-      const projects = this._l().PROJECTS;
-      const filtered = this._activeCat === this._l().CATEGORIES[0] ? projects : projects.filter((p) => p.cat === this._activeCat);
-      const p = filtered[idx];
-      if (p?.id) {
-        setProjectLocale(this.s.lang);
-        this._showSkeleton();
-        renderProjectPage(p.id);
-        history.replaceState(null, '', `#/project/${p.id}`);
-      }
+      // Keyed by id rather than by position: the grid can be re-sorted, so an
+      // index into the filtered array is no longer a stable identifier.
+      const id = card.dataset.projectId;
+      if (!id) return;
+      setProjectLocale(this.s.lang);
+      this._showSkeleton();
+      renderProjectPage(id);
+      history.replaceState(null, '', `#/project/${id}`);
     });
   }
 
@@ -610,10 +643,13 @@ export default class PortfolioOrchestrator {
       if (h === lastHash) return;
       lastHash = h;
       setProjectLocale(this.s.lang);
-      let m, handled = false;
-      if (m = h.match(/^#\/project\/(.+)$/)) { this._showSkeleton(); renderProjectPage(m[1]); handled = true; }
-      else if (m = h.match(/^#\/career\/(\d+)$/)) { this._showSkeleton(); renderCareerPage(parseInt(m[1])); handled = true; }
-      else if (m = h.match(/^#\/achievement\/(\d+)$/)) { this._showSkeleton(); renderAchievementPage(parseInt(m[1])); handled = true; }
+      let handled = false;
+      const project = h.match(/^#\/project\/(.+)$/);
+      const career = h.match(/^#\/career\/(\d+)$/);
+      const achievement = h.match(/^#\/achievement\/(\d+)$/);
+      if (project) { this._showSkeleton(); renderProjectPage(project[1]); handled = true; }
+      else if (career) { this._showSkeleton(); renderCareerPage(parseInt(career[1])); handled = true; }
+      else if (achievement) { this._showSkeleton(); renderAchievementPage(parseInt(achievement[1])); handled = true; }
       if (!handled) {
         const pd = document.getElementById('projectDetail');
         if (pd) {
@@ -639,16 +675,18 @@ export default class PortfolioOrchestrator {
     };
     window.addEventListener('hashchange', checkHash);
 
-    // Smooth scroll on nav link click (business mode)
+    // Smooth scroll for anchor-style buttons. This is the only [data-scroll-to]
+    // handler on the page; it runs in every mode, but only business mode gets a
+    // history entry (the other modes are scroll-driven and would fight it).
     document.addEventListener('click', (e) => {
       const link = e.target.closest('[data-scroll-to]');
       if (!link) return;
-      if (document.documentElement.getAttribute('data-mode') !== 'business') return;
       e.preventDefault();
       const targetId = link.getAttribute('data-scroll-to');
       const target = document.getElementById(targetId);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (document.documentElement.getAttribute('data-mode') === 'business') {
         history.pushState(null, '', `#${targetId}`);
       }
     });
@@ -671,7 +709,7 @@ export default class PortfolioOrchestrator {
     this._ensureMeta('property', 'og:description', PONYTAIL.SEO[locale].description);
     this._ensureMeta('property', 'og:title', PONYTAIL.SEO[locale].title);
     this._ensureMeta('name', 'twitter:description', PONYTAIL.SEO[locale].description);
-    this._ensureMeta('property', 'og:image', 'https://dev24.pro/img_2025_12_23.png');
-    this._ensureMeta('name', 'twitter:image', 'https://dev24.pro/img_2025_12_23.png');
+    this._ensureMeta('property', 'og:image', 'https://dev24.pro/og-cover.jpg');
+    this._ensureMeta('name', 'twitter:image', 'https://dev24.pro/og-cover.jpg');
   }
 }
