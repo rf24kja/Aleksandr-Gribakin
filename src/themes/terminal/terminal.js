@@ -51,6 +51,15 @@ function lineEl(line) {
   }
   el.className = `tsh-line tsh-${line.cls || 'row'}`;
   el.textContent = line.text;
+  // Rows that map to a command become clickable, so details are reachable by
+  // pointer as well as by typing — the command is still shown, so nobody has to
+  // guess it.
+  if (line.run) {
+    el.classList.add('tsh-runnable');
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.dataset.run = line.run;
+  }
   return el;
 }
 
@@ -390,8 +399,30 @@ function wire(root) {
 
   // Tapping anywhere in the window focuses the prompt — including on mobile,
   // where the real <input> is what opens the on-screen keyboard.
-  shell.body.addEventListener('click', () => {
+  shell.body.addEventListener('click', async (e) => {
     if (window.getSelection()?.toString()) return;
+    const runnable = e.target.closest('[data-run]');
+    if (runnable) {
+      const cmd = runnable.dataset.run;
+      printPrompt(cmd);
+      pushHistory(cmd);
+      await execute(cmd);
+      shell.input.focus();
+      return;
+    }
+    shell.input.focus();
+  });
+
+  // Same rows via the keyboard.
+  shell.body.addEventListener('keydown', async (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const runnable = e.target.closest('[data-run]');
+    if (!runnable) return;
+    e.preventDefault();
+    const cmd = runnable.dataset.run;
+    printPrompt(cmd);
+    pushHistory(cmd);
+    await execute(cmd);
     shell.input.focus();
   });
 

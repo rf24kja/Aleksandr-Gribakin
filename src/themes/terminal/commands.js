@@ -68,7 +68,7 @@ const COMMANDS = [
       for (const c of COMMANDS) {
         if (c.hidden) continue;
         const usage = c.usage ? `${c.name} ${c.usage}` : c.name;
-        out.push({ text: `  ${pad(usage, ctx.cols > 56 ? 22 : 20)}${(t.CMD || {})[c.key] || ''}`, cls: 'cmdrow' });
+        out.push({ text: `  ${pad(usage, ctx.cols > 56 ? 22 : 20)}${(t.CMD || {})[c.key] || ''}`, cls: 'cmdrow', run: c.usage ? null : c.name });
       }
       out.push('');
       out.push({ text: `  ${t.HINT_KEYS || 'Tab completes · ↑ ↓ history · Ctrl+L clears'}`, cls: 'dim' });
@@ -145,9 +145,9 @@ const COMMANDS = [
       }
       const out = [...head(t.HEAD_CAREER || 'CAREER LOG', ctx.cols)];
       l.CAREER.forEach((c, i) => {
-        out.push({ text: `  [${c.period}]  ${c.role.toUpperCase()}  @ ${c.company}`, cls: 'accent' });
+        out.push({ text: `  [${c.period}]  ${c.role.toUpperCase()}  @ ${c.company}`, cls: 'accent', run: `career ${i + 1}` });
         wrap(c.desc, ctx.cols - 6, '  │  ').forEach((x) => out.push({ text: x, cls: 'dim' }));
-        out.push({ text: `  │  → ${(t.HINT_DETAIL || 'career {n} for detail').replace('{n}', i + 1)}`, cls: 'hintline' });
+        out.push({ text: `  │  → ${(t.HINT_DETAIL || 'career {n} for detail').replace('{n}', i + 1)}`, cls: 'hintline', run: `career ${i + 1}` });
         out.push('');
       });
       return out;
@@ -172,11 +172,12 @@ const COMMANDS = [
       }
       const out = [...head(`${t.HEAD_TARGETS || 'TARGETS'} (${list.length})`, ctx.cols)];
       for (const p of list) {
+        const runOpen = `open ${p.id}`;
         if (ctx.cols < 62) {
-          out.push({ text: `  ${p.id}`, cls: 'accent' });
-          out.push({ text: `    [${p.cat}] · ${p.metric}`, cls: 'dim' });
+          out.push({ text: `  ${p.id}`, cls: 'accent', run: runOpen });
+          out.push({ text: `    [${p.cat}] · ${p.metric}`, cls: 'dim', run: runOpen });
         } else {
-          out.push({ text: `  ${pad('[' + p.cat + ']', 18)}${pad(p.id, 20)}· ${p.metric}`, cls: 'row' });
+          out.push({ text: `  ${pad('[' + p.cat + ']', 18)}${pad(p.id, 20)}· ${p.metric}`, cls: 'row', run: runOpen });
         }
       }
       out.push('');
@@ -254,11 +255,12 @@ const COMMANDS = [
       }
       const out = [...head(t.HEAD_MILESTONES || 'MILESTONES', ctx.cols)];
       l.ACHIEVEMENTS.forEach((a, i) => {
+        const runAch = `achievements ${i + 1}`;
         if (ctx.cols < 62) {
-          out.push({ text: `  ${a.year}  ${a.title}`, cls: 'row' });
-          out.push({ text: `        ${(t.HINT_DETAIL_N || 'achievements {n}').replace('{n}', i + 1)}`, cls: 'hintline' });
+          out.push({ text: `  ${a.year}  ${a.title}`, cls: 'row', run: runAch });
+          out.push({ text: `        ${(t.HINT_DETAIL_N || 'achievements {n}').replace('{n}', i + 1)}`, cls: 'hintline', run: runAch });
         } else {
-          out.push({ text: `  ${pad(a.year, 6)}${pad(a.title, 34)}· ${(t.HINT_DETAIL_N || 'achievements {n}').replace('{n}', i + 1)}`, cls: 'row' });
+          out.push({ text: `  ${pad(a.year, 6)}${pad(a.title, 34)}· ${(t.HINT_DETAIL_N || 'achievements {n}').replace('{n}', i + 1)}`, cls: 'row', run: runAch });
         }
       });
       return out;

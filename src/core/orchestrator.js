@@ -556,8 +556,11 @@ export default class PortfolioOrchestrator {
         const msg = (key + '').toLowerCase().includes('rate') ? t.RATE_LIMIT : t.NETWORK;
         el.textContent = msg || key;
       } else {
-        const lookup = (field + '_' + key).toUpperCase();
-        el.textContent = t[lookup] || key;
+        // FORM_ERRORS keys the message field as MSG_*, but the field is named
+        // "message" — so MESSAGE_MIN never resolved and the raw rule name
+        // ("min") was shown to the visitor.
+        const prefix = field === 'message' ? 'MSG' : field.toUpperCase();
+        el.textContent = t[`${prefix}_${key}`.toUpperCase()] || key;
       }
       el.style.opacity = '1';
       if (first && c && field !== '_api') { c.textContent = el.textContent; first = false; }

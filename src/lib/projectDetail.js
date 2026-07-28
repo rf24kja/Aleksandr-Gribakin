@@ -348,7 +348,13 @@ function closeProjectDetail() {
   document.removeEventListener('keydown', _pdKeyHandler);
   const scrollContainer = document.querySelector('[data-scroll-container]');
   if (scrollContainer) scrollContainer.style.overflow = '';
-  if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+  // Only clear the hash when it is one of our detail routes. Stripping it
+  // unconditionally desynchronised the router's lastHash from the real URL:
+  // after landing on an unknown route the 404 stayed up because navigating
+  // "home" produced no hashchange to react to.
+  if (/^#\/(project|career|achievement)\//.test(window.location.hash)) {
+    history.replaceState(null, '', window.location.pathname);
+  }
 }
 
 export { closeProjectDetail };

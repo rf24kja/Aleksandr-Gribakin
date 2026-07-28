@@ -1,7 +1,8 @@
 import PONYTAIL from '../../config/ponytail.config.js'
 import { getMode, setMode, MODES } from '../themeManager.js'
-import { computeStats } from '../../lib/stats.js'
-import { renderStatsForDesktop } from '../../lib/statsUI.js'
+import { computeStats, buildMetricScale } from '../../lib/stats.js'
+import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js'
+import { renderStatsForDesktop, renderMetricGrid, animateMetricGrid, esc } from '../../lib/statsUI.js'
 import WindowManager from './windowManager.js'
 
 const apps = []
@@ -116,42 +117,129 @@ function renderCareer() {
   const career = _('CAREER')
   if (!Array.isArray(career)) return '<div class="wb-text">No data</div>'
   return career.map((c, i) => `
-    <div class="wb-section" style="${i > 0 ? 'margin-top:12px' : ''}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span style="font-weight:600;font-size:13px">${c.company}</span>
-        <span style="font-size:10px;opacity:.5">${c.period}</span>
-      </div>
-      <div style="font-size:11px;color:var(--ubuntu-accent);margin-bottom:6px">${c.role}</div>
-      <div style="font-size:12px;opacity:.7;line-height:1.6">${c.desc}</div>
-    </div>
-    ${i < career.length - 1 ? '<hr class="wb-divider">' : ''}
+    <button type="button" class="wb-row" data-open="career:${i}">
+      <span class="wb-row-head">
+        <span class="wb-row-title">${esc(c.company)}</span>
+        <span class="wb-row-period">${esc(c.period)}</span>
+      </span>
+      <span class="wb-row-meta wb-row-role">${esc(c.role)}</span>
+      <span class="wb-row-desc">${esc(c.desc)}</span>
+      <span class="wb-row-go">${esc(_('DETAIL.OPEN_DETAIL') || 'Open')} →</span>
+    </button>
   `).join('')
 }
 
 function renderProjects() {
   const projects = _('PROJECTS')
   if (!Array.isArray(projects)) return '<div class="wb-text">No data</div>'
+  // Rows were plain divs, so there was no way to reach a project's detail in
+  // this mode at all. They open a detail window now.
   return projects.map(p => `
-    <div class="wb-section">
-      <div style="font-weight:600;font-size:13px;margin-bottom:2px">${p.name}</div>
-      <div style="font-size:10px;opacity:.5;margin-bottom:6px">${p.stack || ''}</div>
-      <div style="font-size:12px;opacity:.7;line-height:1.6">${p.desc}</div>
-    </div>
+    <button type="button" class="wb-row" data-open="project:${esc(p.id)}">
+      <span class="wb-row-title">${esc(p.name)}</span>
+      <span class="wb-row-meta">${esc(p.stack || '')}</span>
+      <span class="wb-row-desc">${esc(p.desc)}</span>
+      <span class="wb-row-go">${esc(_('DETAIL.OPEN_DETAIL') || 'Open')} →</span>
+    </button>
   `).join('')
 }
 
 function renderAchievements() {
   const achievements = _('ACHIEVEMENTS')
   if (!Array.isArray(achievements)) return '<div class="wb-text">No data</div>'
-  return achievements.map(a => `
-    <div class="wb-section">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <span style="font-size:16px">★</span>
-        <span style="font-weight:600;font-size:13px">${a.title}</span>
-      </div>
-      <div style="font-size:12px;opacity:.7;line-height:1.6">${a.desc}</div>
-    </div>
+  return achievements.map((a, i) => `
+    <button type="button" class="wb-row" data-open="achievement:${i}">
+      <span class="wb-row-head">
+        <span class="wb-row-title">${esc(a.title)}</span>
+        <span class="wb-row-period">${esc(a.year)}</span>
+      </span>
+      <span class="wb-row-desc">${esc(a.desc)}</span>
+      <span class="wb-row-go">${esc(_('DETAIL.OPEN_DETAIL') || 'Open')} →</span>
+    </button>
   `).join('')
+}
+
+// ---------------------------------------------------------------------------
+// Detail windows
+//
+// Opening a row spawns its own window rather than reusing #projectDetail, which
+// this mode hides — a modal overlay would break the desktop metaphor and cover
+// the taskbar the visitor uses to get back.
+// ---------------------------------------------------------------------------
+
+function detailLang() { return state?.lang || 'EN' }
+
+function metricsBlock(highlights) {
+  const scale = buildMetricScale(detailLang())
+  return `<div class="wb-metrics pd-charts">${renderMetricGrid(highlights, scale, _('METRIC') || {})}</div>`
+}
+
+function renderProjectWindow(id) {
+  const p = (_('PROJECTS') || []).find(x => x.id === id)
+  const d = (PROJECTS_DETAIL[detailLang()] || PROJECTS_DETAIL.EN)[id]
+  if (!p || !d) return `<div class="wb-text">${esc(_('DETAIL.NOT_FOUND') || 'not found')}</div>`
+  return `
+    <div class="wb-title">${esc(p.name)}</div>
+    <div class="wb-sub">${esc(p.cat)} / ${esc(p.tag)}</div>
+    <div class="wb-badge">🔒 ${esc(_('DETAIL.PRIVATE_REPO') || 'Private repository')}</div>
+    <div class="wb-note">${esc(_('DETAIL.REFERENCE_NOTE') || '')}</div>
+    <hr class="wb-divider">
+    ${d.details.map(x => `<div class="wb-text">${esc(x)}</div>`).join('')}
+    <div class="wb-section-title">${esc(_('DETAIL.KEY_METRICS') || 'Key Metrics')}</div>
+    ${metricsBlock(d.highlights)}
+    <div class="wb-section-title">${esc(_('DETAIL.FEATURES') || 'Features')}</div>
+    ${d.features.map(f => `<div class="wb-bullet">· ${esc(f)}</div>`).join('')}
+    <div class="wb-section-title">${esc(_('DETAIL.TECH_STACK') || 'Tech Stack')}</div>
+    <div class="wb-text">${esc(p.stack)}</div>
+  `
+}
+
+function renderCareerWindow(i) {
+  const c = (_('CAREER') || [])[i]
+  const d = (CAREER_DETAIL[detailLang()] || CAREER_DETAIL.EN)[i]
+  if (!c || !d) return `<div class="wb-text">${esc(_('DETAIL.NOT_FOUND') || 'not found')}</div>`
+  return `
+    <div class="wb-title">${esc(c.role)}</div>
+    <div class="wb-sub">${esc(c.company)} · ${esc(c.period)}</div>
+    <hr class="wb-divider">
+    ${d.details.map(x => `<div class="wb-text">${esc(x)}</div>`).join('')}
+    <div class="wb-section-title">${esc(_('DETAIL.KEY_METRICS') || 'Key Metrics')}</div>
+    ${metricsBlock(d.highlights)}
+    <div class="wb-section-title">${esc(_('DETAIL.TECH_STACK') || 'Tech Stack')}</div>
+    <div class="wb-tags">${d.techStack.map(t => `<span class="wb-tag">${esc(t)}</span>`).join('')}</div>
+    <div class="wb-section-title">${esc(_('DETAIL.KEY_ACH') || 'Key Achievements')}</div>
+    ${d.keyAchievements.map(a => `<div class="wb-bullet">▸ ${esc(a)}</div>`).join('')}
+  `
+}
+
+function renderAchievementWindow(i) {
+  const a = (_('ACHIEVEMENTS') || [])[i]
+  const d = (ACHIEVEMENT_DETAIL[detailLang()] || ACHIEVEMENT_DETAIL.EN)[i]
+  if (!a || !d) return `<div class="wb-text">${esc(_('DETAIL.NOT_FOUND') || 'not found')}</div>`
+  return `
+    <div class="wb-title">${esc(a.title)}</div>
+    <div class="wb-sub">${esc(a.year)}</div>
+    <hr class="wb-divider">
+    ${d.details.map(x => `<div class="wb-text">${esc(x)}</div>`).join('')}
+  `
+}
+
+function openDetail(token) {
+  const [kind, ref] = String(token).split(':')
+  if (kind === 'project') {
+    const p = (_('PROJECTS') || []).find(x => x.id === ref)
+    wm.open({ id: 'win-project-' + ref, title: p ? p.name : ref, icon: SVG.projects,
+      content: renderProjectWindow(ref), width: 600, height: 460 })
+  } else if (kind === 'career') {
+    const c = (_('CAREER') || [])[Number(ref)]
+    wm.open({ id: 'win-career-' + ref, title: c ? c.company : 'Career', icon: SVG.career,
+      content: renderCareerWindow(Number(ref)), width: 600, height: 460 })
+  } else if (kind === 'achievement') {
+    const a = (_('ACHIEVEMENTS') || [])[Number(ref)]
+    wm.open({ id: 'win-ach-' + ref, title: a ? a.title : 'Milestone', icon: SVG.achievements,
+      content: renderAchievementWindow(Number(ref)), width: 540, height: 400 })
+  }
+  requestAnimationFrame(() => animateMetricGrid(document.getElementById('desktop-windows')))
 }
 
 function renderAura() {
@@ -238,6 +326,12 @@ export function initDesktop(appState) {
 
   document.getElementById('start-btn')?.addEventListener('click', () => {
     startMenu?.classList.toggle('open')
+  })
+
+  // Row clicks inside any window open the corresponding detail window.
+  winContainer.addEventListener('click', (e) => {
+    const row = e.target.closest('[data-open]')
+    if (row) openDetail(row.dataset.open)
   })
 
   document.getElementById('taskbar-windows')?.addEventListener('click', (e) => {

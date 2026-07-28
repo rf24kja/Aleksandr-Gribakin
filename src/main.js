@@ -511,15 +511,10 @@ document.addEventListener('mode:change', (e) => {
 
 console.log(`[Portfolio] ${PONYTAIL.LOCALE.EN.PROJECTS.length} projects, ${PONYTAIL.SCENES.length} scenes`);
 
-// SPA 404 — unknown hash routes
-window.addEventListener('hashchange', () => {
-  const hash = location.hash.slice(1);
-  if (!hash || hash.match(/^\/(project|career|achievement)\/\d+$/)) return;
-  if (hash.startsWith('/project/') || hash.startsWith('/career/') || hash.startsWith('/achievement/')) return;
-  if (!document.getElementById(hash.replace(/^\//, ''))) {
-    location.hash = '';
-  }
-});
+// Routing lives in orchestrator._wireHashRouter. A second hashchange listener
+// used to sit here and reset any unrecognised hash to '', which raced the
+// router and made the 404 route unreachable — it appeared and was cleared in
+// the same tick.
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {

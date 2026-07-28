@@ -2858,6 +2858,64 @@
       max-width: 62ch;
     }
 
+    /* --- Desktop-mode list rows and detail windows --------------------- */
+    .wb-row {
+      display: block;
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .wb-row:hover { background: rgba(233,84,32,.1); border-color: rgba(233,84,32,.4); }
+    .wb-row:focus-visible { outline: 2px solid var(--ubuntu-accent, #e95420); outline-offset: 2px; }
+    .wb-row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .wb-row-title { display: block; font-weight: 600; font-size: 13px; }
+    .wb-row-period { font-size: 10px; opacity: .5; flex: none; }
+    .wb-row-meta { display: block; font-size: 10px; opacity: .5; margin: 2px 0 6px; }
+    .wb-row-role { color: var(--ubuntu-accent, #e95420); opacity: .9; font-size: 11px; }
+    .wb-row-desc { display: block; font-size: 12px; opacity: .7; line-height: 1.6; }
+    .wb-row-go {
+      display: block; margin-top: 8px;
+      font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--ubuntu-accent, #e95420); opacity: .75;
+    }
+    .wb-badge {
+      display: inline-block; margin-top: 8px;
+      font-size: 11px; padding: 4px 10px; border-radius: 999px;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+      opacity: .8;
+    }
+    .wb-note { font-size: 11px; line-height: 1.6; opacity: .5; margin-top: 8px; }
+    .wb-bullet { font-size: 12px; line-height: 1.7; opacity: .8; margin-bottom: 2px; }
+    .wb-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .wb-tag {
+      font-size: 10px; padding: 3px 9px; border-radius: 4px;
+      background: rgba(233,84,32,.1); border: 1px solid rgba(233,84,32,.25);
+      color: var(--ubuntu-accent, #e95420);
+    }
+    /* The metric grid is shared with the other modes; give it desktop colours. */
+    [data-mode="desktop"] .wb-metrics {
+      --sb-accent: var(--ubuntu-accent, #e95420);
+      --sb-text: var(--ubuntu-text, #eee);
+      --sb-dim: rgba(238,238,238,.55);
+      --sb-surface: rgba(255,255,255,.04);
+      --sb-border: rgba(255,255,255,.08);
+      --sb-track: rgba(255,255,255,.1);
+      --sb-radius: 6px;
+      margin-top: 8px;
+    }
+    @media (max-width: 768px) {
+      .wb-row { padding: 14px; }
+      .wb-row-desc { font-size: 12px; }
+    }
+
     /* --- Desktop-mode About window stats ------------------------------ */
     .wb-stats {
       display: grid;
@@ -2969,6 +3027,11 @@
     .tsh-row    { color: #b8b8b8; }
     .tsh-cmdrow { color: #d0d0d0; }
     .tsh-hintline { color: rgba(0,255,65,.4); }
+    /* Output rows that map to a command. The command stays visible in the row,
+       so clicking is a shortcut rather than a hidden alternative. */
+    .tsh-runnable { cursor: pointer; }
+    .tsh-runnable:hover { background: rgba(0,255,65,.09); }
+    .tsh-runnable:focus-visible { outline: 1px solid var(--t-accent, #00ff41); outline-offset: -1px; }
     .tsh-echo   { color: #d0d0d0; white-space: pre-wrap; }
     .tsh-echo .tsh-prompt { color: var(--t-accent, #00ff41); }
 
