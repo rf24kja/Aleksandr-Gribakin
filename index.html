@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" data-scroll-container data-theme="dark">
+<!-- Light is the default. Set here as well as in main.js so the first paint is
+     already correct — applying it from JS alone flashed a dark page first. -->
+<html lang="en" data-scroll-container data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -14,7 +16,7 @@
   <meta property="og:url" content="https://dev24.pro" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:site_name" content="Aleksandr Gribakin Portfolio" />
-  <meta name="theme-color" content="#08080c" />
+  <meta name="theme-color" content="#fafafa" />
   <meta name="robots" content="index, follow" />
   <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://dev24.pro" />
@@ -49,7 +51,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;500;600&family=JetBrains+Mono:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <style>
-    html { background: #08080c; scrollbar-width: thin; }
+    /* First paint, before the theme variables resolve. Matches the default
+       (business light) so the page does not flash dark on load. */
+    html { background: #fafafa; scrollbar-width: thin; }
+    html[data-theme="dark"] { background: #08080c; }
     html::-webkit-scrollbar { width: 6px; }
     html::-webkit-scrollbar-track { background: transparent; }
     html::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent) 30%, transparent); border-radius: 3px; }
@@ -108,7 +113,12 @@
     [data-theme="dark"] #scanlines::after {
       display: none !important;
     }
-    #ui-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
+    /* Holds the only global controls (language, settings), so it has to sit
+       above the page content. At z-index 1 it was below .section-overlay's
+       z-index 2: the buttons stayed visible but stopped being clickable as
+       soon as you scrolled into any section. Still below #projectDetail (300),
+       which should cover them when open. */
+    #ui-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 120; pointer-events: none; }
     #ui-overlay > * { pointer-events: auto; }
 
     /* Preloader */
@@ -444,8 +454,8 @@
       min-height: 0; min-width: 0;
     }
     @media (pointer: coarse), (max-width: 768px) {
-      button.lang-toggle.tsh-ctl { min-height: 34px; padding: 6px 10px; }
-      button.settings-gear.tsh-ctl { min-height: 34px; min-width: 34px; }
+      button.lang-toggle.tsh-ctl { min-height: 40px; padding: 8px 10px; }
+      button.settings-gear.tsh-ctl { min-height: 40px; min-width: 40px; font-size: 17px; }
     }
 
     /* Settings Popup */
@@ -2911,8 +2921,20 @@
     .tsh-dots i:nth-child(1) { background: #ff5f57; }
     .tsh-dots i:nth-child(2) { background: #febc2e; }
     .tsh-dots i:nth-child(3) { background: #28c840; }
-    .tsh-title { flex: 1; text-align: center; font-size: 12px; color: #7a7a7a; letter-spacing: .04em; }
-    .tsh-clock { font-size: 11px; color: #555; font-variant-numeric: tabular-nums; }
+    /* min-width:0 lets the title shrink instead of forcing the controls to its
+       right off the edge of a narrow screen. */
+    .tsh-title {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      font-size: 12px;
+      color: #7a7a7a;
+      letter-spacing: .04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tsh-clock { flex: none; font-size: 11px; color: #555; font-variant-numeric: tabular-nums; }
 
     .tsh-body {
       flex: 1;
@@ -3012,14 +3034,27 @@
     .tsh-chip:focus-visible { outline: 2px solid var(--t-accent, #00ff41); outline-offset: 2px; }
 
     @media (max-width: 640px) {
+      /* Output now sizes itself to the viewport, so nothing needs to pan
+         sideways — a horizontally scrolling body read as an unfixed width. */
       .tsh-body { padding: 14px 12px 6px; }
+      .tsh-line { white-space: pre-wrap; overflow-wrap: anywhere; }
+      .tsh-logo, .tsh-bar { white-space: pre; overflow-wrap: normal; }
       .tsh-line, .tsh-inputline { font-size: 12px; }
       /* Taller prompt row so tapping the line itself is comfortable — the
          invisible input is stretched to fill it. */
       .tsh-inputline { padding-block: 10px 20px; }
+      .tsh-titlebar { gap: 8px; padding: 8px 10px; }
       .tsh-title { font-size: 11px; }
-      .tsh-chip { min-height: 40px; font-size: 12px; }
+      .tsh-chip { min-height: 44px; font-size: 12px; }
       .tsh-hints { padding: 8px 10px; gap: 5px; }
+    }
+    /* Below ~360px the window chrome cannot hold everything: the clock is the
+       one part nothing depends on, and the title is decorative. */
+    @media (max-width: 400px) {
+      .tsh-clock { display: none; }
+    }
+    @media (max-width: 340px) {
+      .tsh-title { display: none; }
     }
     @media (prefers-reduced-motion: reduce) {
       .tsh-caret { animation: none; }
@@ -3096,7 +3131,13 @@
       .tagline { font-size: 11px; }
       .sb-value em { font-size: 10px; }
       .stat-hint, .stat-label, .sb-label, .sb-value,
-      .pdash-cap, .pm-label, .pd-metrics-note, .pd-disclaimer { font-size: 11px; }
+      .pdash-cap, .pm-label, .pd-metrics-note, .pd-disclaimer,
+      /* Mode-scoped so these beat the per-mode rules that set 9px. */
+      .settings-label, .settings-hint, .coffee-popup-sub { font-size: 11px; }
+      [data-mode="business"] .pd-tag,
+      [data-mode="terminal"] .pd-tag,
+      .pd-tag { font-size: 11px; }
+      .pd-stack-tag { font-size: 11px; padding: 5px 10px; }
       .pm-value { font-size: 18px; }
     }
 
@@ -3131,9 +3172,11 @@
       /* --- Desktop-mode chrome on touch -----------------------------
          The window controls were 14x14, so a window could not be closed
          with a finger at all. The taskbar and tray were similarly small. */
+      /* Icon captions were 9px — unreadable on a phone. */
+      [data-mode="desktop"] .desk-icon-label { font-size: 11px; }
       [data-mode="desktop"] .wt-btn {
-        min-width: 32px;
-        min-height: 32px;
+        min-width: 36px;
+        min-height: 36px;
         display: inline-flex;
         align-items: center;
         justify-content: center;

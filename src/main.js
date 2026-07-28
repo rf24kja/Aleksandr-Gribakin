@@ -326,8 +326,16 @@ function applyTheme(theme, anim = true) {
   }
   document.documentElement.setAttribute('data-theme', theme);
   try { localStorage.setItem('theme', theme); } catch {}
+  // Business mode paints from --b-bg, not --bg, so reading --bg gave the
+  // browser chrome the wrong colour in the mode most visitors actually see.
   const metaTheme = document.querySelector('meta[name="theme-color"]');
-  if (metaTheme) metaTheme.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0c0a09';
+  if (metaTheme) {
+    const cs = getComputedStyle(document.documentElement);
+    const isBusiness = document.documentElement.getAttribute('data-mode') === 'business';
+    metaTheme.content =
+      (isBusiness ? cs.getPropertyValue('--b-bg') : cs.getPropertyValue('--bg')).trim() ||
+      (theme === 'light' ? '#fafafa' : '#0c0a09');
+  }
   const cfg = themeConfigs[theme] || themeConfigs.dark;
   if (scene) {
     scene.background = new THREE.Color(cfg.bg);
@@ -337,8 +345,11 @@ function applyTheme(theme, anim = true) {
   if (bloomPass) { bloomPass.threshold = cfg.bloom.threshold; bloomPass.strength = cfg.bloom.strength; bloomPass.radius = cfg.bloom.radius; }
   document.dispatchEvent(new CustomEvent('theme:change', { detail: { theme } }));
 }
-let savedTheme = 'dark'; try { savedTheme = localStorage.getItem('theme') || 'dark'; } catch {} finally { if (!['dark','light'].includes(savedTheme)) savedTheme = 'dark'; }
-applyTheme(savedTheme);
+// Light unless the visitor has previously chosen otherwise.
+let savedTheme = 'light';
+try { savedTheme = localStorage.getItem('theme') || 'light'; } catch { /* private mode */ }
+finally { if (!['dark', 'light'].includes(savedTheme)) savedTheme = 'light'; }
+applyTheme(savedTheme, false);
 // --- Preloader + Cinematic Reveal ---
 (function() {
   const pl = document.getElementById('preloader');

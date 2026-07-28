@@ -163,9 +163,34 @@ function transmitAbort() {
 // Command execution
 // ---------------------------------------------------------------------------
 
+/**
+ * Character columns that fit the current window.
+ *
+ * Command output is monospace and was laid out for a desktop-width terminal,
+ * so on a phone every line ran past the edge and the body had to pan sideways —
+ * the width felt unfixed. Commands now size their columns, bars and wrapping to
+ * whatever actually fits.
+ */
+function columns() {
+  const probe = document.createElement('div');
+  // Must carry .tsh-line: output lines are a smaller size than the log itself
+  // on mobile, and measuring the wrong one over-estimated the character width.
+  probe.className = 'tsh-line';
+  probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre';
+  probe.textContent = '0'.repeat(50);
+  shell.log.appendChild(probe);
+  const charWidth = probe.getBoundingClientRect().width / 50;
+  probe.remove();
+  const styles = getComputedStyle(shell.body);
+  const avail = shell.body.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
+  if (!charWidth) return 72;
+  return Math.max(28, Math.min(78, Math.floor(avail / charWidth)));
+}
+
 function context() {
   return {
     lang: lang(),
+    cols: columns(),
     history: shell.history,
     clear: clearScreen,
     setLang(l) {
@@ -303,12 +328,12 @@ function bootLines() {
     { text: '  ╚═╝  ╚═╝ ╚═════╝ ', cls: 'logo' },
     '',
     { text: t.ACCESS || 'ACCESS GRANTED', cls: 'accent' },
-    { text: '─'.repeat(46), cls: 'head' },
+    { text: '─'.repeat(Math.min(46, columns())), cls: 'head' },
     ok(`${t.BOOT_CLIENT || 'Client'}: ${browser} / ${os}`),
     ok(`${t.BOOT_SESSION || 'Session'}: ${new Date().toISOString().replace('T', ' ').slice(0, 19)}`),
     ok(`${t.BOOT_TARGET || 'Target'}: ${l.ROLE}`),
     { text: `[ INFO ] ${t.BOOT_SHELL || 'Shell'}: portfolio-sh 1.0`, cls: 'dim' },
-    { text: '─'.repeat(46), cls: 'head' },
+    { text: '─'.repeat(Math.min(46, columns())), cls: 'head' },
     '',
     { text: t.WELCOME || 'Type `help` to see what this thing does.', cls: 'accent' },
     '',
