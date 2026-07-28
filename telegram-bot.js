@@ -4,9 +4,13 @@ import { dirname, resolve } from 'path';
 import { appendFileSync, writeFileSync, readFileSync } from 'fs';
 import { get as httpsGet } from 'https';
 
-const TOKEN = '8825772515:AAHFj-czR5tdpAcUzTvFo17-5VjAMpJr8qk';
-const CHAT_ID = 770419171;
+const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const API = `https://api.telegram.org/bot${TOKEN}`;
+
+if (!TOKEN || !CHAT_ID) {
+  throw new Error('TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set (see .env.example)');
+}
 const CWD = dirname(fileURLToPath(import.meta.url));
 const LOG = fileURLToPath(new URL('./bot.log', import.meta.url));
 const OFFSET_FILE = fileURLToPath(new URL('./bot.offset', import.meta.url));
