@@ -13,11 +13,20 @@ initMode();
 
 const IS_BUSINESS = (document.documentElement.getAttribute('data-mode') || 'business') === 'business';
 
-// --- Renderer (skip in business mode) ---
+// Whether to boot the WebGL subsystem at all.
+//
+// Derived from the canvas rather than from the mode name: all three modes
+// currently hide `canvas#webgl` in CSS, so terminal and desktop were
+// downloading 667 KB of Three.js and running a render loop every frame to
+// paint something nobody can see. Reading the computed style means 3D comes
+// back on its own if a mode ever stops hiding the canvas.
+const USE_3D = (() => {
+  const canvas = document.getElementById('webgl');
+  return !!canvas && getComputedStyle(canvas).display !== 'none';
+})();
+
+// --- Renderer (only when the canvas is actually visible) ---
 let renderer = null, scene = null, camera = null, composer = null, bloomPass = null, world = null;
-// Three.js and the scene classes are ~473 KB of the bundle and are useless in
-// business mode, which is the default. Loading them on demand keeps that cost
-// off the critical path for most visitors.
 let THREE = null;
 let SceneIntro, SceneChronicle, SceneTechStack, SceneAchievements, SceneCTA;
 
@@ -27,7 +36,7 @@ const bloomConfigs = {
   low: { threshold: 1.0, strength: 0, radius: 0 },
 };
 
-if (!IS_BUSINESS) {
+if (USE_3D) {
   const [three, composerMod, renderPassMod, bloomMod, intro, chronicle, techStack, achievements, cta] =
     await Promise.all([
       import('three'),
@@ -131,7 +140,7 @@ orchestrator.s.on('fps:tick', ({ fps, throttled }) => {
 
 // --- Scene Manager (only with 3D) ---
 let sceneManager = null;
-if (!IS_BUSINESS && world) {
+if (USE_3D && world) {
   sceneManager = new SceneManager(world, orchestrator.s);
   sceneManager.register('intro', new SceneIntro(world, orchestrator.s));
   sceneManager.register('chronicle', new SceneChronicle(world, orchestrator.s));
@@ -142,7 +151,7 @@ if (!IS_BUSINESS && world) {
 }
 
 // --- Scroll Timeline ---
-const has3D = !IS_BUSINESS;
+const has3D = USE_3D;
 gsap.timeline({
   scrollTrigger: {
     trigger: has3D ? '#scrollSpacer' : '#mainContent',
@@ -197,7 +206,7 @@ gsap.timeline({
 });
 
 // --- Resize (3D only) ---
-if (!IS_BUSINESS && renderer && camera && composer) {
+if (USE_3D && renderer && camera && composer) {
   let _resizeTimer;
   window.addEventListener('resize', () => {
     cancelAnimationFrame(_resizeTimer);
@@ -216,7 +225,7 @@ if (!IS_BUSINESS && renderer && camera && composer) {
 // loop below — the `typeof ... === 'function'` guard there quietly swallowed
 // it and the parallax never ran. Hoisted to module scope.
 let updateParallax = null;
-if (!IS_BUSINESS) {
+if (USE_3D) {
   let _mx = 0, _my = 0;
   document.addEventListener('mousemove', (e) => {
     _mx = (e.clientX / window.innerWidth - 0.5) * 2;
@@ -233,7 +242,7 @@ if (!IS_BUSINESS) {
 }
 
 // --- Quality (3D only) ---
-if (!IS_BUSINESS) {
+if (USE_3D) {
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 768;
   if (isMobile && renderer && bloomPass) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -271,7 +280,7 @@ if (!IS_BUSINESS) {
 }
 
 // --- Render Loop (3D only) ---
-if (!IS_BUSINESS && composer) {
+if (USE_3D && composer) {
   (function animate() { requestAnimationFrame(animate); if (updateParallax) updateParallax(); if (!document.hidden) composer.render(); })();
 }
 

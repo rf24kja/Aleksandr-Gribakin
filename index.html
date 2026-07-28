@@ -1701,15 +1701,31 @@
     [data-mode="terminal"] #fpsCounter { display: none !important; }
     [data-mode="terminal"] #introText { display: none !important; }
     [data-mode="terminal"] #mainContent { display: block !important; }
+    /* The spacer exists to give the scroll-driven WebGL scenes room to play.
+       This mode hides the canvas, so it was 4320px of blank page before any
+       content — the page opened on four screens of nothing. */
+    [data-mode="terminal"] .spacer { display: none !important; }
 
     /* Terminal Intro */
+    /* This container used to hold a single .ti-box, so a row flexbox was fine.
+       It now holds three (boot output, stats, prompt) — without an explicit
+       column direction they laid out side by side as three columns. */
     [data-mode="terminal"] #terminalIntro {
       display: flex !important;
+      flex-direction: column;
       min-height: 100vh;
+      min-height: 100dvh;
       align-items: center;
       justify-content: center;
+      gap: 6px;
       padding: 40px;
       position: relative;
+    }
+    /* Shared width so the boxes' left edges line up like real terminal output
+       instead of each block centring on its own. */
+    [data-mode="terminal"] #terminalIntro > .ti-box {
+      width: 100%;
+      max-width: 720px;
     }
     .ti-box {
       font-family: var(--t-font);
@@ -2299,6 +2315,7 @@
     [data-mode="desktop"] .coffee-egg,
     [data-mode="desktop"] .coffee-popup,
     [data-mode="desktop"] #mainContent,
+    [data-mode="desktop"] .spacer,
     [data-mode="desktop"] #ui-overlay { display: none !important; }
     [data-mode="desktop"] .settings-card {
       background: #2d2d2d;
