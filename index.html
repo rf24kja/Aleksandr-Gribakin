@@ -904,7 +904,12 @@
       opacity: 1;
       letter-spacing: .03em;
     }
+    /* .intro-text is pointer-events: none so the scene behind it stays
+       draggable, and every interactive child has to opt back in — the settings
+       gear already does. This button did not, so it rendered, hovered as a
+       button and did nothing when clicked. */
     [data-mode="business"] .intro-cta {
+      pointer-events: auto;
       display: inline-block;
       margin-top: 28px;
       padding: 10px 28px;
