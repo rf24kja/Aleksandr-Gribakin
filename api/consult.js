@@ -217,10 +217,17 @@ export default async function handler(request) {
         if (res.status === 401) {
           // Distinguish the two things a 401 actually means here, because the
           // API's own wording ("API key is invalid") points at neither.
+          // The shape tells them apart without printing the secret: a Resend
+          // key is re_ followed by ~30 URL-safe characters, so a short or
+          // oddly-shaped value is a truncated or wrong paste, while a
+          // well-formed one that still fails has been revoked.
           console.error(
-            '[Consult] Resend rejected RESEND_API_KEY. Confirm it is the full re_… '
-            + 'value, still active in the Resend dashboard, and set for the Production '
-            + 'environment of the deployment that is serving traffic.',
+            '[Consult] Resend rejected RESEND_API_KEY. Key shape: '
+            + `length=${resendKey.length}, starts_with_re=${resendKey.startsWith('re_')}, `
+            + `well_formed=${/^re_[A-Za-z0-9_-]{20,}$/.test(resendKey)}. `
+            + 'A malformed shape means the pasted value is truncated or not an API key; '
+            + 'a well-formed one that still fails has been revoked — create a new key '
+            + 'with sending access and set it for Production.',
           );
         } else if (res.status === 403) {
           console.error(
