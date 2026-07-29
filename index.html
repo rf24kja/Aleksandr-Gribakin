@@ -3258,6 +3258,11 @@
       .cat-tab { min-height: 44px; min-width: 44px; padding-block: 10px; font-size: 12px; }
       .pdash-sort-btn { min-height: 44px; padding: 12px 14px; font-size: 11px; }
       .lang-toggle { min-height: 44px; min-width: 44px; }
+      /* Padding plus line-height landed these at 43px — a pixel under, and the
+         contact form is the one flow that has to work on a phone. */
+      .terminal-form input,
+      .terminal-form textarea,
+      .terminal-form button[type="submit"] { min-height: 44px; }
       .intro-cta { min-height: 48px; padding: 14px 28px; }
       .skip-link { min-height: 44px; display: inline-flex; align-items: center; }
       .stat-trigger { padding-block: 4px; }
