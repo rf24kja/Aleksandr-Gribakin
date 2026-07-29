@@ -47,9 +47,14 @@ test('the settings panel opens, is translated, and switches theme', async ({ pag
   await page.evaluate(() => {
     localStorage.setItem('portfolio-mode', 'business');
     localStorage.setItem('portfolio-lang', 'RU');
+    // Pinned so the assertion below has a known starting point: clicking "dark"
+    // while already dark changes nothing, and under parallel load the boot
+    // sequence could still be settling when the theme was read.
+    localStorage.setItem('theme', 'light');
   });
   await page.goto(`/?t=${Date.now()}`);
   await expect(page.locator('html')).toHaveAttribute('lang', 'ru', { timeout: 15_000 });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
   await page.locator('#settingsGear').click();
   const popup = page.locator('#settingsPopup');
@@ -60,11 +65,8 @@ test('the settings panel opens, is translated, and switches theme', async ({ pag
   const english = labels.filter((t) => /\b(Dark|Light|Business|Desktop|Terminal|Close|Theme|Interface)\b/.test(t));
   expect(english).toEqual([]);
 
-  const before = await page.getAttribute('html', 'data-theme');
   await popup.locator('[data-stheme="dark"]').click();
-  await expect
-    .poll(async () => page.getAttribute('html', 'data-theme'))
-    .not.toBe(before);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
 
 test('the settings options each get a full row rather than wrapping', async ({ page }) => {

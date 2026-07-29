@@ -193,9 +193,20 @@ test('prerendered HTML carries the content, not just a shell', async ({ page }) 
   const html = await res.text();
   // Rendered by JavaScript only, this was 164 words of stale placeholder copy.
   expect(html).toContain('lang="ru"');
-  expect(html).toContain('<link rel="canonical" href="https://dev24.pro/ru/"');
+  expect(html).toContain('<link rel="canonical" href="https://dev24.pro/ru"');
   expect(html).toMatch(/Kubernetes/);
   expect(html.match(/<a class="project-card/g) || []).toHaveLength(17);
   // Claims removed from the site must not survive in the served markup.
   expect(html).not.toMatch(/ML fraud detection|Omnimesh/);
+});
+
+test('the consult endpoint answers directly, with no redirect in the way', async ({ request }) => {
+  // trailingSlash once rewrote /api/consult to /api/consult/ with a 308. A
+  // browser follows that and keeps the body, so submissions still arrived, but
+  // an extra hop sat on the one path that carries a lead — and any client that
+  // does not follow redirects got "Redirecting..." instead of the endpoint.
+  const res = await request.get('/api/consult', { maxRedirects: 0, failOnStatusCode: false });
+  // What the status is depends on the environment — the preview server has no
+  // serverless functions at all. What matters is that nothing redirects.
+  expect([301, 302, 307, 308]).not.toContain(res.status());
 });

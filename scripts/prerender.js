@@ -63,7 +63,7 @@ function careerHTML(l) {
 // follow these through to the seventeen project pages, and a reader without
 // JavaScript gets a working site rather than a dead grid.
 function projectsHTML(l, prefix) {
-  return l.PROJECTS.map((p) => `<a class="project-card visible" href="/${prefix}project/${esc(p.id)}/" data-project-id="${esc(p.id)}" data-cat="${esc(p.cat)}">
+  return l.PROJECTS.map((p) => `<a class="project-card visible" href="/${prefix}project/${esc(p.id)}" data-project-id="${esc(p.id)}" data-cat="${esc(p.cat)}">
         <span class="card-inner">
           <span class="card-tag">${esc(p.tag)}</span>
           <span class="card-title">${esc(p.name)}</span>
@@ -141,8 +141,8 @@ function setHead(html, { lang, canonical, title, description }) {
     /<link rel="alternate"[^>]*>\s*/g, '',
   ).replace(
     '<link rel="canonical"',
-    `<link rel="alternate" hreflang="en" href="${ORIGIN}/en/" />\n  `
-    + `<link rel="alternate" hreflang="ru" href="${ORIGIN}/ru/" />\n  `
+    `<link rel="alternate" hreflang="en" href="${ORIGIN}/en" />\n  `
+    + `<link rel="alternate" hreflang="ru" href="${ORIGIN}/ru" />\n  `
     + `<link rel="alternate" hreflang="x-default" href="${ORIGIN}/" />\n  `
     + '<link rel="canonical"',
   );
@@ -199,8 +199,8 @@ function projectPage(shell, lang, project, detail, canonical, prefix) {
 function sitemap(urls) {
   const body = urls.map(({ loc, priority }) => `  <url>
     <loc>${loc}</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="${ORIGIN}/en/" />
-    <xhtml:link rel="alternate" hreflang="ru" href="${ORIGIN}/ru/" />
+    <xhtml:link rel="alternate" hreflang="en" href="${ORIGIN}/en" />
+    <xhtml:link rel="alternate" hreflang="ru" href="${ORIGIN}/ru" />
     <xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}/" />
     <changefreq>monthly</changefreq>
     <priority>${priority}</priority>
@@ -224,8 +224,8 @@ async function main() {
 
   const roots = [
     { lang: 'EN', path: 'index.html', loc: `${ORIGIN}/`, priority: '1.0' },
-    { lang: 'EN', path: 'en/index.html', loc: `${ORIGIN}/en/`, priority: '0.9' },
-    { lang: 'RU', path: 'ru/index.html', loc: `${ORIGIN}/ru/`, priority: '1.0' },
+    { lang: 'EN', path: 'en/index.html', loc: `${ORIGIN}/en`, priority: '0.9' },
+    { lang: 'RU', path: 'ru/index.html', loc: `${ORIGIN}/ru`, priority: '1.0' },
   ];
 
   for (const { lang, path, loc, priority } of roots) {
@@ -240,7 +240,7 @@ async function main() {
     for (const project of l.PROJECTS) {
       const detail = details[project.id];
       if (!detail) continue;
-      const loc = `${ORIGIN}/${prefix}project/${project.id}/`;
+      const loc = `${ORIGIN}/${prefix}project/${project.id}`;
       await emit(`${prefix}project/${project.id}/index.html`,
         projectPage(shell, lang, project, detail, loc, prefix));
       urls.push({ loc, priority: '0.7' });
