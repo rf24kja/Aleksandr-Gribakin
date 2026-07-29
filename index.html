@@ -211,7 +211,9 @@
     .section-overlay::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 1px 1px, var(--dot-color) 1px, transparent 0); background-size: 40px 40px; pointer-events: none; }
     .section-overlay.visible { opacity: 1; transform: scale(1); }
     .section-overlay.visible > * { pointer-events: auto; }
-    .section-overlay .section-title { font-family: var(--font-mono); font-size: clamp(9px, 1.2vw, 12px); letter-spacing: .3em; text-transform: uppercase; margin-bottom: 28px; opacity: .8; background: var(--gradient-title); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    /* These are <h2> so the document has a heading outline; the UA's own
+       margin and weight are not wanted. */
+    .section-overlay .section-title { font-family: var(--font-mono); font-size: clamp(9px, 1.2vw, 12px); font-weight: 400; letter-spacing: .3em; text-transform: uppercase; margin: 0 0 28px; opacity: .8; background: var(--gradient-title); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* Intro */
     .intro-text { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2; text-align: center; pointer-events: none; opacity: 0; transition: opacity 1s; }
@@ -3391,17 +3393,17 @@
       <span class="accent">&lt;</span> ALEKSANDR GRIBAKIN <span class="accent">/&gt;</span>
       <button class="settings-gear" id="settingsGear" title="Settings" aria-label="Open settings">⚙</button>
     </h1>
-    <div class="sub" data-i18n="ROLE">Lead Full Stack Engineer &amp; System Architect</div>
+    <div class="sub" data-i18n="ROLE">Lead Full Stack &amp; DevOps Engineer</div>
     <div class="tagline" data-i18n="TAGLINE">15 Years in Code</div>
-    <div class="bio" data-i18n="BIO">Architecting distributed systems for 15 years. Fintech, ML fraud detection, real-time infrastructure. Go, Rust, Python, Kubernetes.</div>
+    <div class="bio" data-i18n="BIO">Fifteen years building and scaling distributed systems, across the industry’s move from bare-metal servers and monoliths to cloud-native, Kubernetes and GitOps. I take on the work teams postpone: technical debt, CI/CD built from nothing, and keeping things up.</div>
     <div class="stack-tags">
-      <span class="stack-tag">Go</span>
-      <span class="stack-tag">Rust</span>
-      <span class="stack-tag">Python</span>
-      <span class="stack-tag">K8s</span>
+      <span class="stack-tag">Kubernetes</span>
+      <span class="stack-tag">Terraform</span>
+      <span class="stack-tag">Docker</span>
+      <span class="stack-tag">GitLab CI</span>
       <span class="stack-tag">PostgreSQL</span>
-      <span class="stack-tag">React</span>
-      <span class="stack-tag">TypeScript</span>
+      <span class="stack-tag">Go</span>
+      <span class="stack-tag">Node.js</span>
     </div>
     <button class="intro-cta" data-scroll-to="ctaSection" data-i18n="FORM.SUBMIT">Initiate Consult</button>
   </div>
@@ -3439,7 +3441,7 @@
 
   <!-- Stats -->
   <div class="section-overlay" id="statsOverlay">
-    <div class="section-title" data-i18n="SECTION_TITLES.STATS">Impact By The Numbers</div>
+    <h2 class="section-title" data-i18n="SECTION_TITLES.STATS">Impact By The Numbers</h2>
     <!-- No aria-live here: the count-up used to announce every intermediate
          number. Each card is a button whose accessible name carries the final
          value instead. -->
@@ -3448,13 +3450,13 @@
 
   <!-- Career -->
   <div class="section-overlay" id="careerOverlay">
-    <div class="section-title" data-i18n="SECTION_TITLES.CAREER">Career Timeline</div>
+    <h2 class="section-title" data-i18n="SECTION_TITLES.CAREER">Career Timeline</h2>
     <div class="career-list" id="careerList"></div>
   </div>
 
   <!-- Projects -->
   <div class="section-overlay" id="projectsOverlay">
-    <div class="section-title" data-i18n="SECTION_TITLES.PROJECTS">Projects &amp; Impact</div>
+    <h2 class="section-title" data-i18n="SECTION_TITLES.PROJECTS">Projects &amp; Impact</h2>
     <div class="cat-tabs" id="catTabs"></div>
     <div class="projects-dash" id="projectsDash"></div>
     <div class="projects-grid" id="projectsGrid"></div>
@@ -3462,7 +3464,7 @@
 
   <!-- Achievements -->
   <div class="section-overlay" id="achievementsOverlay">
-    <div class="section-title" data-i18n="SECTION_TITLES.ACHIEVEMENTS">Milestones &amp; Recognition</div>
+    <h2 class="section-title" data-i18n="SECTION_TITLES.ACHIEVEMENTS">Milestones &amp; Recognition</h2>
     <div class="achievements-grid" id="achievementsGrid"></div>
   </div>
 
