@@ -2410,8 +2410,11 @@
     #desktop-wallpaper { flex:1;background:radial-gradient(ellipse at 30% 30%,#5e2750 0%,#3a3a3a 50%,#2d2d2d 100%);position:relative;overflow:hidden }
     #desktop-wallpaper::before { content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 80%,rgba(233,84,32,.08) 0%,transparent 60%);pointer-events:none }
     #desktop-icons { position:absolute;top:16px;left:16px;display:flex;flex-direction:column;flex-wrap:wrap;gap:4px;max-height:calc(100% - 60px) }
-    .desk-icon { display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;width:80px;cursor:pointer;border-radius:6px;transition:background .15s }
+    /* Now a <button> so it can be focused; the UA chrome has to go or it
+       stops looking like a desktop icon. */
+    .desk-icon { display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;width:80px;cursor:pointer;border-radius:6px;transition:background .15s;background:none;border:none;color:inherit;font:inherit;text-align:center }
     .desk-icon:hover { background:rgba(255,255,255,.08) }
+    .desk-icon:focus-visible { outline:2px solid var(--ubuntu-accent, #e95420);outline-offset:2px }
     .desk-icon:active { background:rgba(255,255,255,.12) }
     .desk-icon-icon { width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.04);transition:background .2s }
     .desk-icon:hover .desk-icon-icon { background:rgba(233,84,32,.15) }

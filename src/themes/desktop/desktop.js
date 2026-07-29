@@ -26,7 +26,6 @@ const SVG = {
   career: '<svg viewBox="0 0 48 48" fill="none" stroke="#fbbb2d" stroke-width="1.5" width="28" height="28"><rect x="6" y="14" width="36" height="26" rx="3"/><path d="M34 14V8a2 2 0 0 0-2-2H16a2 2 0 0 0-2 2v6"/><circle cx="24" cy="28" r="5" fill="#fbbb2d"/></svg>',
   projects: '<svg viewBox="0 0 48 48" fill="none" stroke="#888" stroke-width="1.5" width="28" height="28"><path d="M42 38a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h12l4 6h16a2 2 0 0 1 2 2z"/></svg>',
   achievements: '<svg viewBox="0 0 48 48" fill="none" stroke="#fbbb2d" stroke-width="1.5" width="28" height="28"><polygon points="24 4 28.4 17.2 42 18 31.4 27.4 34.6 41 24 33.6 13.4 41 16.6 27.4 6 18 19.6 17.2 24 4" stroke-linejoin="round"/></svg>',
-  aura: '<svg viewBox="0 0 48 48" fill="none" stroke="#888" stroke-width="1.5" width="28" height="28"><circle cx="24" cy="8" r="4"/><circle cx="8" cy="40" r="4"/><circle cx="40" cy="40" r="4"/><circle cx="24" cy="24" r="4"/><path d="M24 12v8M12 36l8-8M36 36l-8-8"/></svg>',
   mail: '<svg viewBox="0 0 48 48" fill="none" stroke="#e95420" stroke-width="1.5" width="28" height="28"><rect x="4" y="8" width="40" height="32" rx="4"/><path d="M4 12l20 16 20-16"/></svg>',
   settings: '<svg viewBox="0 0 48 48" fill="none" stroke="#888" stroke-width="1.5" width="28" height="28"><circle cx="24" cy="24" r="6"/><path d="M24 2v6m0 32v6M2 24h6m32 0h6M8.5 8.5l4.2 4.2m22.6 22.6l4.2 4.2M8.5 39.5l4.2-4.2m22.6-22.6l4.2-4.2" stroke-linecap="round"/></svg>',
 }
@@ -35,12 +34,14 @@ function registerApp(id, label, svg, contentFn, opts = {}) {
   apps.push({ id, label, svg, contentFn, ...opts })
 }
 
+// Buttons, not divs: as <div> these were unreachable without a mouse, which
+// made an entire mode keyboard-inaccessible.
 function renderDesktopIcons(container) {
   container.innerHTML = apps.map(a => `
-    <div class="desk-icon" data-app="${a.id}">
+    <button type="button" class="desk-icon" data-app="${a.id}">
       ${appIcon(a.svg)}
       <span class="desk-icon-label">${a.label}</span>
-    </div>
+    </button>
   `).join('')
 }
 
@@ -242,16 +243,6 @@ function openDetail(token) {
   requestAnimationFrame(() => animateMetricGrid(document.getElementById('desktop-windows')))
 }
 
-function renderAura() {
-  return `
-    <div class="wb-title">Aura-Omnimesh</div>
-    <div class="wb-section-title" style="color:#2ecc71">Coming Soon</div>
-    <hr class="wb-divider">
-    <div class="wb-text">Advanced monitoring mesh for distributed systems with real-time topology visualization, intelligent alerting, and predictive analytics.</div>
-    <div class="wb-text" style="margin-top:8px;opacity:.5">Stack: Go, Rust, WebAssembly, D3.js, WebRTC</div>
-  `
-}
-
 function renderMail() {
   return `
     <div class="wb-title">${_('FORM.SUBMIT')}</div>
@@ -308,7 +299,6 @@ export function initDesktop(appState) {
   registerApp('career', _('CAREER_TITLE') || 'Career', SVG.career, renderCareer, { width: 600, height: 440 })
   registerApp('projects', _('PROJECTS_TITLE') || 'Projects', SVG.projects, renderProjects, { width: 640, height: 440 })
   registerApp('achievements', _('ACHIEVEMENTS_TITLE') || 'Achievements', SVG.achievements, renderAchievements, { width: 560, height: 400 })
-  registerApp('aura', 'Aura-Omnimesh', SVG.aura, renderAura, { width: 480, height: 340 })
   registerApp('mail', _('MAIL') || 'Mail', SVG.mail, renderMail, { width: 460, height: 400 })
   registerApp('settings', _('SETTINGS') || 'Settings', SVG.settings, renderSettings, { width: 400, height: 300 })
 
@@ -365,6 +355,16 @@ export function initDesktop(appState) {
     if (!tapToOpen()) return
     const icon = e.target.closest('.desk-icon')
     if (icon) openApp(icon.dataset.app)
+  })
+
+  // A focused icon opens on Enter or Space. Pointer users get double-click on
+  // a desktop and single tap on a touch screen; neither helps a keyboard.
+  icons?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return
+    const icon = e.target.closest('.desk-icon')
+    if (!icon) return
+    e.preventDefault()
+    openApp(icon.dataset.app)
   })
 
   startMenu?.addEventListener('click', (e) => {
