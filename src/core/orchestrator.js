@@ -37,6 +37,7 @@ export default class PortfolioOrchestrator {
     this._wireCoffeeEgg();
     this._wireProjectClicks();
     this._wireCareerAchClicks();
+    this._routeFromPath();
     this._wireHashRouter();
     this._wireSEOTags();
     this._updateLangToggleText();
@@ -674,6 +675,27 @@ export default class PortfolioOrchestrator {
         history.replaceState(null, '', `#/achievement/${idx}`);
       }
     });
+  }
+
+  /**
+   * Adopts a prerendered project URL into the route the router already owns.
+   *
+   * /project/<id>/ and /ru/project/<id>/ are real documents, so each project is
+   * one indexable URL with its own canonical instead of seventeen sharing the
+   * homepage. In a browser they are still this single page: the path becomes
+   * the hash route, which means opening, closing and the prev/next arrows all
+   * keep working without a second code path. The prerendered copy is dropped
+   * first — it exists for readers and crawlers without JavaScript, and would
+   * otherwise sit underneath the panel showing the same text twice.
+   *
+   * Runs before the router's own first checkHash(), so that call picks it up.
+   */
+  _routeFromPath() {
+    const m = window.location.pathname.match(/^\/(?:(en|ru)\/)?project\/([^/]+)\/?$/i);
+    if (!m) return;
+    document.querySelectorAll('[data-prerendered]').forEach((el) => el.remove());
+    const base = m[1] ? `/${m[1].toLowerCase()}/` : '/';
+    history.replaceState(null, '', `${base}#/project/${m[2]}`);
   }
 
   _wireHashRouter() {

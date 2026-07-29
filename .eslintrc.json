@@ -1,16 +1,42 @@
 {
   "root": true,
-  "env": { "browser": true, "es2022": true },
-  "parserOptions": { "ecmaVersion": "latest", "sourceType": "module" },
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
   "extends": "eslint:recommended",
   "rules": {
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-    "no-empty": ["error", { "allowEmptyCatch": true }]
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "no-empty": [
+      "error",
+      {
+        "allowEmptyCatch": true
+      }
+    ]
   },
   "overrides": [
     {
-      "files": ["api/**/*.js", "telegram-bot.js", "*.cjs", "vite.config.js"],
-      "env": { "node": true, "browser": false },
+      "files": [
+        "api/**/*.js",
+        "scripts/**/*.js",
+        "telegram-bot.js",
+        "*.cjs",
+        "vite.config.js"
+      ],
+      "env": {
+        "node": true,
+        "browser": false
+      },
       "rules": {
         "no-control-regex": "off"
       }
