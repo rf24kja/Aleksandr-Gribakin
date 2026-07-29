@@ -11,6 +11,42 @@ const RATE_WINDOW = 60_000;
 const MAX_PER_IP = 5;
 const MAX_PER_EMAIL = 2;
 
+// Resend rejects a From address on a domain that is not verified in the
+// account, and dev24.pro does not resolve — so the previous hardcoded
+// noreply@dev24.pro would have failed every send even with a valid key.
+// resend.dev is Resend's shared sender: it needs no DNS and delivers to the
+// account owner's own address, which is exactly who RECIPIENT is. Set
+// MAIL_FROM once a domain is actually verified.
+const SENDER = process.env.MAIL_FROM || 'onboarding@resend.dev';
+
+// The UI sends X-Locale; answering in English to a Russian visitor is jarring
+// when the message is the one thing that tells them what to do next.
+const MESSAGES = {
+  EN: {
+    rate: 'Too many requests. Please try again in a minute.',
+    rateEmail: 'Too many requests from this email. Please try again in a minute.',
+    badJson: 'Invalid JSON.',
+    validation: 'Invalid or incomplete payload.',
+    notConfigured: `Mail delivery is not configured. Please write to ${RECIPIENT} directly.`,
+    delivery: `Transmission failed. Please write to ${RECIPIENT} directly.`,
+    success: 'Message delivered. I will respond within 24 hours.',
+  },
+  RU: {
+    rate: 'Слишком много запросов. Попробуйте через минуту.',
+    rateEmail: 'Слишком много запросов с этого адреса. Попробуйте через минуту.',
+    badJson: 'Некорректный JSON.',
+    validation: 'Данные заполнены не полностью или неверно.',
+    notConfigured: `Отправка почты не настроена. Напишите напрямую на ${RECIPIENT}.`,
+    delivery: `Отправить не удалось. Напишите напрямую на ${RECIPIENT}.`,
+    success: 'Сообщение отправлено. Отвечу в течение 24 часов.',
+  },
+};
+
+function messages(request) {
+  const tag = (request.headers.get('x-locale') || 'EN').trim().slice(0, 2).toUpperCase();
+  return MESSAGES[tag] || MESSAGES.EN;
+}
+
 // Best-effort only. Edge isolates are per-region and short-lived, so this
 // catches bursts from a single client but is not a substitute for a shared
 // store (KV/Upstash) if abuse becomes a real problem.
@@ -92,20 +128,21 @@ export default async function handler(request) {
 
   const start = Date.now();
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const m = messages(request);
 
   if (!hit(ipMap, ip, MAX_PER_IP, start)) {
-    return json({ error: 'rate_limit', message: 'Too many requests.', retryAfter: 60 }, 429);
+    return json({ error: 'rate_limit', message: m.rate, retryAfter: 60 }, 429);
   }
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return json({ error: 'bad_request', message: 'Invalid JSON' }, 400);
+    return json({ error: 'bad_request', message: m.badJson }, 400);
   }
 
   // Honeypot: pretend success so bots do not learn they were caught.
-  if (clean(body._website, 64)) return json({ success: true, message: 'Message delivered.' });
+  if (clean(body._website, 64)) return json({ success: true, message: m.success });
 
   const name = clean(body.name, 64);
   const email = clean(body.email, 254).toLowerCase();
@@ -114,11 +151,11 @@ export default async function handler(request) {
   // Mirrors src/lib/validation.js so client and server agree on what is valid.
   // The recipient is a server-side constant — it is never taken from the body.
   if (name.length < 2 || !EMAIL_RE.test(email) || message.length < 10) {
-    return json({ error: 'validation', message: 'Invalid or incomplete payload.' }, 400);
+    return json({ error: 'validation', message: m.validation }, 400);
   }
 
   if (!hit(emailMap, email, MAX_PER_EMAIL, start)) {
-    return json({ error: 'rate_limit', message: 'Too many requests from this email.' }, 429);
+    return json({ error: 'rate_limit', message: m.rateEmail }, 429);
   }
 
   const text = [
@@ -141,7 +178,7 @@ export default async function handler(request) {
     console.error('[Consult] No delivery channel configured — set RESEND_API_KEY.');
     return json({
       error: 'not_configured',
-      message: `Mail delivery is not configured. Please write to ${RECIPIENT} directly.`,
+      message: m.notConfigured,
       recipient: RECIPIENT,
     }, 503);
   }
@@ -158,7 +195,7 @@ export default async function handler(request) {
         },
         body: JSON.stringify({
           to: RECIPIENT,
-          from: 'noreply@dev24.pro',
+          from: SENDER,
           reply_to: email,
           subject: `[Consult] ${name}`,
           text,
@@ -177,10 +214,10 @@ export default async function handler(request) {
   if (!delivered) {
     return json({
       error: 'delivery',
-      message: `Transmission failed. Please write to ${RECIPIENT} directly.`,
+      message: m.delivery,
       recipient: RECIPIENT,
     }, 502);
   }
 
-  return json({ success: true, message: 'Message delivered. I will respond within 24 hours.' });
+  return json({ success: true, message: m.success });
 }
