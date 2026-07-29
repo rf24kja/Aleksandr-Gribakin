@@ -734,7 +734,12 @@ export default class PortfolioOrchestrator {
           return;
         }
       }
-      if (h && !handled) {
+      // Only an app route can 404. Anything else is a plain anchor — and the
+      // CTA itself pushes #ctaSection, so treating every unmatched hash as a
+      // missing page meant clicking it and then switching mode buried the site
+      // under a full-screen 404 at z-index 9997. An anchor with no target in
+      // this mode is simply nothing to scroll to.
+      if (h && !handled && /^#\//.test(h)) {
         document.getElementById('page404').style.display = 'flex';
         this._applyI18n();
         return;
