@@ -66,3 +66,51 @@ test('the settings panel opens, is translated, and switches theme', async ({ pag
     .poll(async () => page.getAttribute('html', 'data-theme'))
     .not.toBe(before);
 });
+
+test('the settings options each get a full row rather than wrapping', async ({ page }) => {
+  // On a phone the three interface options broke 2 + 1: "Рабочий стол" does not
+  // fit beside two siblings in a 360px card, leaving one button stranded.
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.setItem('portfolio-mode', 'business');
+    localStorage.setItem('portfolio-lang', 'RU');
+  });
+  await page.goto(`/?t=${Date.now()}`);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ru', { timeout: 15_000 });
+
+  await page.locator('#settingsGear').click();
+  const popup = page.locator('#settingsPopup');
+  await expect(popup).toBeVisible();
+
+  const tops = await popup.locator('.settings-mode-group .settings-opt')
+    .evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+  expect(tops.length).toBe(3);
+  // One row each: three distinct offsets, none shared.
+  expect(new Set(tops).size).toBe(3);
+
+  const widths = await popup.locator('.settings-mode-group .settings-opt')
+    .evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().width)));
+  expect(new Set(widths).size, 'every option is the same width').toBe(1);
+});
+
+test('the desktop settings window is translated too', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.setItem('portfolio-mode', 'desktop');
+    localStorage.setItem('portfolio-lang', 'RU');
+  });
+  await page.goto(`/?t=${Date.now()}`);
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'desktop', { timeout: 15_000 });
+
+  await page.locator('.desk-icon[data-app="settings"]').dblclick();
+  const win = page.locator('#win-settings');
+  await expect(win).toBeVisible();
+
+  // The heading read "Mode" and the buttons capitalised the raw mode id, so
+  // this window stayed English however the site was set.
+  const text = await win.innerText();
+  expect(text).not.toMatch(/\bMode\b/);
+  expect(text).not.toMatch(/\bBusiness\b|\bDesktop\b|\bTerminal\b/);
+  expect(text).toMatch(/Бизнес/);
+  expect(text).toMatch(/Терминал/);
+});

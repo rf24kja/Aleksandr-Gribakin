@@ -270,16 +270,22 @@ function renderMail() {
   `
 }
 
+// The heading read "Mode" and the buttons capitalised the raw mode id, so the
+// desktop settings window stayed in English however the site was set.
+function modeLabel(mode) {
+  return _(`MODE_${mode.toUpperCase()}`) || mode.charAt(0).toUpperCase() + mode.slice(1)
+}
+
 function renderSettings() {
   const cur = getMode()
   return `
     <div class="wb-title">${_('SETTINGS') || 'Settings'}</div>
     <hr class="wb-divider">
     <div class="wb-section">
-      <div class="wb-section-title">Mode</div>
+      <div class="wb-section-title">${_('SETTINGS_INTERFACE') || 'Interface'}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         ${MODES.map(m => `
-          <button class="stg-mode-btn" data-mode="${m}" style="padding:6px 14px;background:${cur === m ? 'var(--ubuntu-accent)' : 'rgba(255,255,255,.08)'};border:none;border-radius:4px;color:inherit;font-family:inherit;font-size:11px;cursor:pointer;transition:background .15s">${m.charAt(0).toUpperCase() + m.slice(1)}</button>
+          <button class="stg-mode-btn" data-mode="${m}" style="padding:6px 14px;background:${cur === m ? 'var(--ubuntu-accent)' : 'rgba(255,255,255,.08)'};border:none;border-radius:4px;color:inherit;font-family:inherit;font-size:11px;cursor:pointer;transition:background .15s">${modeLabel(m)}</button>
         `).join('')}
       </div>
     </div>

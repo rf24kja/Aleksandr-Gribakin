@@ -503,16 +503,29 @@
       color: var(--text-dim);
       margin-bottom: 8px;
     }
-    .settings-theme-group,
-    .settings-mode-group {
-      display: flex;
+    /* These were a wrapping flex row. The card is 360px at its widest, and
+       "Рабочий стол" does not fit beside two siblings, so the three interface
+       options broke 2 + 1 and left one button stranded on its own line. A grid
+       makes the arrangement deliberate: themes are two short labels and sit
+       side by side, modes get a row each and a full-width target with them. */
+    .settings-theme-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 6px;
-      flex-wrap: wrap;
+    }
+    .settings-mode-group {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
     }
     .settings-opt {
       font-family: var(--font-mono);
       font-size: 11px;
       padding: 6px 14px;
+      text-align: center;
+      /* Tells the browser this is a tap target, not a pinch/double-tap
+         surface, which removes the delay iOS otherwise adds before the click. */
+      touch-action: manipulation;
       border: 1px solid var(--border);
       border-radius: 6px;
       background: transparent;
@@ -2591,6 +2604,11 @@
     }
     .project-card .card-tag { display: inline-block; }
     .career-item .role-company .company { display: inline; }
+
+    /* No double-tap zoom on controls: iOS waits ~300ms to see whether a tap
+       is the first of two, and that delay reads as an unresponsive button. */
+    button, a[href], .desk-icon, .wb-row, .tsh-chip, .settings-opt, .stat-item,
+    .project-card, .career-item, .achievement-item { touch-action: manipulation; }
 
     /* Prerendered cards are <a>; the runtime swaps them for <button> on
        boot. The two have to be indistinguishable, so the link chrome goes. */
