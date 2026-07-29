@@ -395,12 +395,33 @@
       transition: color .3s, transform .4s;
       display: inline-flex; align-items: center; justify-content: center;
     }
-    /* The gear used to spin forever. That is motion nobody asked for, it keeps
-       a compositor layer alive on every page, and because a rotating glyph's
-       bounding box changes every frame the control was never geometrically
-       still — automated clicks could not settle on it. It turns on hover and
-       focus instead, where the movement means something. */
-    .settings-gear:hover, .settings-gear:focus-visible { color: var(--text-bright); transform: rotate(90deg); }
+    /* Without any movement nothing marks this as a control, so it announces
+       itself — but on the glyph inside, never on the button. Rotating the button
+       changes its own bounding box every frame, which is what made the old
+       perpetual spin impossible to click reliably.
+       Two turns shortly after load draw the eye, then it rests: a permanent
+       animation is a compositor layer kept alive for the life of the page, and
+       after the first look it is only a distraction. Hover and focus turn it
+       again, on demand. */
+    .settings-gear .gear-glyph {
+      display: inline-block;
+      animation: gearHint 1.5s ease-in-out .9s 2 both;
+    }
+    .settings-gear:hover .gear-glyph,
+    .settings-gear:focus-visible .gear-glyph {
+      transform: rotate(120deg);
+    }
+    .settings-gear .gear-glyph { transition: transform .45s cubic-bezier(.4,0,.2,1); }
+    .settings-gear:hover, .settings-gear:focus-visible { color: var(--text-bright); }
+    @keyframes gearHint {
+      0%   { transform: rotate(0deg); }
+      70%  { transform: rotate(320deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Someone who has asked for less motion gets the resting state only. */
+    @media (prefers-reduced-motion: reduce) {
+      .settings-gear .gear-glyph { animation: none; transition: none; }
+    }
 
     /* Business mode — gear next to name */
     [data-mode="business"] .settings-gear {
@@ -3408,7 +3429,7 @@
   </div>
 
   <div id="ui-overlay">
-    <button class="settings-gear" id="settingsGearUI" title="Settings" aria-label="Open settings">⚙</button>
+    <button class="settings-gear" id="settingsGearUI" title="Settings" aria-label="Open settings"><span class="gear-glyph" aria-hidden="true">⚙</span></button>
     <button class="lang-toggle" data-lang-switch></button>
     <div class="coffee-egg" id="coffeeEgg" title="☕">☕</div>
   </div>
@@ -3426,7 +3447,7 @@
   <div class="intro-text" id="introText">
     <h1>
       <span class="accent">&lt;</span> ALEKSANDR GRIBAKIN <span class="accent">/&gt;</span>
-      <button class="settings-gear" id="settingsGear" title="Settings" aria-label="Open settings">⚙</button>
+      <button class="settings-gear" id="settingsGear" title="Settings" aria-label="Open settings"><span class="gear-glyph" aria-hidden="true">⚙</span></button>
     </h1>
     <div class="sub" data-i18n="ROLE">Lead Full Stack &amp; DevOps Engineer</div>
     <div class="tagline" data-i18n="TAGLINE">15 Years in Code</div>
@@ -3559,7 +3580,7 @@
       <div id="taskbar-windows"></div>
       <div id="system-tray">
         <span id="tray-clock"></span>
-        <button class="settings-gear" id="settingsGearDesk" title="Settings" aria-label="Open settings">⚙</button>
+        <button class="settings-gear" id="settingsGearDesk" title="Settings" aria-label="Open settings"><span class="gear-glyph" aria-hidden="true">⚙</span></button>
       </div>
     </div>
   </div>

@@ -394,7 +394,7 @@ function buildDom(root) {
              except the mode command. Both reuse the existing delegated
              handlers via their class / data attribute. -->
         <button type="button" class="lang-toggle tsh-ctl" data-lang-switch></button>
-        <button type="button" class="settings-gear tsh-ctl" title="Settings" aria-label="Open settings">⚙</button>
+        <button type="button" class="settings-gear tsh-ctl" title="Settings" aria-label="Open settings"><span class="gear-glyph" aria-hidden="true">⚙</span></button>
       </div>
       <div class="tsh-body" id="tshBody">
         <div class="tsh-log" id="tshLog" role="log" aria-live="polite" aria-atomic="false"></div>

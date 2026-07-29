@@ -210,3 +210,40 @@ test('the consult endpoint answers directly, with no redirect in the way', async
   // serverless functions at all. What matters is that nothing redirects.
   expect([301, 302, 307, 308]).not.toContain(res.status());
 });
+
+test('the gear announces itself without becoming unclickable', async ({ page }) => {
+  // It span forever, which was motion nobody asked for and left the control
+  // geometrically unstable — a rotating box changes its own bounds every frame.
+  // Removing it entirely lost the only cue that this is a control. So the glyph
+  // inside turns, briefly, and the button it sits in never moves.
+  await boot(page, { mode: 'business' });
+  const gear = page.locator('#settingsGear');
+  const glyph = gear.locator('.gear-glyph');
+
+  const anim = await glyph.evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return { name: cs.animationName, count: cs.animationIterationCount, duration: cs.animationDuration };
+  });
+  expect(anim.name).not.toBe('none');
+  // Bounded: a permanent animation keeps a compositor layer alive for the life
+  // of the page and stops being a cue after the first look.
+  expect(anim.count).not.toBe('infinite');
+
+  // The button's own size must not change while the glyph turns. Its position
+  // legitimately can — the gear sits inside the <h1>, and a webfont swapping in
+  // reflows that line — so only the dimensions are asserted here.
+  await page.evaluate(() => document.fonts?.ready);
+  const sizes = [];
+  for (let i = 0; i < 5; i += 1) {
+    const b = await gear.boundingBox();
+    sizes.push([Math.round(b.width), Math.round(b.height)].join('x'));
+    await page.waitForTimeout(120);
+  }
+  expect(new Set(sizes).size, `the button must not resize while the glyph turns: ${sizes.join(' | ')}`).toBe(1);
+
+  // The real guard. With the old animation on the button itself, Playwright
+  // waited for the element to hold still, retried 54 times and gave up — the
+  // control was never clickable by anything that checks before acting.
+  await gear.click({ timeout: 5_000 });
+  await expect(page.locator('#settingsPopup')).toBeVisible();
+});
