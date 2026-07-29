@@ -28,3 +28,7 @@ skills-lock.json
 
 # Duplicate of public/img_2025_12_23.png — public/ is the one Vite serves
 /img_2025_12_23.png
+test-results/
+playwright-report/
+blob-report/
+.playwright/

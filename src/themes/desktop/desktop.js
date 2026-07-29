@@ -34,30 +34,36 @@ function registerApp(id, label, svg, contentFn, opts = {}) {
   apps.push({ id, label, svg, contentFn, ...opts })
 }
 
+// `label` is a function so it is resolved at render time, not at registration.
+// As a plain string it froze the language the app happened to boot in.
+function appLabel(a) {
+  return typeof a.label === 'function' ? a.label() : a.label
+}
+
 // Buttons, not divs: as <div> these were unreachable without a mouse, which
 // made an entire mode keyboard-inaccessible.
 function renderDesktopIcons(container) {
   container.innerHTML = apps.map(a => `
     <button type="button" class="desk-icon" data-app="${a.id}">
       ${appIcon(a.svg)}
-      <span class="desk-icon-label">${a.label}</span>
+      <span class="desk-icon-label">${appLabel(a)}</span>
     </button>
   `).join('')
 }
 
 function renderStartMenu(container) {
   container.innerHTML = apps.map(a => `
-    <div class="start-app-item" data-app="${a.id}">
+    <button type="button" class="start-app-item" data-app="${a.id}">
       <span class="sai-icon">${a.svg}</span>
-      ${a.label}
-    </div>
+      ${appLabel(a)}
+    </button>
   `).join('')
 }
 
 function openApp(id) {
   const app = apps.find(a => a.id === id)
   if (!app) return
-  wm.open({ id: 'win-' + id, title: app.label, icon: app.svg, content: app.contentFn(), width: app.width || 520, height: app.height || 380 })
+  wm.open({ id: 'win-' + id, title: appLabel(app), icon: app.svg, content: app.contentFn(), width: app.width || 520, height: app.height || 380 })
 }
 
 function updateTaskbar(state) {
@@ -295,12 +301,12 @@ export function initDesktop(appState) {
   _inited = true
   state = appState
 
-  registerApp('about', _('ABOUT') || 'About', SVG.about, renderAbout)
-  registerApp('career', _('CAREER_TITLE') || 'Career', SVG.career, renderCareer, { width: 600, height: 440 })
-  registerApp('projects', _('PROJECTS_TITLE') || 'Projects', SVG.projects, renderProjects, { width: 640, height: 440 })
-  registerApp('achievements', _('ACHIEVEMENTS_TITLE') || 'Achievements', SVG.achievements, renderAchievements, { width: 560, height: 400 })
-  registerApp('mail', _('MAIL') || 'Mail', SVG.mail, renderMail, { width: 460, height: 400 })
-  registerApp('settings', _('SETTINGS') || 'Settings', SVG.settings, renderSettings, { width: 400, height: 300 })
+  registerApp('about', () => _('ABOUT') || 'About', SVG.about, renderAbout)
+  registerApp('career', () => _('CAREER_TITLE') || 'Career', SVG.career, renderCareer, { width: 600, height: 440 })
+  registerApp('projects', () => _('PROJECTS_TITLE') || 'Projects', SVG.projects, renderProjects, { width: 640, height: 440 })
+  registerApp('achievements', () => _('ACHIEVEMENTS_TITLE') || 'Achievements', SVG.achievements, renderAchievements, { width: 560, height: 400 })
+  registerApp('mail', () => _('MAIL') || 'Mail', SVG.mail, renderMail, { width: 460, height: 400 })
+  registerApp('settings', () => _('SETTINGS') || 'Settings', SVG.settings, renderSettings, { width: 400, height: 300 })
 
   const iconsContainer = document.getElementById('desktop-icons')
   const startMenu = document.getElementById('start-menu')

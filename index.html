@@ -2434,7 +2434,10 @@
     .tray-btn:hover { opacity:1;background:rgba(255,255,255,.1) }
     #start-menu { position:absolute;bottom:46px;left:4px;background:var(--ubuntu-start-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px 8px 0 0;padding:8px;min-width:240px;display:none;z-index:300;box-shadow:0 -4px 24px rgba(0,0,0,.5) }
     #start-menu.open { display:block }
-    .start-app-item { display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:all .15s;font-size:13px;color:var(--ubuntu-text) }
+    /* Now a <button>, same reason as the desktop icons: as a <div> it could
+       not be focused. UA chrome stripped, full width so it still fills the menu. */
+    .start-app-item { display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:all .15s;font-size:13px;color:var(--ubuntu-text);width:100%;background:none;border:none;font-family:inherit;text-align:left }
+    .start-app-item:focus-visible { outline:2px solid var(--ubuntu-accent, #e95420);outline-offset:-2px }
     .start-app-item:hover { background:rgba(233,84,32,.15) }
     .start-app-item .sai-icon { font-size:20px;width:28px;text-align:center;opacity:.8 }
     #desktop-windows { position:absolute;inset:0 0 42px;pointer-events:none }

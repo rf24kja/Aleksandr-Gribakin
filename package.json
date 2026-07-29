@@ -11,16 +11,19 @@
     "bot": "node telegram-bot.js",
     "lint": "eslint src/",
     "format": "prettier --write src/",
-    "prerender": "node scripts/prerender.js"
+    "prerender": "node scripts/prerender.js",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
   },
   "dependencies": {
-    "three": "^0.160.0",
-    "gsap": "^3.12.2"
+    "gsap": "^3.12.2",
+    "three": "^0.160.0"
   },
   "devDependencies": {
-    "vite": "^5.0.0",
+    "@playwright/test": "^1.62.0",
     "eslint": "^8.56.0",
-    "prettier": "^3.2.0"
+    "prettier": "^3.2.0",
+    "vite": "^5.0.0"
   },
   "browserslist": {
     "production": [
