@@ -365,6 +365,21 @@ function renderChips() {
   shell.hints.innerHTML = CHIPS
     .map((c) => `<button type="button" class="tsh-chip" data-cmd="${esc(c)}">${esc(c)}</button>`)
     .join('');
+  syncHintFade();
+}
+
+/**
+ * Marks the chip strip while it still has something to scroll to.
+ *
+ * On a phone the strip is one scrolling row, and the only cue that it scrolls
+ * is a faded right edge. Keeping that fade on permanently would dim the last
+ * chip once there is nothing left to reach, which reads as disabled.
+ */
+function syncHintFade() {
+  const el = shell.hints;
+  if (!el) return;
+  const max = el.scrollWidth - el.clientWidth;
+  el.classList.toggle('has-more', max > 4 && el.scrollLeft < max - 4);
 }
 
 function buildDom(root) {
@@ -446,6 +461,16 @@ function wire(root) {
     shell.input.focus();
   });
 
+  // Focus would move to the chip and dismiss the on-screen keyboard, which the
+  // focus() above then summons again — the whole window resizing twice per tap.
+  // Preventing the synthesised mousedown keeps focus on the input. Deliberately
+  // not pointerdown: that is the event the strip's own scroll gesture rides on.
+  shell.hints.addEventListener('mousedown', (e) => {
+    if (e.target.closest('[data-cmd]')) e.preventDefault();
+  });
+
+  shell.hints.addEventListener('scroll', syncHintFade, { passive: true });
+
   trackViewport(root);
 
   const clock = root.querySelector('#tshClock');
@@ -479,6 +504,13 @@ function trackViewport(root) {
     win.style.height = `${vv.height}px`;
     win.style.width = `${vv.width}px`;
     win.style.transform = `translate(${vv.offsetLeft}px, ${vv.offsetTop}px)`;
+    // With the keyboard up the window loses roughly half its height, and the
+    // log — the only part worth reading — is what gets squeezed. This lets the
+    // chrome around it give up its padding for as long as the keyboard is
+    // there. 120px is well past any browser toolbar that also shrinks the
+    // visual viewport.
+    win.classList.toggle('is-kb', window.innerHeight - vv.height > 120);
+    syncHintFade();
     scrollToEnd();
   };
 

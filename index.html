@@ -3115,9 +3115,46 @@
       .tsh-inputline { padding-block: 10px 20px; }
       .tsh-titlebar { gap: 8px; padding: 8px 10px; }
       .tsh-title { font-size: 11px; }
-      .tsh-chip { min-height: 44px; font-size: 12px; }
-      .tsh-hints { padding: 8px 10px; gap: 5px; }
+      /* One scrolling row rather than a wrapped block. Ten chips wrapped to
+         three rows, which took about a third of the window — and with the
+         keyboard up, more room than the log they exist to drive. */
+      .tsh-hints {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+        padding: 6px 10px;
+        gap: 6px;
+      }
+      .tsh-hints::-webkit-scrollbar { display: none; }
+      .tsh-chip {
+        flex: none;
+        min-height: 44px;
+        font-size: 12px;
+        padding: 0 14px;
+      }
     }
+
+    /* Fades the trailing edge so the strip reads as scrollable instead of
+       clipped. Only while there is more to reach — a permanent fade would dim
+       the last chip and make it look disabled. */
+    .tsh-hints.has-more {
+      -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+      mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+    }
+
+    /* On-screen keyboard up. Everything that is not the log gives up padding:
+       the visitor is mid-command and needs to see the output above it. */
+    .tsh-window.is-kb .tsh-titlebar { padding-block: 4px; }
+    .tsh-window.is-kb .tsh-dots { display: none; }
+    .tsh-window.is-kb .tsh-body { padding-top: 8px; }
+    .tsh-window.is-kb .tsh-inputline { padding-block: 6px 8px; }
+    .tsh-window.is-kb .tsh-hints { padding-block: 4px; }
+    .tsh-window.is-kb .tsh-chip { min-height: 40px; }
+    /* The gear alone held the title bar at 49px. These two are secondary — the
+       command strip and the prompt keep their full targets. */
+    .tsh-window.is-kb button.lang-toggle.tsh-ctl { min-height: 36px; padding: 4px 8px; }
+    .tsh-window.is-kb button.settings-gear.tsh-ctl { min-height: 36px; min-width: 36px; padding: 2px 6px; }
     /* Below ~360px the window chrome cannot hold everything: the clock is the
        one part nothing depends on, and the title is decorative. */
     @media (max-width: 400px) {
