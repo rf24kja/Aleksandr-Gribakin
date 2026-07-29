@@ -11,6 +11,15 @@ const RATE_WINDOW = 60_000;
 const MAX_PER_IP = 5;
 const MAX_PER_EMAIL = 2;
 
+// Pasted env values routinely carry a trailing newline or wrapping quotes.
+// Either one makes the Authorization header invalid and Resend answers
+// 401 "API key is invalid", which reads like a wrong key rather than a
+// whitespace problem — so normalise every read.
+function env(name) {
+  const raw = process.env[name];
+  return typeof raw === 'string' ? raw.trim().replace(/^["']|["']$/g, '') : '';
+}
+
 // Resend rejects a From address on a domain that is not verified in the
 // account. dev24.pro is registered but its DKIM/SPF records are not published
 // yet, so the previously hardcoded noreply@dev24.pro would have failed every
@@ -18,7 +27,7 @@ const MAX_PER_EMAIL = 2;
 // no DNS and delivers to the account owner's own address, which is exactly who
 // RECIPIENT is. Switch MAIL_FROM to noreply@dev24.pro once Resend reports the
 // domain verified.
-const SENDER = process.env.MAIL_FROM || 'onboarding@resend.dev';
+const SENDER = env('MAIL_FROM') || 'onboarding@resend.dev';
 
 // The UI sends X-Locale; answering in English to a Russian visitor is jarring
 // when the message is the one thing that tells them what to do next.
@@ -84,9 +93,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Returns true only if Telegram actually accepted the message. */
 async function notifyTelegram({ name, email, message }) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (process.env.TELEGRAM_NOTIFY !== '1' || !token || !chatId) return false;
+  const token = env('TELEGRAM_BOT_TOKEN');
+  const chatId = env('TELEGRAM_CHAT_ID');
+  if (env('TELEGRAM_NOTIFY') !== '1' || !token || !chatId) return false;
   const text = [
     'New consult submission',
     '----------------',
@@ -111,8 +120,8 @@ async function notifyTelegram({ name, email, message }) {
 /** Which delivery channels are actually configured on this deployment. */
 function channels() {
   const out = [];
-  if (process.env.RESEND_API_KEY) out.push('email');
-  if (process.env.TELEGRAM_NOTIFY === '1' && process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
+  if (env('RESEND_API_KEY')) out.push('email');
+  if (env('TELEGRAM_NOTIFY') === '1' && env('TELEGRAM_BOT_TOKEN') && env('TELEGRAM_CHAT_ID')) {
     out.push('telegram');
   }
   return out;
@@ -186,12 +195,13 @@ export default async function handler(request) {
 
   let delivered = false;
 
-  if (process.env.RESEND_API_KEY) {
+  const resendKey = env('RESEND_API_KEY');
+  if (resendKey) {
     try {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          Authorization: `Bearer ${resendKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -202,7 +212,24 @@ export default async function handler(request) {
           text,
         }),
       });
-      if (!res.ok) throw new Error(`Email API: ${res.status} ${await res.text().catch(() => '')}`.trim());
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '');
+        if (res.status === 401) {
+          // Distinguish the two things a 401 actually means here, because the
+          // API's own wording ("API key is invalid") points at neither.
+          console.error(
+            '[Consult] Resend rejected RESEND_API_KEY. Confirm it is the full re_… '
+            + 'value, still active in the Resend dashboard, and set for the Production '
+            + 'environment of the deployment that is serving traffic.',
+          );
+        } else if (res.status === 403) {
+          console.error(
+            `[Consult] Resend refused to send from ${SENDER}. The shared resend.dev sender only `
+            + 'delivers to the address that owns the account; any other From needs a verified domain.',
+          );
+        }
+        throw new Error(`Email API: ${res.status} ${detail}`.trim());
+      }
       delivered = true;
     } catch (err) {
       console.error(`[Consult] Email delivery failed: ${err.message}`);
