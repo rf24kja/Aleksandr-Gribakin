@@ -24,7 +24,10 @@ export default class PortfolioOrchestrator {
   }
 
   async init() {
-    this.s.init({ active_language: this._detectLocale() });
+    // No override: the store works out the language from a stored choice, the
+    // URL and the browser, and passing anything here silently wins over all
+    // three — which is what _detectLocale used to do by returning a constant.
+    this.s.init();
 
     await     this._bootSequence();
     this._renderContent();
@@ -474,9 +477,6 @@ export default class PortfolioOrchestrator {
   }
 
   // --- Language ---
-  _detectLocale() {
-    return 'EN';
-  }
   // All of them: terminal mode renders a second toggle inside its title bar,
   // and querySelector only ever labelled the first one.
   _updateLangToggleText() {

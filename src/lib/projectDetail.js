@@ -1,5 +1,6 @@
 import PONYTAIL from '../config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../data/projects.js';
+import { snippetFor } from '../data/snippets.js';
 import { buildMetricScale } from './stats.js';
 import { renderMetricGrid, animateMetricGrid } from './statsUI.js';
 
@@ -11,10 +12,20 @@ function _r() {
   COLOR.bg = c(b ? '--b-bg2' : '--bg2') || '#0d0d14';
   COLOR.surface = c(b ? '--b-bg3' : '--bg3') || '#12121c';
   COLOR.accent = c(b ? '--b-accent' : '--accent');
-  COLOR.accent2 = c(b ? '--b-accent2' : '--accent2');
-  COLOR.accent3 = c(b ? '--b-accent3' : '--accent3');
-  COLOR.text = c(b ? '--b-text' : '--text');
-  COLOR.dim = `color-mix(in srgb, ${COLOR.text} 40%, transparent)`;
+  // The accent carries the highlighted result line and the prompt marker, so
+  // here it is text rather than a fill and needs the darker twin.
+  COLOR.accentText = (b && c('--b-accent-text')) || COLOR.accent;
+  // An undefined custom property resolves to '', and SVG treats an empty fill
+  // as black — which is invisible on a dark surface and was how a missing
+  // --b-accent2 went unnoticed in the light theme for so long.
+  COLOR.accent2 = c(b ? '--b-accent2' : '--accent2') || COLOR.accent;
+  COLOR.accent3 = c(b ? '--b-accent3' : '--accent3') || COLOR.accent;
+  COLOR.text = c(b ? '--b-text' : '--text') || '#222';
+  // Captions and code comments are content, not chrome. At 40% of the text
+  // colour they landed near 2:1 — the same opacity-as-dimming pattern that made
+  // the rest of the page unreadable. Business mode has a token sized for this;
+  // the other modes get a mix heavy enough to stay legible on their grounds.
+  COLOR.dim = (b && c('--b-text-mute')) || `color-mix(in srgb, ${COLOR.text} 72%, transparent)`;
   COLOR.border = c(b ? '--b-border' : '--border');
 }
 _r();
@@ -81,7 +92,7 @@ export function renderProjectPage(projectId) {
 
         <p class="pd-disclaimer">${l().DETAIL.REFERENCE_NOTE}</p>
 
-        <div class="pd-screenshot">${_renderScreenshot(p, detail)}</div>
+        <div class="pd-screenshot">${_renderScreenshot(p)}</div>
 
         <div class="pd-details">
           ${detail.details.map((para) => `<p class="pd-para">${para}</p>`).join('')}
@@ -135,179 +146,78 @@ function _renderLinks(links, detail) {
 }
 
 
-function _renderScreenshot(p, detail) {
-  const type = detail.screenshotType || 'dashboard';
-  const name = p.name;
+/**
+ * Renders the project's own artefact.
+ *
+ * This used to be one of five generic SVG mockups picked by `screenshotType`,
+ * shared across seventeen projects: ten showed the same terminal session down
+ * to the same pod hash, the "code" mockup showed a Rust validator with a
+ * Cargo.toml tree, and one leftover drew a blockchain. The dashboard carried
+ * headline numbers — 99.99%, 50K/s, 12M+ — belonging to no project on the
+ * site. Each project now supplies its own lines; see data/snippets.js.
+ */
+function _renderScreenshot(p) {
+  const snip = snippetFor(p.id);
+  if (!snip) return _svgPlaceholder(p.name);
+  return _svgSnippet(p.name, snip);
+}
 
-  switch (type) {
-    case 'terminal': return _svgTerminal(name);
-    case 'graph': return _svgGraph(name);
-    case 'code': return _svgCodeEditor(name);
-    case 'blocks': return _svgBlocks(name);
-    default: return _svgDashboard(name);
+// The snippets contain <, > and & (JSX, shell redirects, HTML types); SVG
+// <text> is XML, so they have to be escaped or the document stops parsing.
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+const LINE_H = 19;
+const TOP = 62;
+
+function _lineFill(kind) {
+  switch (kind) {
+    case 'c': return COLOR.dim;
+    case 'p': return COLOR.accent2;
+    case 'h': return COLOR.accentText;
+    case 'k': return COLOR.text;
+    default: return COLOR.text;
   }
 }
 
-function _svgDashboard(name) {
-  return `<svg class="pd-svg" viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg">
-    <rect width="600" height="340" rx="8" fill="${COLOR.surface}"/>
-    <rect x="0" y="0" width="600" height="32" rx="8" fill="${COLOR.bg}"/>
-    <circle cx="16" cy="16" r="5" fill="#ff5f57"/><circle cx="30" cy="16" r="5" fill="#febc2e"/><circle cx="44" cy="16" r="5" fill="#28c840"/>
-    <text x="300" y="21" text-anchor="middle" fill="${COLOR.dim}" font-size="10" font-family="monospace">${name} — Dashboard</text>
-    <rect x="12" y="44" width="140" height="80" rx="4" fill="${COLOR.bg}" stroke="${COLOR.border}" stroke-width=".5"/>
-    <text x="24" y="62" fill="${COLOR.dim}" font-size="8" font-family="monospace">METRIC A</text>
-    <text x="24" y="84" fill="${COLOR.accent}" font-size="18" font-family="monospace" font-weight="bold">99.99%</text>
-    <rect x="12" y="130" width="140" height="80" rx="4" fill="${COLOR.bg}" stroke="${COLOR.border}" stroke-width=".5"/>
-    <text x="24" y="148" fill="${COLOR.dim}" font-size="8" font-family="monospace">METRIC B</text>
-    <text x="24" y="170" fill="${COLOR.accent2}" font-size="18" font-family="monospace" font-weight="bold">50K/s</text>
-    <rect x="12" y="216" width="140" height="80" rx="4" fill="${COLOR.bg}" stroke="${COLOR.border}" stroke-width=".5"/>
-    <text x="24" y="234" fill="${COLOR.dim}" font-size="8" font-family="monospace">METRIC C</text>
-    <text x="24" y="256" fill="${COLOR.accent}" font-size="18" font-family="monospace" font-weight="bold">12M+</text>
-    <rect x="164" y="44" width="424" height="140" rx="4" fill="${COLOR.bg}" stroke="${COLOR.border}" stroke-width=".5"/>
-    <text x="176" y="62" fill="${COLOR.dim}" font-size="8" font-family="monospace">PERFORMANCE OVER TIME</text>
-    <polyline points="200,170 260,150 320,120 380,130 440,80 500,95 560,70" fill="none" stroke="${COLOR.accent}" stroke-width="1.5" opacity=".8"/>
-    <polyline points="200,170 260,155 320,140 380,145 440,120 500,130 560,105" fill="none" stroke="${COLOR.accent2}" stroke-width="1" opacity=".4"/>
-    <circle cx="440" cy="80" r="3" fill="${COLOR.accent}"/>
-    <rect x="164" y="192" width="424" height="104" rx="4" fill="${COLOR.bg}" stroke="${COLOR.border}" stroke-width=".5"/>
-    <text x="176" y="210" fill="${COLOR.dim}" font-size="8" font-family="monospace">RECENT ACTIVITY</text>
-    ${[0,1,2,3,4].map((i) => `<rect x="${180 + i * 82}" y="${240 - Math.random() * 30}" width="16" height="${30 + Math.random() * 30}" rx="2" fill="${COLOR.accent}" opacity=".${4 + i * 1}"/>`).join('')}
-    <rect x="164" y="304" width="200" height="24" rx="4" fill="rgba(0,212,255,.08)"/>
-    <text x="180" y="319" fill="${COLOR.accent}" font-size="10" font-family="monospace" font-weight="bold">System Healthy ▸</text>
+function _svgSnippet(name, snip) {
+  const isTerm = snip.kind === 'terminal';
+  const rows = snip.lines.slice(0, 11);
+  const height = TOP + rows.length * LINE_H + 30;
+
+  const body = rows.map((ln, i) => {
+    const y = TOP + i * LINE_H;
+    const fill = _lineFill(ln.k);
+    // A prompt line gets its marker drawn separately so the command itself
+    // keeps its own colour and the two never run together visually.
+    const lead = isTerm && ln.k === 'p'
+      ? `<tspan fill="${COLOR.accentText}">$ </tspan>`
+      : '';
+    const main = `<tspan fill="${fill}">${esc(ln.t)}</tspan>`;
+    const val = ln.v ? `<tspan fill="${COLOR.accent2}">${esc(ln.v)}</tspan>` : '';
+    const bg = ln.k === 'h'
+      ? `<rect x="14" y="${y - 13}" width="572" height="${LINE_H}" rx="3" fill="${COLOR.accent}" opacity=".08"/>`
+      : '';
+    return `${bg}<text x="20" y="${y}" font-size="11.5" font-family="monospace" xml:space="preserve">${lead}${main}${val}</text>`;
+  }).join('');
+
+  return `<svg class="pd-svg" viewBox="0 0 600 ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(name)}: ${esc(snip.caption)}">
+    <rect width="600" height="${height}" rx="8" fill="${COLOR.surface}"/>
+    <rect x="0" y="0" width="600" height="34" rx="8" fill="${COLOR.bg}"/>
+    <circle cx="16" cy="17" r="5" fill="#ff5f57"/><circle cx="30" cy="17" r="5" fill="#febc2e"/><circle cx="44" cy="17" r="5" fill="#28c840"/>
+    <text x="300" y="22" text-anchor="middle" fill="${COLOR.dim}" font-size="10" font-family="monospace">${esc(snip.caption)}</text>
+    ${body}
   </svg>`;
 }
 
-function _svgTerminal(name) {
-  return `<svg class="pd-svg" viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg">
-    <rect width="600" height="340" rx="8" fill="${COLOR.surface}"/>
-    <rect x="0" y="0" width="600" height="32" rx="8" fill="#0a0a10"/>
-    <circle cx="16" cy="16" r="5" fill="#ff5f57"/><circle cx="30" cy="16" r="5" fill="#febc2e"/><circle cx="44" cy="16" r="5" fill="#28c840"/>
-    <text x="300" y="21" text-anchor="middle" fill="${COLOR.dim}" font-size="10" font-family="monospace">${name} — Terminal</text>
-    <text x="20" y="56" fill="${COLOR.accent2}" font-size="11" font-family="monospace">$ kubectl debug pod/app-7f8b9c --ephemeral</text>
-    <text x="20" y="76" fill="${COLOR.text}" font-size="11" font-family="monospace" opacity=".7">Created debug container: debug-8a2f</text>
-    <text x="20" y="96" fill="${COLOR.text}" font-size="11" font-family="monospace" opacity=".7">Container app running: 3h 12m</text>
-    <text x="20" y="116" fill="${COLOR.text}" font-size="11" font-family="monospace" opacity=".7">Memory: 256Mi / 512Mi &lt;—————————▷ 50%</text>
-    <rect x="20" y="130" width="560" height="1" fill="${COLOR.border}" opacity=".3"/>
-    <text x="20" y="150" fill="${COLOR.accent2}" font-size="11" font-family="monospace">$ curl http://localhost:8080/health</text>
-    <text x="20" y="170" fill="${COLOR.accent}" font-size="11" font-family="monospace">{"status":"ok","uptime":"3d12h","replicas":6,"region":"eu-west-1"}</text>
-    <text x="20" y="190" fill="${COLOR.accent2}" font-size="11" font-family="monospace">$ kubectl logs -f app-7f8b9c --tail=20</text>
-    <text x="20" y="210" fill="${COLOR.dim}" font-size="10" font-family="monospace">[INFO] 2026-07-17T12:00:01Z Request processed: 2.3ms</text>
-    <text x="20" y="226" fill="${COLOR.dim}" font-size="10" font-family="monospace">[INFO] 2026-07-17T12:00:01Z Cache hit: session_9a2f7b</text>
-    <text x="20" y="242" fill="${COLOR.dim}" font-size="10" font-family="monospace">[INFO] 2026-07-17T12:00:02Z DB query: 4 rows in 1.1ms</text>
-    <text x="20" y="258" fill="${COLOR.accent2}" font-size="11" font-family="monospace">$ kubectl get pods -n production -w</text>
-    <rect x="20" y="272" width="560" height="24" rx="4" fill="rgba(0,255,136,.06)"/>
-    <text x="30" y="288" fill="${COLOR.accent2}" font-size="10" font-family="monospace">app-7f8b9c  Running   6/6   Ready   age:3d12h  ✓</text>
-    <text x="20" y="316" fill="${COLOR.dim}" font-size="10" font-family="monospace">Type 'help' for available commands    █</text>
+function _svgPlaceholder(name) {
+  return `<svg class="pd-svg" viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(name)}">
+    <rect width="600" height="120" rx="8" fill="${COLOR.surface}"/>
+    <text x="300" y="64" text-anchor="middle" fill="${COLOR.dim}" font-size="11" font-family="monospace">${esc(name)}</text>
   </svg>`;
 }
 
-function _svgGraph(name) {
-  const r = () => 30 + Math.random() * 50;
-  return `<svg class="pd-svg" viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg">
-    <rect width="600" height="340" rx="8" fill="${COLOR.surface}"/>
-    <rect x="0" y="0" width="600" height="32" rx="8" fill="${COLOR.bg}"/>
-    <circle cx="16" cy="16" r="5" fill="#ff5f57"/><circle cx="30" cy="16" r="5" fill="#febc2e"/><circle cx="44" cy="16" r="5" fill="#28c840"/>
-    <text x="300" y="21" text-anchor="middle" fill="${COLOR.dim}" font-size="10" font-family="monospace">${name} — Architecture</text>
-    <circle cx="300" cy="160" r="36" fill="rgba(0,212,255,.08)" stroke="${COLOR.accent}" stroke-width="1.5"/>
-    <text x="300" y="163" text-anchor="middle" fill="${COLOR.accent}" font-size="8" font-family="monospace">API GATEWAY</text>
-    <circle cx="160" cy="80" r="${r()}" fill="rgba(0,212,255,.06)" stroke="${COLOR.accent}" stroke-width="1" opacity=".7"/>
-    <text x="160" y="83" text-anchor="middle" fill="${COLOR.text}" font-size="7" font-family="monospace" opacity=".7">SERVICE A</text>
-    <circle cx="440" cy="80" r="${r()}" fill="rgba(0,255,136,.06)" stroke="${COLOR.accent2}" stroke-width="1" opacity=".7"/>
-    <text x="440" y="83" text-anchor="middle" fill="${COLOR.text}" font-size="7" font-family="monospace" opacity=".7">SERVICE B</text>
-    <circle cx="120" cy="260" r="${r()}" fill="rgba(0,212,255,.04)" stroke="${COLOR.accent}" stroke-width="1" opacity=".5"/>
-    <text x="120" y="263" text-anchor="middle" fill="${COLOR.text}" font-size="7" font-family="monospace" opacity=".5">SERVICE C</text>
-    <circle cx="300" cy="270" r="${r()}" fill="rgba(255,107,107,.04)" stroke="${COLOR.accent3}" stroke-width="1" opacity=".5"/>
-    <text x="300" y="273" text-anchor="middle" fill="${COLOR.text}" font-size="7" font-family="monospace" opacity=".5">SERVICE D</text>
-    <circle cx="480" cy="260" r="${r()}" fill="rgba(0,255,136,.04)" stroke="${COLOR.accent2}" stroke-width="1" opacity=".5"/>
-    <text x="480" y="263" text-anchor="middle" fill="${COLOR.text}" font-size="7" font-family="monospace" opacity=".5">SERVICE E</text>
-    <line x1="264" y1="145" x2="196" y2="100" stroke="${COLOR.accent}" stroke-width="1" opacity=".3"/>
-    <line x1="336" y1="145" x2="404" y2="100" stroke="${COLOR.accent2}" stroke-width="1" opacity=".3"/>
-    <line x1="280" y1="180" x2="140" y2="240" stroke="${COLOR.accent}" stroke-width="1" opacity=".2"/>
-    <line x1="320" y1="180" x2="300" y2="240" stroke="${COLOR.accent3}" stroke-width="1" opacity=".2"/>
-    <line x1="340" y1="175" x2="460" y2="240" stroke="${COLOR.accent2}" stroke-width="1" opacity=".2"/>
-    <rect x="160" y="306" width="280" height="22" rx="4" fill="rgba(0,212,255,.06)"/>
-    <text x="300" y="320" text-anchor="middle" fill="${COLOR.accent}" font-size="8" font-family="monospace">200+ Services • 3 Regions • 14 Data Centers</text>
-  </svg>`;
-}
-
-function _svgCodeEditor(name) {
-  return `<svg class="pd-svg" viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg">
-    <rect width="600" height="340" rx="8" fill="${COLOR.surface}"/>
-    <rect x="0" y="0" width="600" height="32" rx="8" fill="${COLOR.bg}"/>
-    <circle cx="16" cy="16" r="5" fill="#ff5f57"/><circle cx="30" cy="16" r="5" fill="#febc2e"/><circle cx="44" cy="16" r="5" fill="#28c840"/>
-    <text x="300" y="21" text-anchor="middle" fill="${COLOR.dim}" font-size="10" font-family="monospace">${name} — Code</text>
-    <rect x="0" y="32" width="120" height="308" fill="${COLOR.bg}" opacity=".5"/>
-    <text x="16" y="56" fill="${COLOR.dim}" font-size="9" font-family="monospace">src/</text>
-    <text x="20" y="72" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".6">├─ main.rs</text>
-    <text x="20" y="88" fill="${COLOR.accent2}" font-size="9" font-family="monospace">├─ lib.rs</text>
-    <text x="20" y="104" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".6">├─ config/</text>
-    <text x="28" y="120" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".4">│  ├─ mod.rs</text>
-    <text x="28" y="136" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".4">│  └─ schema.rs</text>
-    <text x="20" y="152" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".6">├─ parser/</text>
-    <text x="28" y="168" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".4">│  ├─ mod.rs</text>
-    <text x="28" y="184" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".4">│  └─ validator.rs</text>
-    <text x="20" y="200" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".6">├─ benches/</text>
-    <text x="28" y="216" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".4">│  └── perf.rs</text>
-    <text x="20" y="232" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".6">├─ Cargo.toml</text>
-    <text x="20" y="248" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".6">└─ README.md</text>
-    <rect x="124" y="36" width="472" height="16" rx="2" fill="${COLOR.bg}"/>
-    <text x="136" y="48" fill="${COLOR.accent2}" font-size="9" font-family="monospace">fn validate(input: &str) → Result&lt;Schema, Error&gt; {</text>
-    <text x="140" y="68" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".6">    let parsed = Parser::parse(input)?;</text>
-    <text x="140" y="84" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".6">    let schema = Schema::from_ast(parsed);</text>
-    <text x="140" y="100" fill="${COLOR.accent}" font-size="9" font-family="monospace">    let report = ValidationReport::new()</text>
-    <text x="144" y="116" fill="${COLOR.accent}" font-size="9" font-family="monospace">        .with_strategy(ValidationStrategy::Strict)</text>
-    <text x="144" y="132" fill="${COLOR.accent}" font-size="9" font-family="monospace">        .validate(&amp;schema, input)?;</text>
-    <text x="140" y="148" fill="${COLOR.accent2}" font-size="9" font-family="monospace">    Ok(report.into_inner())</text>
-    <text x="136" y="164" fill="${COLOR.text}" font-size="9" font-family="monospace" opacity=".6">}</text>
-    <rect x="124" y="176" width="472" height="1" fill="${COLOR.border}" opacity=".3"/>
-    <text x="140" y="200" fill="${COLOR.dim}" font-size="9" font-family="monospace">// Performance: 5.2µs average validation</text>
-    <text x="140" y="216" fill="${COLOR.dim}" font-size="9" font-family="monospace">// Memory: 4KB per allocation</text>
-    <text x="140" y="232" fill="${COLOR.dim}" font-size="9" font-family="monospace">// Thread-safe: Send + Sync impl</text>
-    <rect x="124" y="250" width="472" height="24" rx="4" fill="rgba(0,212,255,.06)"/>
-    <text x="140" y="266" fill="${COLOR.accent}" font-size="10" font-family="monospace">λ ~/projects/validator → (main) cargo test — — —nocapture</text>
-    <text x="140" y="290" fill="${COLOR.accent2}" font-size="10" font-family="monospace">✓ 248 passed • 0 failed • 94.7% coverage</text>
-    <text x="140" y="310" fill="${COLOR.dim}" font-size="9" font-family="monospace">Elapsed: 0.847s   █</text>
-  </svg>`;
-}
-
-function _svgBlocks(name) {
-  return `<svg class="pd-svg" viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg">
-    <rect width="600" height="340" rx="8" fill="${COLOR.surface}"/>
-    <rect x="0" y="0" width="600" height="32" rx="8" fill="${COLOR.bg}"/>
-    <circle cx="16" cy="16" r="5" fill="#ff5f57"/><circle cx="30" cy="16" r="5" fill="#febc2e"/><circle cx="44" cy="16" r="5" fill="#28c840"/>
-    <text x="300" y="21" text-anchor="middle" fill="${COLOR.dim}" font-size="10" font-family="monospace">${name} — Network</text>
-    <rect x="30" y="60" width="120" height="120" rx="6" fill="rgba(0,212,255,.04)" stroke="${COLOR.accent}" stroke-width="1" opacity=".6"/>
-    <text x="90" y="120" text-anchor="middle" fill="${COLOR.accent}" font-size="9" font-family="monospace">BLOCK</text>
-    <text x="90" y="137" text-anchor="middle" fill="${COLOR.dim}" font-size="7" font-family="monospace">#221,472</text>
-    <text x="90" y="152" text-anchor="middle" fill="${COLOR.dim}" font-size="6" font-family="monospace">0x7f3a…b8e2</text>
-    <rect x="180" y="50" width="120" height="120" rx="6" fill="rgba(0,255,136,.04)" stroke="${COLOR.accent2}" stroke-width="1" opacity=".7"/>
-    <text x="240" y="110" text-anchor="middle" fill="${COLOR.accent2}" font-size="9" font-family="monospace">BLOCK</text>
-    <text x="240" y="127" text-anchor="middle" fill="${COLOR.dim}" font-size="7" font-family="monospace">#221,473</text>
-    <text x="240" y="142" text-anchor="middle" fill="${COLOR.dim}" font-size="6" font-family="monospace">0x9c1d…a4f3</text>
-    <rect x="330" y="40" width="120" height="120" rx="6" fill="rgba(0,212,255,.04)" stroke="${COLOR.accent}" stroke-width="1" opacity=".8"/>
-    <text x="390" y="100" text-anchor="middle" fill="${COLOR.accent}" font-size="9" font-family="monospace">BLOCK</text>
-    <text x="390" y="117" text-anchor="middle" fill="${COLOR.dim}" font-size="7" font-family="monospace">#221,474</text>
-    <text x="390" y="132" text-anchor="middle" fill="${COLOR.dim}" font-size="6" font-family="monospace">0x4e8f…f1c2</text>
-    <rect x="480" y="30" width="120" height="120" rx="6" fill="rgba(255,107,107,.04)" stroke="${COLOR.accent3}" stroke-width="1" opacity=".9"/>
-    <text x="540" y="90" text-anchor="middle" fill="${COLOR.accent3}" font-size="9" font-family="monospace">BLOCK</text>
-    <text x="540" y="107" text-anchor="middle" fill="${COLOR.dim}" font-size="7" font-family="monospace">#221,475</text>
-    <text x="540" y="122" text-anchor="middle" fill="${COLOR.dim}" font-size="6" font-family="monospace">0xd2a7…3c9e</text>
-    <line x1="150" y1="120" x2="180" y2="110" stroke="${COLOR.accent}" stroke-width="1" opacity=".4"/>
-    <line x1="300" y1="110" x2="330" y2="100" stroke="${COLOR.accent2}" stroke-width="1" opacity=".4"/>
-    <line x1="450" y1="100" x2="480" y2="90" stroke="${COLOR.accent}" stroke-width="1" opacity=".4"/>
-    <rect x="180" y="200" width="240" height="90" rx="6" fill="${COLOR.bg}" stroke="${COLOR.border}" stroke-width=".5"/>
-    <text x="300" y="225" text-anchor="middle" fill="${COLOR.accent}" font-size="9" font-family="monospace" font-weight="bold">Network Summary</text>
-    <text x="200" y="248" fill="${COLOR.dim}" font-size="8" font-family="monospace">Validators:</text>
-    <text x="280" y="248" fill="${COLOR.accent2}" font-size="8" font-family="monospace">128</text>
-    <text x="200" y="266" fill="${COLOR.dim}" font-size="8" font-family="monospace">TPS:</text>
-    <text x="280" y="266" fill="${COLOR.accent}" font-size="8" font-family="monospace">2,400</text>
-    <text x="340" y="248" fill="${COLOR.dim}" font-size="8" font-family="monospace">Finality:</text>
-    <text x="400" y="248" fill="${COLOR.accent}" font-size="8" font-family="monospace">~2s</text>
-    <text x="340" y="266" fill="${COLOR.dim}" font-size="8" font-family="monospace">Gas:</text>
-    <text x="400" y="266" fill="${COLOR.accent2}" font-size="8" font-family="monospace">12 Gwei</text>
-    <rect x="180" y="300" width="240" height="22" rx="4" fill="rgba(0,212,255,.06)"/>
-    <text x="300" y="315" text-anchor="middle" fill="${COLOR.accent}" font-size="8" font-family="monospace">300K Identities • ZK-Proof • 8 Protocols</text>
-  </svg>`;
-}
 
 function _wireProjectDetail(prevId, nextId) {
   document.querySelectorAll('[data-pd-close]').forEach((el) => {
