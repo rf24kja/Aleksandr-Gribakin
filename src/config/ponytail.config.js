@@ -140,7 +140,7 @@ const EN = {
   },
   BIO: 'Fifteen years building and scaling distributed systems, across the industry\'s move from bare-metal servers and monoliths to cloud-native, Kubernetes and GitOps. I take on the work teams postpone: technical debt, CI/CD built from nothing, and keeping things up.',
   STATS_DESC: 'Infrastructure migration, delivery automation and database performance under load.',
-  ABOUT: 'About', CAREER_TITLE: 'Career', PROJECTS_TITLE: 'Projects', ACHIEVEMENTS_TITLE: 'Achievements', SETTINGS: 'Settings', SETTINGS_LANG: 'Language', MAIL: 'Mail', THEME_DARK: 'Dark', THEME_LIGHT: 'Light', MODE_BUSINESS: 'Business', MODE_DESKTOP: 'Desktop', MODE_TERMINAL: 'Terminal',
+  ABOUT: 'About', CAREER_TITLE: 'Career', PROJECTS_TITLE: 'Projects', ACHIEVEMENTS_TITLE: 'Achievements', SETTINGS: 'Settings', SETTINGS_LANG: 'Language', SETTINGS_THEME: 'Theme', SETTINGS_THEME_HINT: '(Business mode only)', SETTINGS_INTERFACE: 'Interface', SETTINGS_CLOSE: 'Close', MAIL: 'Mail', THEME_DARK: 'Dark', THEME_LIGHT: 'Light', MODE_BUSINESS: 'Business', MODE_DESKTOP: 'Desktop', MODE_TERMINAL: 'Terminal',
   COFFEE: { TITLE: '☕ Buy me a coffee', NETWORK: 'USDT TRC-20', COPY: 'Copy Address', DONE: '✓ Copied', CLOSE: 'Close' },
   DETAIL: { BACK: 'Back', BACK_CAREER: 'Back to Career', BACK_ACH: 'Back to Achievements', NOT_FOUND: 'not found', KEY_METRICS: 'Key Metrics', FEATURES: 'Features', TECH_STACK: 'Tech Stack', KEY_ACH: 'Key Achievements', TYPE_PROJECT: 'Project', TYPE_CAREER: 'Career', TYPE_ACH: 'Achievement', PRIVATE_REPO: 'Private repository', OPEN_DETAIL: 'Open', REFERENCE_NOTE: 'Reference architecture. Client code is under NDA, so this page describes the design and the reasoning behind it rather than a specific deployment.' },
 };
@@ -279,7 +279,7 @@ const RU = {
   },
   BIO: 'Пятнадцать лет строю и масштабирую распределённые системы — застал переход индустрии от bare-metal серверов и монолитов к cloud-native, Kubernetes и GitOps. Берусь за то, что команды откладывают: технический долг, CI/CD с нуля и удержание систем в строю.',
   STATS_DESC: 'Миграция инфраструктуры, автоматизация поставки и производительность баз под нагрузкой.',
-  ABOUT: 'О себе', CAREER_TITLE: 'Карьера', PROJECTS_TITLE: 'Проекты', ACHIEVEMENTS_TITLE: 'Достижения', SETTINGS: 'Настройки', SETTINGS_LANG: 'Язык', MAIL: 'Почта', THEME_DARK: 'Тёмная', THEME_LIGHT: 'Светлая', MODE_BUSINESS: 'Бизнес', MODE_DESKTOP: 'Рабочий стол', MODE_TERMINAL: 'Терминал',
+  ABOUT: 'О себе', CAREER_TITLE: 'Карьера', PROJECTS_TITLE: 'Проекты', ACHIEVEMENTS_TITLE: 'Достижения', SETTINGS: 'Настройки', SETTINGS_LANG: 'Язык', SETTINGS_THEME: 'Тема', SETTINGS_THEME_HINT: '(только для режима Бизнес)', SETTINGS_INTERFACE: 'Интерфейс', SETTINGS_CLOSE: 'Закрыть', MAIL: 'Почта', THEME_DARK: 'Тёмная', THEME_LIGHT: 'Светлая', MODE_BUSINESS: 'Бизнес', MODE_DESKTOP: 'Рабочий стол', MODE_TERMINAL: 'Терминал',
   COFFEE: { TITLE: '☕ Угостить кофе', NETWORK: 'USDT TRC-20', COPY: 'Скопировать адрес', DONE: '✓ Скопировано', CLOSE: 'Закрыть' },
   DETAIL: { BACK: 'Назад', BACK_CAREER: 'Назад к карьере', BACK_ACH: 'Назад к достижениям', NOT_FOUND: 'не найден', KEY_METRICS: 'Ключевые метрики', FEATURES: 'Возможности', TECH_STACK: 'Технологии', KEY_ACH: 'Ключевые достижения', TYPE_PROJECT: 'Проект', TYPE_CAREER: 'Карьера', TYPE_ACH: 'Достижение', PRIVATE_REPO: 'Приватный репозиторий', OPEN_DETAIL: 'Открыть', REFERENCE_NOTE: 'Референсная архитектура. Клиентский код под NDA, поэтому страница описывает устройство системы и логику решений, а не конкретное внедрение.' },
 };

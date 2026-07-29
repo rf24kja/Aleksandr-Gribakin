@@ -392,11 +392,15 @@
     .settings-gear {
       background: none; border: none; cursor: pointer; padding: 0;
       font-size: inherit; line-height: 1; color: var(--text-dim);
-      animation: gearSpin 4s linear infinite; transition: color .3s;
+      transition: color .3s, transform .4s;
       display: inline-flex; align-items: center; justify-content: center;
     }
-    .settings-gear:hover { color: var(--text-bright); }
-    @keyframes gearSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* The gear used to spin forever. That is motion nobody asked for, it keeps
+       a compositor layer alive on every page, and because a rotating glyph's
+       bounding box changes every frame the control was never geometrically
+       still — automated clicks could not settle on it. It turns on hover and
+       focus instead, where the movement means something. */
+    .settings-gear:hover, .settings-gear:focus-visible { color: var(--text-bright); transform: rotate(90deg); }
 
     /* Business mode — gear next to name */
     [data-mode="business"] .settings-gear {
@@ -556,8 +560,6 @@
       color: var(--text);
     }
 
-    @keyframes gearSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes gearSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* === PER-THEME PROJECT CARD DECORATIONS === */
 
@@ -3552,8 +3554,8 @@
       <div class="settings-section">
         <div class="settings-label">◈ <span data-i18n="SETTINGS_THEME">Theme</span></div>
         <div class="settings-theme-group">
-          <button class="settings-opt" data-stheme="dark">🌙 Dark</button>
-          <button class="settings-opt" data-stheme="light">☀ Light</button>
+          <button class="settings-opt" data-stheme="dark"><span aria-hidden="true">🌙</span> <span data-i18n="THEME_DARK">Dark</span></button>
+          <button class="settings-opt" data-stheme="light"><span aria-hidden="true">☀</span> <span data-i18n="THEME_LIGHT">Light</span></button>
         </div>
         <div class="settings-hint" data-i18n="SETTINGS_THEME_HINT">(Business mode only)</div>
       </div>
@@ -3561,9 +3563,9 @@
       <div class="settings-section">
         <div class="settings-label">◈ <span data-i18n="SETTINGS_INTERFACE">Interface</span></div>
         <div class="settings-mode-group">
-          <button class="settings-opt" data-smode="business">💼 Business</button>
-          <button class="settings-opt" data-smode="desktop">🖥 Desktop</button>
-          <button class="settings-opt" data-smode="terminal">⎔ Terminal</button>
+          <button class="settings-opt" data-smode="business"><span aria-hidden="true">💼</span> <span data-i18n="MODE_BUSINESS">Business</span></button>
+          <button class="settings-opt" data-smode="desktop"><span aria-hidden="true">🖥</span> <span data-i18n="MODE_DESKTOP">Desktop</span></button>
+          <button class="settings-opt" data-smode="terminal"><span aria-hidden="true">⎔</span> <span data-i18n="MODE_TERMINAL">Terminal</span></button>
         </div>
       </div>
 
