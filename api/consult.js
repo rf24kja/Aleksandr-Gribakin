@@ -6,7 +6,14 @@
 // signature assumed (that threw on every call).
 export const config = { runtime: 'edge' };
 
+// Shown to visitors in the fallback messages, so it keeps the casing used
+// everywhere else on the site.
 const RECIPIENT = 'RF24KRSK@gmail.com';
+// What actually goes to the mail API. Resend's test-mode allowlist compares
+// the recipient against the account owner's address as a plain string, so the
+// capitalised form was refused as "not your own email address" even though it
+// is the same mailbox.
+const RECIPIENT_ADDR = RECIPIENT.toLowerCase();
 const RATE_WINDOW = 60_000;
 const MAX_PER_IP = 5;
 const MAX_PER_EMAIL = 2;
@@ -205,7 +212,7 @@ export default async function handler(request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          to: RECIPIENT,
+          to: RECIPIENT_ADDR,
           from: SENDER,
           reply_to: email,
           subject: `[Consult] ${name}`,
