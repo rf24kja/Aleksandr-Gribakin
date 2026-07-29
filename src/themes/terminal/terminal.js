@@ -436,6 +436,8 @@ function wire(root) {
     shell.input.focus();
   });
 
+  trackViewport(root);
+
   const clock = root.querySelector('#tshClock');
   const tick = () => { clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
   tick();
@@ -444,6 +446,39 @@ function wire(root) {
   // The orchestrator labels the language toggles during init, which happens
   // before this title bar exists — so label ours on creation.
   labelLangToggle();
+}
+
+/**
+ * Keeps the shell inside the *visual* viewport.
+ *
+ * The window is `position: fixed; inset: 0`, which tracks the layout viewport.
+ * When the on-screen keyboard opens, iOS shrinks only the visual viewport and
+ * leaves the layout viewport alone, so the prompt ended up behind the keyboard;
+ * Android resizes the layout viewport instead, which nudged the width as the
+ * scrollbar came and went. Sizing to visualViewport handles both, and the
+ * prompt is scrolled back into view once the keyboard has settled.
+ */
+function trackViewport(root) {
+  const vv = window.visualViewport;
+  const win = root.querySelector('.tsh-window');
+  if (!vv || !win) return;
+
+  // Applied synchronously: visualViewport events are infrequent, and deferring
+  // to requestAnimationFrame means nothing happens while the tab is hidden.
+  const apply = () => {
+    win.style.height = `${vv.height}px`;
+    win.style.width = `${vv.width}px`;
+    win.style.transform = `translate(${vv.offsetLeft}px, ${vv.offsetTop}px)`;
+    scrollToEnd();
+  };
+
+  vv.addEventListener('resize', apply);
+  vv.addEventListener('scroll', apply);
+  // Focusing the input is what summons the keyboard; the viewport reports its
+  // new size a beat later.
+  shell.input.addEventListener('focus', () => setTimeout(apply, 250));
+  shell.input.addEventListener('blur', () => setTimeout(apply, 250));
+  apply();
 }
 
 function labelLangToggle() {

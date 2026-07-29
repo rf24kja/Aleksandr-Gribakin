@@ -45,10 +45,11 @@ function json(data, status = 200) {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Returns true only if Telegram actually accepted the message. */
 async function notifyTelegram({ name, email, message }) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (process.env.TELEGRAM_NOTIFY !== '1' || !token || !chatId) return;
+  if (process.env.TELEGRAM_NOTIFY !== '1' || !token || !chatId) return false;
   const text = [
     'New consult submission',
     '----------------',
@@ -58,15 +59,35 @@ async function notifyTelegram({ name, email, message }) {
   ].join('\n');
   // Direct HTTP call — importing telegram-bot.js here would pull a filesystem
   // polling loop into the serverless function.
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
-  }).catch(() => {});
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Which delivery channels are actually configured on this deployment. */
+function channels() {
+  const out = [];
+  if (process.env.RESEND_API_KEY) out.push('email');
+  if (process.env.TELEGRAM_NOTIFY === '1' && process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
+    out.push('telegram');
+  }
+  return out;
 }
 
 export default async function handler(request) {
-  if (request.method === 'GET') return json({ status: 'ok' });
+  // Reports configuration, never secrets — so it can be checked from outside
+  // whether a submitted form would actually reach anyone.
+  if (request.method === 'GET') {
+    const configured = channels();
+    return json({ status: 'ok', delivery: configured.length ? configured : 'none' });
+  }
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
 
   const start = Date.now();
@@ -112,6 +133,21 @@ export default async function handler(request) {
     `Response time: ${Date.now() - start}ms`,
   ].join('\n');
 
+  // Nothing configured means the message goes nowhere. Saying "delivered"
+  // anyway loses the lead silently, so fail loudly and let the UI offer the
+  // direct address instead.
+  const configured = channels();
+  if (!configured.length) {
+    console.error('[Consult] No delivery channel configured — set RESEND_API_KEY.');
+    return json({
+      error: 'not_configured',
+      message: `Mail delivery is not configured. Please write to ${RECIPIENT} directly.`,
+      recipient: RECIPIENT,
+    }, 503);
+  }
+
+  let delivered = false;
+
   if (process.env.RESEND_API_KEY) {
     try {
       const res = await fetch('https://api.resend.com/emails', {
@@ -128,16 +164,23 @@ export default async function handler(request) {
           text,
         }),
       });
-      if (!res.ok) throw new Error(`Email API: ${res.status}`);
+      if (!res.ok) throw new Error(`Email API: ${res.status} ${await res.text().catch(() => '')}`.trim());
+      delivered = true;
     } catch (err) {
       console.error(`[Consult] Email delivery failed: ${err.message}`);
-      return json({ error: 'delivery', message: 'Transmission failed. Please try again later.' }, 502);
+      // Telegram may still carry it; only give up if that fails too.
     }
-  } else {
-    console.log(`[Consult] DEV MODE — would send:\n${text}`);
   }
 
-  await notifyTelegram({ name, email, message });
+  if (await notifyTelegram({ name, email, message })) delivered = true;
+
+  if (!delivered) {
+    return json({
+      error: 'delivery',
+      message: `Transmission failed. Please write to ${RECIPIENT} directly.`,
+      recipient: RECIPIENT,
+    }, 502);
+  }
 
   return json({ success: true, message: 'Message delivered. I will respond within 24 hours.' });
 }

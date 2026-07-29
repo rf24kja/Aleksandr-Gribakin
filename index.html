@@ -2949,7 +2949,14 @@
 
     .tsh-window {
       position: fixed;
-      inset: 0;
+      /* Anchored top-left with an explicit size rather than `inset: 0`, because
+         terminal.js resizes this to the visual viewport when the on-screen
+         keyboard opens. Over-constraining it with right/bottom would fight that. */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform-origin: top left;
       display: flex;
       flex-direction: column;
       background: var(--t-bg, #0a0a0a);

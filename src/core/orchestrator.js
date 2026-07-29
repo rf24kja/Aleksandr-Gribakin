@@ -530,7 +530,16 @@ export default class PortfolioOrchestrator {
           headers: { 'Content-Type': 'application/json', 'X-Locale': lang },
           body: JSON.stringify({ ...data, to: 'RF24KRSK@gmail.com', timestamp: new Date().toISOString() }),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          // The endpoint reports whether the message actually went anywhere.
+          // When it did not, say so and offer the address — telling someone
+          // "delivered" while the message is dropped loses the enquiry.
+          const payload = await res.json().catch(() => ({}));
+          const err = new Error(payload.message || `HTTP ${res.status}`);
+          err.status = res.status;
+          err.recipient = payload.recipient;
+          throw err;
+        }
         this.s.set('_lastSubmission', Date.now());
         this._showFormSuccess(form);
       } catch (err) {
@@ -538,7 +547,7 @@ export default class PortfolioOrchestrator {
         btn.disabled = false;
         btn.style.pointerEvents = 'auto';
         btn.textContent = PONYTAIL.LOCALE[this.s.lang]?.FORM?.SUBMIT || 'Initiate Consult';
-        this._renderFormErrors(form, { _api: err.message });
+        this._renderFormErrors(form, { _api: err });
       }
     });
   }
@@ -553,8 +562,14 @@ export default class PortfolioOrchestrator {
       const el = form.querySelector(`[data-field-error="${field}"]`);
       if (!el) return;
       if (field === '_api') {
-        const msg = (key + '').toLowerCase().includes('rate') ? t.RATE_LIMIT : t.NETWORK;
-        el.textContent = msg || key;
+        const status = key?.status;
+        const raw = String(key?.message ?? key);
+        if (status === 429 || raw.toLowerCase().includes('rate')) el.textContent = t.RATE_LIMIT || raw;
+        else if (status === 503 || status === 502) {
+          // Delivery is down or unconfigured: give the visitor the address.
+          el.textContent = (t.DELIVERY_DOWN || 'Could not send. Write to {mail} directly.')
+            .replace('{mail}', key?.recipient || 'RF24KRSK@gmail.com');
+        } else el.textContent = t.NETWORK || raw;
       } else {
         // FORM_ERRORS keys the message field as MSG_*, but the field is named
         // "message" — so MESSAGE_MIN never resolved and the raw rule name

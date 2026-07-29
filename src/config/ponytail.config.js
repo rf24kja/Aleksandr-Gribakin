@@ -131,6 +131,7 @@ const EN = {
     MSG_MAX: 'Message is too long (max 2000)',
     NETWORK: 'Network error. Try again later.',
     RATE_LIMIT: 'Slow down. One message at a time.',
+    DELIVERY_DOWN: 'Could not send from here. Please write to {mail} directly.',
   },
   _PAGE_404: {
     TITLE: '404 — Page Not Found',
@@ -269,6 +270,7 @@ const RU = {
     MSG_MAX: 'Сообщение слишком длинное (макс. 2000)',
     NETWORK: 'Ошибка сети. Попробуйте позже.',
     RATE_LIMIT: 'Не так быстро. По одному сообщению.',
+    DELIVERY_DOWN: 'Отсюда отправить не удалось. Напишите напрямую на {mail}.',
   },
   _PAGE_404: {
     TITLE: '404 — Страница не найдена',
