@@ -9,7 +9,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -26,11 +26,32 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Downloading Chromium and WebKit on every run was what pushed the job
+      # past its limit. The cache is keyed on the Playwright version, so a
+      # dependency bump still fetches fresh binaries.
+      - name: Resolve Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache browsers
+        id: browser-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
       # Chromium covers the desktop and the emulated touch phone; WebKit is
       # Safari, and therefore every iPhone — the terminal's on-screen-keyboard
       # handling was written for it.
       - name: Install browsers
+        if: steps.browser-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium webkit
+
+      # A cache hit restores the binaries but not the system libraries WebKit
+      # links against, which are not in the cached path.
+      - name: Install browser dependencies
+        if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium webkit
 
       - name: Test
         run: npx playwright test
