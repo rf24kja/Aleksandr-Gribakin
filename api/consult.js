@@ -12,11 +12,12 @@ const MAX_PER_IP = 5;
 const MAX_PER_EMAIL = 2;
 
 // Resend rejects a From address on a domain that is not verified in the
-// account, and dev24.pro does not resolve — so the previous hardcoded
-// noreply@dev24.pro would have failed every send even with a valid key.
-// resend.dev is Resend's shared sender: it needs no DNS and delivers to the
-// account owner's own address, which is exactly who RECIPIENT is. Set
-// MAIL_FROM once a domain is actually verified.
+// account. dev24.pro is registered but its DKIM/SPF records are not published
+// yet, so the previously hardcoded noreply@dev24.pro would have failed every
+// send even with a valid key. resend.dev is Resend's shared sender: it needs
+// no DNS and delivers to the account owner's own address, which is exactly who
+// RECIPIENT is. Switch MAIL_FROM to noreply@dev24.pro once Resend reports the
+// domain verified.
 const SENDER = process.env.MAIL_FROM || 'onboarding@resend.dev';
 
 // The UI sends X-Locale; answering in English to a Russian visitor is jarring
