@@ -1,3 +1,15 @@
+// How much of a window must stay on screen. Enough that the title bar — and
+// with it the close button — can always be grabbed back.
+const KEEP_VISIBLE = 96
+const EDGE_GAP = 8
+
+/** Usable height above the taskbar, which is fixed to the bottom of the shell. */
+function workArea() {
+  const taskbar = document.getElementById('taskbar')
+  const taskbarH = taskbar ? taskbar.getBoundingClientRect().height : 42
+  return { width: window.innerWidth, height: Math.max(160, window.innerHeight - taskbarH) }
+}
+
 export default class WindowManager {
   constructor(container) {
     this.container = container
@@ -16,10 +28,18 @@ export default class WindowManager {
     const win = document.createElement('div')
     win.className = 'desk-window'
     win.id = id
-    win.style.width = `${width || 520}px`
-    win.style.height = `${height || 360}px`
-    win.style.left = `${60 + this.windows.size * 28}px`
-    win.style.top = `${40 + this.windows.size * 24}px`
+    // A window used to open at its requested size wherever the cascade put it.
+    // On a short viewport — a laptop with browser chrome, a phone in landscape
+    // — a 640x440 window on an 801x389 screen ran off the bottom, and nothing
+    // in this desktop resizes, so the content below the fold was unreachable.
+    const area = workArea()
+    const w = Math.min(width || 520, area.width - EDGE_GAP * 2)
+    const h = Math.min(height || 360, area.height - EDGE_GAP * 2)
+    const step = this.windows.size
+    win.style.width = `${w}px`
+    win.style.height = `${h}px`
+    win.style.left = `${Math.max(EDGE_GAP, Math.min(60 + step * 28, area.width - w - EDGE_GAP))}px`
+    win.style.top = `${Math.max(EDGE_GAP, Math.min(40 + step * 24, area.height - h - EDGE_GAP))}px`
     win.style.zIndex = ++this.zIndex
 
     win.innerHTML = `
@@ -41,9 +61,17 @@ export default class WindowManager {
       const dx = e.clientX - rect.left
       const dy = e.clientY - rect.top
       win.classList.add('dragging')
+      // Only the left and top edges were clamped, so a window could be dragged
+      // past the right or bottom edge until it was entirely off screen — close
+      // button included — with no way to bring it back.
       function onMove(e) {
-        win.style.left = `${Math.max(0, e.clientX - dx)}px`
-        win.style.top = `${Math.max(0, e.clientY - dy)}px`
+        const area = workArea()
+        const width = win.offsetWidth
+        const minLeft = KEEP_VISIBLE - width
+        const maxLeft = area.width - KEEP_VISIBLE
+        const maxTop = area.height - 32
+        win.style.left = `${Math.min(Math.max(minLeft, e.clientX - dx), maxLeft)}px`
+        win.style.top = `${Math.min(Math.max(0, e.clientY - dy), maxTop)}px`
       }
       function onUp() {
         win.classList.remove('dragging')
@@ -128,6 +156,21 @@ export default class WindowManager {
       list.push({ id, title: win.querySelector('.wt-label')?.textContent?.trim() || id, visible: win.style.display !== 'none' })
     })
     return { list, active: this.activeId }
+  }
+
+  /** Pulls every window back into the work area after the viewport changes. */
+  reflow() {
+    const area = workArea()
+    this.windows.forEach((win) => {
+      const width = Math.min(win.offsetWidth, area.width - EDGE_GAP * 2)
+      const height = Math.min(win.offsetHeight, area.height - EDGE_GAP * 2)
+      win.style.width = `${width}px`
+      win.style.height = `${height}px`
+      const left = Math.min(Math.max(KEEP_VISIBLE - width, win.offsetLeft), area.width - KEEP_VISIBLE)
+      const top = Math.min(Math.max(0, win.offsetTop), area.height - 32)
+      win.style.left = `${left}px`
+      win.style.top = `${top}px`
+    })
   }
 
   closeAll() {

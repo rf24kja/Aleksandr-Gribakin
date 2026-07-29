@@ -405,6 +405,15 @@ export function initDesktop(appState) {
   initClock()
   initModeSwitch()
 
+  // Rotating a phone or resizing the browser shrinks the work area under any
+  // window already placed in it, which would otherwise leave one stranded
+  // off-screen with its title bar out of reach.
+  let reflowTimer = null
+  window.addEventListener('resize', () => {
+    clearTimeout(reflowTimer)
+    reflowTimer = setTimeout(() => wm.reflow(), 120)
+  })
+
   document.addEventListener('locale:change', () => {
     wm.closeAll()
     const icons = document.getElementById('desktop-icons')

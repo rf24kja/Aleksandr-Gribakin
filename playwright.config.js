@@ -17,9 +17,12 @@ export default defineConfig({
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
-    // Pixel 5 rather than an iPhone: it emulates a touch phone on Chromium,
-    // so CI downloads one browser instead of two.
+    // Pixel 5 rather than an iPhone: it emulates a touch phone on Chromium.
     { name: 'mobile', use: { ...devices['Pixel 5'] } },
+    // Safari is the whole of iOS, and the terminal's on-screen-keyboard
+    // handling was written for it — until now it had only ever been checked
+    // against a simulation of that keyboard, never the real engine.
+    { name: 'safari', use: { ...devices['iPhone 13'] } },
   ],
   webServer: {
     command: 'npx vite preview --port 4173 --strictPort',

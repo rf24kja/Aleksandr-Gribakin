@@ -26,10 +26,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Only Chromium: the mobile project emulates a touch phone on the same
-      # engine, so one download covers both.
-      - name: Install browser
-        run: npx playwright install --with-deps chromium
+      # Chromium covers the desktop and the emulated touch phone; WebKit is
+      # Safari, and therefore every iPhone — the terminal's on-screen-keyboard
+      # handling was written for it.
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Test
         run: npx playwright test
