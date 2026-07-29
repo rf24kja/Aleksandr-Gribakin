@@ -149,7 +149,14 @@ async function transmitAccept(value) {
       headers: { 'Content-Type': 'application/json', 'X-Locale': lang() },
       body: JSON.stringify({ ...payload, timestamp: new Date().toISOString() }),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      // The endpoint says whether the message went anywhere and where to write
+      // instead. "HTTP 503" alone tells the visitor nothing they can act on.
+      const body = await res.json().catch(() => ({}));
+      const err = new Error(body.message || `HTTP ${res.status}`);
+      err.recipient = body.recipient;
+      throw err;
+    }
     await print([
       { text: `  ${t.SENT || 'TRANSMISSION SENT (200 OK)'}`, cls: 'ok' },
       { text: `  ${(PONYTAIL.LOCALE[lang()] || PONYTAIL.LOCALE.EN).FORM.SUCCESS}`, cls: 'dim' },
@@ -157,7 +164,10 @@ async function transmitAccept(value) {
   } catch (err) {
     await print([
       { text: `  ${(t.SEND_FAIL || 'TRANSMISSION FAILED ({e})').replace('{e}', err.message)}`, cls: 'err' },
-      { text: `  ${t.SEND_FALLBACK || 'Mail directly: RF24KRSK@gmail.com'}`, cls: 'dim' },
+      {
+        text: `  ${(t.SEND_FALLBACK || 'Mail directly: {mail}').replace('{mail}', err.recipient || 'RF24KRSK@gmail.com')}`,
+        cls: 'dim',
+      },
     ]);
   }
 }

@@ -555,34 +555,48 @@ export default class PortfolioOrchestrator {
   _renderFormErrors(form, errors) {
     form.querySelectorAll('[data-field-error]').forEach((el) => { el.textContent = ''; el.style.opacity = '0'; });
     const c = form.querySelector('[data-form-errors]');
-    if (c) c.textContent = '';
+    if (c) { c.textContent = ''; c.removeAttribute('role'); }
     const t = PONYTAIL.LOCALE[this.s.lang]?.FORM_ERRORS || {};
     let first = true;
     Object.entries(errors).forEach(([field, key]) => {
+      // _api is not a field, so there is no [data-field-error] for it. It used
+      // to be looked up like one and silently dropped — a failed send showed
+      // the visitor nothing at all. It belongs in the form-level summary.
+      if (field === '_api') {
+        if (c) { c.textContent = this._apiErrorText(key, t); c.setAttribute('role', 'alert'); }
+        return;
+      }
       const el = form.querySelector(`[data-field-error="${field}"]`);
       if (!el) return;
-      if (field === '_api') {
-        const status = key?.status;
-        const raw = String(key?.message ?? key);
-        if (status === 429 || raw.toLowerCase().includes('rate')) el.textContent = t.RATE_LIMIT || raw;
-        else if (status === 503 || status === 502) {
-          // Delivery is down or unconfigured: give the visitor the address.
-          el.textContent = (t.DELIVERY_DOWN || 'Could not send. Write to {mail} directly.')
-            .replace('{mail}', key?.recipient || 'RF24KRSK@gmail.com');
-        } else el.textContent = t.NETWORK || raw;
-      } else {
-        // FORM_ERRORS keys the message field as MSG_*, but the field is named
-        // "message" — so MESSAGE_MIN never resolved and the raw rule name
-        // ("min") was shown to the visitor.
-        const prefix = field === 'message' ? 'MSG' : field.toUpperCase();
-        el.textContent = t[`${prefix}_${key}`.toUpperCase()] || key;
-      }
+      // FORM_ERRORS keys the message field as MSG_*, but the field is named
+      // "message" — so MESSAGE_MIN never resolved and the raw rule name
+      // ("min") was shown to the visitor.
+      const prefix = field === 'message' ? 'MSG' : field.toUpperCase();
+      el.textContent = t[`${prefix}_${key}`.toUpperCase()] || key;
       el.style.opacity = '1';
-      if (first && c && field !== '_api') { c.textContent = el.textContent; first = false; }
+      if (first && c) { c.textContent = el.textContent; c.setAttribute('role', 'alert'); first = false; }
     });
   }
 
-  _clearFormErrors(form) { form.querySelectorAll('[data-field-error]').forEach((el) => { el.textContent = ''; el.style.opacity = '0'; }); }
+  /** Turns a failed /api/consult response into something a visitor can act on. */
+  _apiErrorText(err, t) {
+    const status = err?.status;
+    const raw = String(err?.message ?? err);
+    if (status === 429 || raw.toLowerCase().includes('rate')) return t.RATE_LIMIT || raw;
+    if (status === 503 || status === 502) {
+      // Nothing was delivered. Hand over the address rather than a dead end.
+      return (t.DELIVERY_DOWN || 'Could not send. Write to {mail} directly.')
+        .replace('{mail}', err?.recipient || 'RF24KRSK@gmail.com');
+    }
+    return t.NETWORK || raw;
+  }
+
+  _clearFormErrors(form) {
+    form.querySelectorAll('[data-field-error]').forEach((el) => { el.textContent = ''; el.style.opacity = '0'; });
+    // Also the summary, or a delivery failure stays on screen through a retry.
+    const c = form.querySelector('[data-form-errors]');
+    if (c) { c.textContent = ''; c.removeAttribute('role'); }
+  }
 
   _showFormSuccess(form) {
     const btn = form.querySelector('[type="submit"]');
