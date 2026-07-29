@@ -1,3 +1,24 @@
+const LANG_KEY = 'portfolio-lang';
+
+/**
+ * Which language the site should open in.
+ *
+ * It used to always be EN. Half the content is Russian and the site advertises
+ * a /ru alternate, but that URL rendered English and a reader's switch was
+ * forgotten on the next load. Order: an explicit earlier choice, then the URL
+ * the visitor arrived on, then what their browser asks for.
+ */
+function initialLanguage() {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved === 'EN' || saved === 'RU') return saved;
+  } catch { /* private mode */ }
+  if (/^\/ru(\/|$)/i.test(location.pathname)) return 'RU';
+  if (/^\/en(\/|$)/i.test(location.pathname)) return 'EN';
+  const pref = navigator.languages?.[0] || navigator.language || '';
+  return /^ru\b/i.test(pref) ? 'RU' : 'EN';
+}
+
 const SUPER = (() => {
   const _subs = new Map();
   const _state = new Map();
@@ -40,7 +61,7 @@ const SUPER = (() => {
     // --- Lifecycle ---
     init(initial = {}) {
       const defaults = {
-        active_language: 'EN',
+        active_language: initialLanguage(),
         scene: 0,
         progress: 0,
         isSubmitting: false,
@@ -49,6 +70,10 @@ const SUPER = (() => {
         postFX: { bloom: true, motionBlur: true },
       };
       Object.entries({ ...defaults, ...initial }).forEach(([k, v]) => _state.set(k, v));
+      // Defaults go straight into the map, bypassing the lang setter, so the
+      // document attribute has to be synced here or it keeps the markup's `en`
+      // while the page renders in Russian.
+      document.documentElement.lang = String(_state.get('active_language')).toLowerCase();
       _rafId = requestAnimationFrame(_fpsLoop);
       return this;
     },
@@ -80,6 +105,9 @@ const SUPER = (() => {
       if (locale !== 'EN' && locale !== 'RU') return;
       this.set('active_language', locale);
       document.documentElement.lang = locale.toLowerCase();
+      // Without this the choice lasted until the next reload, so a Russian
+      // reader had to switch on every visit.
+      try { localStorage.setItem(LANG_KEY, locale); } catch { /* private mode */ }
     },
     toggleLang() {
       this.lang = this.lang === 'EN' ? 'RU' : 'EN';

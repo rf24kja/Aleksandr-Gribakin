@@ -712,7 +712,16 @@
       --b-bg2: #181818;
       --b-bg3: #1e1e1e;
       --b-text: #e0e0e0;
-      --b-text-dim: #777;
+      /* Every use of --b-text-dim is a text colour, so it has to clear 4.5:1
+         on its own. It was #777, which is 3.9:1 here and 2.5:1 on the light
+         ground — labels and dates were being drawn below readability. */
+      --b-text-dim: #9a9a9a;
+      /* Body copy that should read quieter than the heading but still be read. */
+      --b-text-mute: #a0a0a0;
+      /* The accent is legible on this ground; its light-theme twin is not. */
+      --b-accent-text: #e95420;
+      /* Accent used as a filled surface under white text. */
+      --b-accent-strong: #b8430f;
       --b-accent: #e95420;
       --b-accent-hover: #ff7a45;
       --b-font: 'Inter', system-ui, sans-serif;
@@ -724,7 +733,12 @@
       --b-bg2: #f0f0f0;
       --b-bg3: #e8e8e8;
       --b-text: #222;
-      --b-text-dim: #999;
+      --b-text-dim: #6b6b6b;
+      --b-text-mute: #5f5f5f;
+      /* #e95420 is only 3.5:1 on #fafafa, so small text in the accent needs a
+         darker twin. Buttons and rules keep the brand colour. */
+      --b-accent-text: #b8430f;
+      --b-accent-strong: #b8430f;
       --b-accent: #e95420;
       --b-accent-hover: #d04a1c;
     }
@@ -779,7 +793,7 @@
 
     /* Skip link */
     [data-mode="business"] .skip-link {
-      background: var(--b-accent);
+      background: var(--b-accent-strong);
       color: #fff;
       font-family: var(--b-font-mono);
       font-size: 11px;
@@ -791,21 +805,21 @@
       top: 20px;
       right: 20px;
       z-index: 100;
-      background: transparent;
-      border: 1px solid rgba(255,255,255,.1);
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,.18);
       border-radius: 6px;
-      color: var(--b-text);
+      color: var(--b-accent-text);
       font-family: var(--b-font-mono);
       font-size: 11px;
       padding: 6px 14px;
       cursor: pointer;
-      opacity: .5;
-      transition: opacity .2s;
+      transition: color .2s, border-color .2s;
       text-transform: uppercase;
       letter-spacing: .1em;
     }
     [data-mode="business"] .lang-toggle:hover {
-      opacity: 1;
+      color: var(--b-text);
+      border-color: var(--b-accent);
     }
 
 
@@ -850,10 +864,10 @@
       font-size: 12px;
       letter-spacing: .15em;
       text-transform: uppercase;
-      color: var(--b-accent);
+      color: var(--b-accent-text);
       font-family: var(--b-font-mono);
       margin-top: 20px;
-      opacity: .7;
+      opacity: 1;
       font-weight: 400;
     }
     /* Bio + CTA in intro */
@@ -877,10 +891,10 @@
       font-family: var(--b-font-mono);
       font-size: 10px;
       padding: 3px 10px;
-      border: 1px solid rgba(233,84,32,.15);
+      border: 1px solid rgba(233,84,32,.25);
       border-radius: 4px;
-      color: var(--b-accent);
-      opacity: .7;
+      color: var(--b-accent-text);
+      opacity: 1;
       letter-spacing: .03em;
     }
     [data-mode="business"] .intro-cta {
@@ -929,8 +943,8 @@
       font-size: clamp(10px,1vw,12px);
       letter-spacing: .25em;
       text-transform: uppercase;
-      color: var(--b-accent);
-      opacity: .8;
+      color: var(--b-accent-text);
+      opacity: 1;
       background: none;
       -webkit-text-fill-color: initial;
       margin-bottom: 24px;
@@ -1025,8 +1039,8 @@
     }
     [data-mode="business"] .career-item .period {
       font-family: var(--b-font-mono);
-      font-size: 11px;
-      color: var(--b-text-dim);
+      font-size: 12px;
+      color: var(--b-text-mute);
       padding: 0;
       letter-spacing: 0;
       min-width: auto;
@@ -1044,15 +1058,19 @@
       margin-bottom: 4px;
     }
     [data-mode="business"] .career-item .role-company .company {
-      color: var(--b-accent);
+      color: var(--b-accent-text);
       font-weight: 400;
     }
+    /* This is the description of the role, not a caption. It was 12px of
+       --b-text at half opacity, which composites to about 3:1 — below the
+       4.5:1 that body text needs, and the reason the section read as
+       unfinished rather than dense. */
     [data-mode="business"] .career-item .desc {
-      font-size: 12px;
-      line-height: 1.6;
-      color: var(--b-text);
-      opacity: .5;
-      margin-bottom: 6px;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--b-text-mute);
+      opacity: 1;
+      margin-bottom: 8px;
     }
     [data-mode="business"] .career-achs {
       margin-top: 4px;
@@ -1061,15 +1079,14 @@
       gap: 2px;
     }
     [data-mode="business"] .career-ach {
-      font-size: 11px;
-      line-height: 1.5;
-      color: var(--b-text-dim);
-      opacity: .7;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--b-text-mute);
+      opacity: 1;
       padding-left: 2px;
     }
     [data-mode="business"] .career-ach:hover {
       color: var(--b-accent);
-      opacity: 1;
     }
 
     /* Category Tabs */
@@ -1099,7 +1116,7 @@
     [data-mode="business"] .cat-tab.active {
       background: rgba(233,84,32,.1);
       border-color: var(--b-accent);
-      color: var(--b-accent);
+      color: var(--b-accent-text);
     }
 
     /* Projects */
@@ -1159,15 +1176,14 @@
     [data-mode="business"] .project-card .card-tag {
       display: inline-block;
       font-family: var(--b-font-mono);
-      font-size: 8px;
+      font-size: 10px;
       letter-spacing: .1em;
-      color: var(--b-accent);
-      border: 1px solid rgba(233,84,32,.12);
+      color: var(--b-accent-text);
+      border: 1px solid rgba(233,84,32,.22);
       border-radius: 3px;
       padding: 2px 8px;
       margin-bottom: 10px;
       text-transform: uppercase;
-      opacity: .7;
     }
     [data-mode="business"] .project-card .card-title {
       font-size: 14px;
@@ -1178,28 +1194,31 @@
       background: none;
       -webkit-text-fill-color: initial;
     }
+    /* The technology list is the first thing a technical reader looks for.
+       At 9px and .35 opacity it measured 1.5:1 — present in the DOM, absent
+       on screen. */
     [data-mode="business"] .project-card .stack {
       font-family: var(--b-font-mono);
-      font-size: 9px;
-      color: var(--b-accent);
-      opacity: .35;
+      font-size: 11px;
+      color: var(--b-text-mute);
+      opacity: 1;
       letter-spacing: .03em;
       margin-bottom: 8px;
     }
     [data-mode="business"] .project-card .metric {
       font-family: var(--b-font-mono);
-      font-size: 9px;
-      color: var(--b-text-dim);
-      opacity: .5;
+      font-size: 11px;
+      color: var(--b-text-mute);
+      opacity: 1;
       margin-bottom: 8px;
       padding: 4px 0;
-      border-top: 1px solid rgba(255,255,255,.04);
+      border-top: 1px solid var(--b-border, rgba(128,128,128,.18));
     }
     [data-mode="business"] .project-card .desc {
-      font-size: 12px;
+      font-size: 12.5px;
       line-height: 1.6;
-      color: var(--b-text);
-      opacity: .45;
+      color: var(--b-text-mute);
+      opacity: 1;
     }
 
     /* Achievements */
@@ -1230,8 +1249,8 @@
     }
     [data-mode="business"] .achievement-item .ach-year {
       font-family: var(--b-font-mono);
-      font-size: 10px;
-      color: var(--b-text-dim);
+      font-size: 11px;
+      color: var(--b-text-mute);
       margin-bottom: 4px;
     }
     [data-mode="business"] .achievement-item .ach-title {
@@ -1241,10 +1260,10 @@
       margin-bottom: 4px;
     }
     [data-mode="business"] .achievement-item .ach-desc {
-      font-size: 12px;
-      line-height: 1.5;
-      color: var(--b-text);
-      opacity: .5;
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: var(--b-text-mute);
+      opacity: 1;
     }
 
     /* Form */
@@ -1338,7 +1357,7 @@
     [data-mode="business"] .terminal-form button[type="submit"] {
       width: 100%;
       padding: 12px 20px;
-      background: var(--b-accent);
+      background: var(--b-accent-strong);
       border: none;
       border-radius: 6px;
       color: #fff;
@@ -1622,6 +1641,17 @@
     }
     [data-mode="business"][data-theme="light"] .cat-tab {
       border-color: rgba(0,0,0,.08);
+    }
+    /* Accent text on the light ground: #e95420 is 3.5:1, short of the 4.5:1
+       small text needs. Fills and borders keep the brand colour; only the
+       glyphs move to the darker twin. */
+    [data-mode="business"][data-theme="light"] .intro-cta,
+    [data-mode="business"][data-theme="light"] .pdash-sort-btn.active,
+    [data-mode="business"][data-theme="light"] .lang-toggle {
+      color: var(--b-accent-text);
+      background: #fff;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
     [data-mode="business"][data-theme="light"] .cat-tab.active {
       background: rgba(233,84,32,.06);
@@ -2595,7 +2625,6 @@
       font-size: 10px;
       line-height: 1.4;
       color: var(--sb-dim);
-      opacity: .85;
       margin-top: 6px;
       max-width: 22ch;
     }
