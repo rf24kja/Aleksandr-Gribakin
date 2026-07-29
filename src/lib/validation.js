@@ -4,7 +4,10 @@ const VALIDATION = Object.freeze({
       required: true,
       min: 2,
       max: 64,
-      pattern: /^[\p{L}\s'.-]+$/u,
+      // \p{L} covers every alphabet, so Cyrillic names pass. The typographic
+      // apostrophe is listed because iOS and macOS rewrite a typed ' to ’ as
+      // you go — without it, O’Brien is rejected as invalid characters.
+      pattern: /^[\p{L}\s'’.-]+$/u,
     },
     email: {
       required: true,
