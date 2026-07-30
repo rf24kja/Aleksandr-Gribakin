@@ -34,7 +34,6 @@ export default class PortfolioOrchestrator {
     this._wireLanguageToggle();
     this._wireFPSOptimizer();
     this._wireForm();
-    this._wireCoffeeEgg();
     this._wireProjectClicks();
     this._wireCareerAchClicks();
     this._routeFromPath();
@@ -612,25 +611,6 @@ export default class PortfolioOrchestrator {
     setTimeout(() => form.reset(), 3000);
   }
 
-  // --- Coffee Easter Egg ---
-  _wireCoffeeEgg() {
-    const egg = document.getElementById('coffeeEgg');
-    const popup = document.getElementById('coffeePopup');
-    if (!egg || !popup) return;
-    egg.addEventListener('click', () => popup.classList.add('active'));
-    popup.addEventListener('click', (e) => {
-      if (e.target.closest('[data-close-coffee]')) popup.classList.remove('active');
-      if (e.target.closest('[data-copy-trx]')) {
-        const addr = popup.querySelector('.coffee-popup-addr');
-        const btn = e.target.closest('[data-copy-trx]');
-        navigator.clipboard?.writeText(addr?.textContent || '');
-        btn.textContent = PONYTAIL.LOCALE[this.s.lang]?.COFFEE?.DONE || '✓ Copied';
-        btn.classList.add('copied');
-        setTimeout(() => { btn.textContent = PONYTAIL.LOCALE[this.s.lang]?.COFFEE?.COPY || 'Copy Address'; btn.classList.remove('copied'); }, 2000);
-      }
-    });
-  }
-
   _showSkeleton() {
     const panel = document.getElementById('projectDetail');
     if (panel) {
@@ -691,11 +671,34 @@ export default class PortfolioOrchestrator {
    * Runs before the router's own first checkHash(), so that call picks it up.
    */
   _routeFromPath() {
-    const m = window.location.pathname.match(/^\/(?:(en|ru)\/)?project\/([^/]+)\/?$/i);
+    const path = window.location.pathname;
+    const m = path.match(/^\/(?:(en|ru)\/)?(project|career|achievement)\/([^/]+)\/?$/i);
     if (!m) return;
+    const [, langPrefix, kind, slug] = m;
+    const base = langPrefix ? `/${langPrefix.toLowerCase()}/` : '/';
+
+    // Career and milestones are addressed by period and year rather than by
+    // index: an index says nothing in a search result and changes meaning the
+    // day an entry is inserted. The router works in indices, so the slug is
+    // resolved back to one here.
+    let hash = null;
+    if (kind.toLowerCase() === 'project') {
+      hash = `#/project/${slug}`;
+    } else if (kind.toLowerCase() === 'career') {
+      const want = decodeURIComponent(slug);
+      const idx = this._l().CAREER.findIndex(
+        (c) => c.period.replace(/[–—]/g, '-').replace(/\s+/g, '') === want,
+      );
+      if (idx >= 0) hash = `#/career/${idx}`;
+    } else {
+      const want = decodeURIComponent(slug);
+      const idx = this._l().ACHIEVEMENTS.findIndex((a) => String(a.year) === want);
+      if (idx >= 0) hash = `#/achievement/${idx}`;
+    }
+    if (!hash) return; // unknown slug: leave the page as the server served it
+
     document.querySelectorAll('[data-prerendered]').forEach((el) => el.remove());
-    const base = m[1] ? `/${m[1].toLowerCase()}/` : '/';
-    history.replaceState(null, '', `${base}#/project/${m[2]}`);
+    history.replaceState(null, '', `${base}${hash}`);
   }
 
   _wireHashRouter() {

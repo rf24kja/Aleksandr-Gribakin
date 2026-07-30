@@ -344,49 +344,22 @@
     .terminal-form button[type="submit"].loading::after { content: ''; position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: btn-spin .6s linear infinite; }
     @keyframes btn-spin { to { transform: rotate(360deg); } }
 
-    /* Coffee Easter Egg */
-    .coffee-egg {
-      position: fixed; bottom: 20px; right: 20px; font-size: 18px; cursor: pointer; z-index: 101;
-      opacity: .3; transition: opacity .4s, transform .3s; user-select: none; line-height: 1;
-      animation: coffeePulse 4s ease-in-out infinite;
-      width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
-      background: var(--section-bg); backdrop-filter: blur(8px);
-      border: 1px solid var(--border); border-radius: 50%;
-    }
-    .coffee-egg:hover { opacity: .8; transform: scale(1.2); }
-    @keyframes coffeePulse { 0%,100% { opacity: .15; } 50% { opacity: .35; } }
-    .coffee-popup {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 200;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
-      opacity: 0; pointer-events: none; transition: opacity .4s;
-    }
-    .coffee-popup.active { opacity: 1; pointer-events: auto; }
-    .coffee-popup-body {
-      background: color-mix(in srgb, var(--bg) 96%, transparent); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 32px; max-width: 380px; width: 90%;
-      text-align: center; font-family: var(--font-mono);
-    }
-    .coffee-popup-title { font-size: 18px; color: var(--text-bright); margin-bottom: 16px; }
-    .coffee-qr { width: 140px; height: 140px; margin: 0 auto 12px; display: block; border-radius: 8px; }
-    .coffee-popup-addr {
-      font-size: 11px; color: var(--accent2); word-break: break-all;
-      background: color-mix(in srgb, var(--accent2) 5%, transparent); border: 1px solid color-mix(in srgb, var(--accent2) 12%, transparent);
-      border-radius: 6px; padding: 12px 14px; margin-bottom: 4px;
-      letter-spacing: .02em; line-height: 1.6;
-    }
-    .coffee-popup-sub { font-size: 9px; color: var(--text-dim); margin-bottom: 18px; letter-spacing: .1em; }
-    .coffee-popup-actions { display: flex; gap: 8px; justify-content: center; }
-    .coffee-btn {
-      font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em;
-      padding: 8px 18px; border-radius: 6px; cursor: pointer; transition: all .3s;
-      background: transparent; color: var(--accent); border: 1px solid var(--accent);
-      text-transform: uppercase;
-    }
-    .coffee-btn:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
-    .coffee-btn[data-close-coffee] { border-color: color-mix(in srgb, var(--text-bright) 15%, transparent); color: var(--text-dim); }
-    .coffee-btn[data-close-coffee]:hover { border-color: color-mix(in srgb, var(--text-bright) 25%, transparent); color: var(--text); }
-    .coffee-btn.copied { border-color: var(--accent2); color: var(--accent2); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /* === Settings Gear === */
     .settings-gear {
@@ -673,7 +646,7 @@
       [data-mode="business"] .lang-toggle {
         top: 18px; left: 12px; right: auto; padding: 10px 16px; font-size: 12px;
       }
-      .coffee-egg { width: 44px; height: 44px; }
+
       #portrait { width: 200px; right: 0; opacity: .06; }
       .pd-scroll { padding: 20px 16px; }
       .pd-panel { max-height: 94vh; }
@@ -763,7 +736,7 @@
       .career-item { transform: none !important; }
       .project-card { transform: none !important; }
       .achievement-item { transform: none !important; }
-      .coffee-egg { animation: none !important; }
+
       .intro-text { transition: opacity .5s; }
     }
 
@@ -828,8 +801,6 @@
     [data-mode="business"] .scroll-progress,
     [data-mode="business"] .spacer,
     [data-mode="business"] .year-label,
-    [data-mode="business"] .coffee-egg,
-    [data-mode="business"] .coffee-popup,
     [data-mode="business"] .hud-top,
     [data-mode="business"] .section-overlay::before {
       display: none !important;
@@ -2482,8 +2453,6 @@
     [data-mode="desktop"] #preloader,
     [data-mode="desktop"] #projectDetail,
     [data-mode="desktop"] #page404,
-    [data-mode="desktop"] .coffee-egg,
-    [data-mode="desktop"] .coffee-popup,
     [data-mode="desktop"] #mainContent,
     [data-mode="desktop"] .spacer,
     [data-mode="desktop"] #ui-overlay { display: none !important; }
@@ -3392,7 +3361,6 @@
       .skip-link { min-height: 44px; display: inline-flex; align-items: center; }
       .stat-trigger { padding-block: 4px; }
       .pd-back, .pd-nav-btn { min-height: 44px; min-width: 44px; }
-      .coffee-btn { min-height: 44px; }
       .settings-opt, .settings-close { min-height: 44px; }
       .terminal-form input,
       .terminal-form textarea,
@@ -3404,7 +3372,7 @@
       .stat-hint, .stat-label, .sb-label, .sb-value,
       .pdash-cap, .pm-label, .pd-metrics-note, .pd-disclaimer,
       /* Mode-scoped so these beat the per-mode rules that set 9px. */
-      .settings-label, .settings-hint, .coffee-popup-sub { font-size: 11px; }
+      .settings-label, .settings-hint { font-size: 11px; }
       [data-mode="business"] .pd-tag,
       [data-mode="terminal"] .pd-tag,
       .pd-tag { font-size: 11px; }
@@ -3500,7 +3468,6 @@
   <div id="ui-overlay">
     <button class="settings-gear" id="settingsGearUI" title="Settings" aria-label="Open settings"><span class="gear-glyph" aria-hidden="true">⚙</span></button>
     <button class="lang-toggle" data-lang-switch></button>
-    <div class="coffee-egg" id="coffeeEgg" title="☕">☕</div>
   </div>
 
   <div class="hud-top">
@@ -3612,22 +3579,7 @@
       <div data-form-success></div>
       <button type="submit" data-i18n="FORM.SUBMIT" aria-label="Submit contact form">Initiate Consult</button>
     </form>
-    <div class="coffee-popup" id="coffeePopup">
-      <div class="coffee-popup-body">
-        <div class="coffee-popup-title" data-i18n="COFFEE.TITLE">☕ Buy me a coffee</div>
-        <!-- Generated locally. Was fetched from api.qrserver.com, which sent
-             every visitor's IP to a third party and broke the page offline. -->
-        <img class="coffee-qr" src="/coffee-qr.png" width="180" height="180"
-             alt="USDT TRC-20 wallet QR code" loading="lazy" />
-        <div class="coffee-popup-addr">TWTCH2ZhyKvzZU1ph6h1d4vTHpHyJDkN5i</div>
-        <div class="coffee-popup-sub" data-i18n="COFFEE.NETWORK">USDT TRC-20</div>
-        <div class="coffee-popup-actions">
-          <button class="coffee-btn" data-copy-trx data-i18n="COFFEE.COPY">Copy Address</button>
-          <button class="coffee-btn coffee-close" data-close-coffee data-i18n="COFFEE.CLOSE">Close</button>
-        </div>
-      </div>
-    </div>
-  </section>
+      </section>
   </div>
 
   <div id="projectDetail"></div>

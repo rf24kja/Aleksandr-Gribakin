@@ -24,7 +24,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import PONYTAIL from '../src/config/ponytail.config.js';
-import { PROJECTS_DETAIL } from '../src/data/projects.js';
+import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../src/data/projects.js';
 import { computeStats } from '../src/lib/stats.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -35,6 +35,17 @@ const esc = (s) => String(s ?? '')
   .replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;')
   .replace(/</g, '&lt;')
   .replace(/>/g, '&gt;');
+
+/**
+ * URL slug for a career entry: its period, which is unique and readable.
+ *
+ * Index-based paths would work for the router but say nothing to a reader or a
+ * search result, and they would change meaning the day an entry is inserted.
+ */
+const careerSlug = (entry) => entry.period.replace(/[–—]/g, '-').replace(/\s+/g, '');
+
+/** Achievement years are unique across the list, so the year is the slug. */
+const achievementSlug = (entry) => String(entry.year);
 
 /** Resolves a dotted i18n key against a locale object. */
 const lookup = (locale, key) => key.split('.').reduce((o, k) => o?.[k], locale);
@@ -196,6 +207,60 @@ function projectPage(shell, lang, project, detail, canonical, prefix) {
   });
 }
 
+/**
+ * A career entry's page.
+ *
+ * Five entries shared the homepage URL, the same problem the projects had: a
+ * hash route is not a document, so none of them could be indexed or linked to
+ * on its own.
+ */
+function careerPage(shell, lang, entry, detail, canonical, prefix) {
+  const l = PONYTAIL.LOCALE[lang];
+  const body = `
+      <article class="prerender-detail" data-prerendered="career">
+        <h2>${esc(entry.role)} — ${esc(entry.company)}</h2>
+        <p class="prerender-meta">${esc(entry.period)}</p>
+        <p>${esc(entry.desc)}</p>
+        ${(detail?.details || []).map((d) => `<p>${esc(d)}</p>`).join('\n        ')}
+        ${detail?.keyAchievements?.length ? `<h3>${esc(l.DETAIL?.KEY_ACH || 'Key Achievements')}</h3>
+        <ul>${detail.keyAchievements.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
+        ${detail?.techStack?.length ? `<h3>${esc(l.DETAIL?.TECH_STACK || 'Tech Stack')}</h3>
+        <p>${esc(detail.techStack.join(' · '))}</p>` : ''}
+        ${detail?.highlights?.length ? `<h3>${esc(l.DETAIL?.KEY_METRICS || 'Key Metrics')}</h3>
+        <ul>${detail.highlights.map((h) => `<li>${esc(h.label)}: ${esc(h.value)}${esc(h.unit || '')}</li>`).join('')}</ul>` : ''}
+      </article>`;
+
+  let html = localePage(shell, lang, canonical, prefix);
+  html = html.replace('<div id="projectDetail"></div>', `<div id="projectDetail"></div>\n  ${body}`);
+  return setHead(html, {
+    lang: lang.toLowerCase(),
+    canonical,
+    title: `${entry.role} @ ${entry.company} (${entry.period}) — ${l.ROLE}`,
+    description: entry.desc,
+  });
+}
+
+/** A milestone's page. */
+function achievementPage(shell, lang, entry, detail, canonical, prefix) {
+  const l = PONYTAIL.LOCALE[lang];
+  const body = `
+      <article class="prerender-detail" data-prerendered="achievement">
+        <h2>${esc(entry.title)}</h2>
+        <p class="prerender-meta">${esc(entry.year)}</p>
+        <p>${esc(entry.desc)}</p>
+        ${(detail?.details || []).map((d) => `<p>${esc(d)}</p>`).join('\n        ')}
+      </article>`;
+
+  let html = localePage(shell, lang, canonical, prefix);
+  html = html.replace('<div id="projectDetail"></div>', `<div id="projectDetail"></div>\n  ${body}`);
+  return setHead(html, {
+    lang: lang.toLowerCase(),
+    canonical,
+    title: `${entry.title} (${entry.year}) — ${l.ROLE}`,
+    description: entry.desc,
+  });
+}
+
 function sitemap(urls) {
   const body = urls.map(({ loc, priority }) => `  <url>
     <loc>${loc}</loc>
@@ -221,6 +286,7 @@ async function emit(relPath, html) {
 async function main() {
   const shell = await readFile(join(DIST, 'index.html'), 'utf8');
   const urls = [];
+  const pending = [];
 
   const roots = [
     { lang: 'EN', path: 'index.html', loc: `${ORIGIN}/`, priority: '1.0' },
@@ -248,9 +314,37 @@ async function main() {
     }
   }
 
+  let careerPages = 0;
+  let achievementPages = 0;
+  for (const [lang, prefix] of [['EN', ''], ['RU', 'ru/']]) {
+    const l = PONYTAIL.LOCALE[lang];
+    const careerDetails = CAREER_DETAIL[lang] || CAREER_DETAIL.EN || [];
+    l.CAREER.forEach((entry, i) => {
+      const slug = careerSlug(entry);
+      const loc = `${ORIGIN}/${prefix}career/${slug}`;
+      pending.push([`${prefix}career/${slug}/index.html`,
+        careerPage(shell, lang, entry, careerDetails[i], loc, prefix)]);
+      urls.push({ loc, priority: '0.6' });
+      careerPages += 1;
+    });
+
+    const achDetails = ACHIEVEMENT_DETAIL[lang] || ACHIEVEMENT_DETAIL.EN || [];
+    l.ACHIEVEMENTS.forEach((entry, i) => {
+      const slug = achievementSlug(entry);
+      const loc = `${ORIGIN}/${prefix}achievement/${slug}`;
+      pending.push([`${prefix}achievement/${slug}/index.html`,
+        achievementPage(shell, lang, entry, achDetails[i], loc, prefix)]);
+      urls.push({ loc, priority: '0.5' });
+      achievementPages += 1;
+    });
+  }
+
+  for (const [path, html] of pending) await emit(path, html);
+
   await writeFile(join(DIST, 'sitemap.xml'), sitemap(urls), 'utf8');
 
-  console.log(`prerender: ${roots.length} locale pages, ${projectPages} project pages, `
+  console.log(`prerender: ${roots.length} locale pages, ${projectPages} project, `
+    + `${careerPages} career, ${achievementPages} milestone pages, `
     + `${urls.length} sitemap entries`);
 }
 
