@@ -203,7 +203,11 @@ function columns() {
   const styles = getComputedStyle(shell.body);
   const avail = shell.body.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
   if (!charWidth) return 72;
-  return Math.max(28, Math.min(78, Math.floor(avail / charWidth)));
+  // One column of slack. The character width is fractional and the measurement
+  // rounds, so a count that exactly fills the box occasionally overflows by a
+  // hair — and then CSS wraps the line, which drops the continuation to column
+  // zero and destroys the alignment the layout is built on.
+  return Math.max(28, Math.min(78, Math.floor(avail / charWidth) - 1));
 }
 
 function context() {

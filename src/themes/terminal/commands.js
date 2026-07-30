@@ -68,10 +68,29 @@ const COMMANDS = [
       for (const c of COMMANDS) {
         if (c.hidden) continue;
         const usage = c.usage ? `${c.name} ${c.usage}` : c.name;
-        out.push({ text: `  ${pad(usage, ctx.cols > 56 ? 22 : 20)}${(t.CMD || {})[c.key] || ''}`, cls: 'cmdrow', run: c.usage ? null : c.name });
+        const run = c.usage ? null : c.name;
+        const describe = (t.CMD || {})[c.key] || '';
+        // Below about sixty columns a name and its description cannot share a
+        // line without the browser breaking it, and a CSS break lands at column
+        // zero — the description ends up under the next command's name.
+        if (ctx.cols < 60) {
+          out.push({ text: `  ${usage}`, cls: 'accent', run });
+          for (const line of wrap(describe, ctx.cols - 6, '    ')) {
+            out.push({ text: line, cls: 'cmdrow', run });
+          }
+        } else {
+          const nameW = ctx.cols > 66 ? 22 : 20;
+          const [first, ...rest] = wrap(describe, ctx.cols - nameW - 4, '');
+          out.push({ text: `  ${pad(usage, nameW)}${first || ''}`, cls: 'cmdrow', run });
+          for (const line of rest) {
+            out.push({ text: `  ${' '.repeat(nameW)}${line}`, cls: 'cmdrow', run });
+          }
+        }
       }
       out.push('');
-      out.push({ text: `  ${t.HINT_KEYS || 'Tab completes · ↑ ↓ history · Ctrl+L clears'}`, cls: 'dim' });
+      for (const line of wrap(t.HINT_KEYS || 'Tab completes · ↑ ↓ history · Ctrl+L clears', ctx.cols - 4, '  ')) {
+        out.push({ text: line, cls: 'dim' });
+      }
       return out;
     },
   },
@@ -79,13 +98,21 @@ const COMMANDS = [
     name: 'whoami', key: 'WHOAMI',
     run(ctx) {
       const l = L(ctx.lang);
-      return [
-        ...head(T(ctx.lang).HEAD_ID || 'IDENTITY', ctx.cols),
-        { text: `  ${pad('name', 14)}: ${l.NAME}`, cls: 'kv' },
-        { text: `  ${pad('role', 14)}: ${l.ROLE}`, cls: 'kv' },
-        { text: `  ${pad('focus', 14)}: ${l.TAGLINE}`, cls: 'kv' },
-        { text: `  ${pad('mail', 14)}: RF24KRSK@gmail.com`, cls: 'kv' },
-      ];
+      const out = [...head(T(ctx.lang).HEAD_ID || 'IDENTITY', ctx.cols)];
+      // A key/value pair whose value is long enough to overflow gets its
+      // continuation aligned under the value, not against the left edge.
+      const keyW = ctx.cols < 46 ? 8 : 14;
+      const kv = (key, value) => {
+        const indent = `  ${' '.repeat(keyW + 2)}`;
+        const [first, ...rest] = wrap(String(value), ctx.cols - keyW - 6, '');
+        out.push({ text: `  ${pad(key, keyW)}: ${first || ''}`, cls: 'kv' });
+        for (const line of rest) out.push({ text: `${indent}${line}`, cls: 'kv' });
+      };
+      kv('name', l.NAME);
+      kv('role', l.ROLE);
+      kv('focus', l.TAGLINE);
+      kv('mail', 'RF24KRSK@gmail.com');
+      return out;
     },
   },
   {
@@ -105,7 +132,7 @@ const COMMANDS = [
       for (const s of stats) {
         const labelW = Math.min(30, Math.max(14, ctx.cols - 12));
         out.push({ text: `  ${pad(s.label, labelW)}: ${s.display}`, cls: 'kv' });
-        out.push(...wrap(s.hint, ctx.cols - 6, '    '));
+        out.push(...wrap(s.hint, ctx.cols - 8, '    '));
         if (full) {
           const max = Math.max(...s.breakdown.items.map((i) => i.value)) || 1;
           // Widest value in this group decides the budget, so every row in the
@@ -145,9 +172,23 @@ const COMMANDS = [
       }
       const out = [...head(t.HEAD_CAREER || 'CAREER LOG', ctx.cols)];
       l.CAREER.forEach((c, i) => {
-        out.push({ text: `  [${c.period}]  ${c.role.toUpperCase()}  @ ${c.company}`, cls: 'accent', run: `career ${i + 1}` });
-        wrap(c.desc, ctx.cols - 6, '  │  ').forEach((x) => out.push({ text: x, cls: 'dim' }));
-        out.push({ text: `  │  → ${(t.HINT_DETAIL || 'career {n} for detail').replace('{n}', i + 1)}`, cls: 'hintline', run: `career ${i + 1}` });
+        // Period, role and employer on one line overflow a phone, and the
+        // browser's wrap drops the continuation to column zero. Narrow layout
+        // gives each its own line; wide keeps them together.
+        if (ctx.cols < 62) {
+          out.push({ text: `  [${c.period}]`, cls: 'accent', run: `career ${i + 1}` });
+          for (const line of wrap(`${c.role.toUpperCase()} @ ${c.company}`, ctx.cols - 6, '    ')) {
+            out.push({ text: line, cls: 'accent', run: `career ${i + 1}` });
+          }
+        } else {
+          for (const line of wrap(`[${c.period}]  ${c.role.toUpperCase()}  @ ${c.company}`, ctx.cols - 4, '  ')) {
+            out.push({ text: line, cls: 'accent', run: `career ${i + 1}` });
+          }
+        }
+        wrap(c.desc, ctx.cols - 8, '  │  ').forEach((x) => out.push({ text: x, cls: 'dim' }));
+        for (const line of wrap(`→ ${(t.HINT_DETAIL || 'career {n} for detail').replace('{n}', i + 1)}`, ctx.cols - 8, '  │  ')) {
+          out.push({ text: line, cls: 'hintline', run: `career ${i + 1}` });
+        }
         out.push('');
       });
       return out;
@@ -175,7 +216,11 @@ const COMMANDS = [
         const runOpen = `open ${p.id}`;
         if (ctx.cols < 62) {
           out.push({ text: `  ${p.id}`, cls: 'accent', run: runOpen });
-          out.push({ text: `    [${p.cat}] · ${p.metric}`, cls: 'dim', run: runOpen });
+          // Wrapped rather than emitted raw: a long metric used to run past the
+          // edge and CSS broke it to column zero, under the project id.
+          for (const line of wrap(`[${p.cat}] · ${p.metric}`, ctx.cols - 6, '    ')) {
+            out.push({ text: line, cls: 'dim', run: runOpen });
+          }
         } else {
           out.push({ text: `  ${pad('[' + p.cat + ']', 18)}${pad(p.id, 20)}· ${p.metric}`, cls: 'row', run: runOpen });
         }
@@ -204,7 +249,10 @@ const COMMANDS = [
       const out = [...head(p.name.toUpperCase(), ctx.cols)];
       out.push({ text: `  ${pad(t.LBL_CAT || 'Category', 10)}: ${p.cat} / ${p.tag}`, cls: 'kv' });
       out.push(...wrap(`${t.LBL_STACK || 'Stack'}: ${p.stack}`, ctx.cols - 4, '  ').map((x) => ({ text: x, cls: 'kv' })));
-      out.push({ text: `  ${pad(t.LBL_ACCESS || 'Access', 10)}: ${d.access === 'private' ? (l.DETAIL.PRIVATE_REPO || 'Private repository') : 'public'}`, cls: 'warn' });
+      const access = d.access === 'private' ? (l.DETAIL.PRIVATE_REPO || 'Private repository') : 'public';
+      for (const line of wrap(`${pad(t.LBL_ACCESS || 'Access', 10)}: ${access}`, ctx.cols - 4, '  ')) {
+        out.push({ text: line, cls: 'warn' });
+      }
       out.push('');
       for (const para of d.details) { out.push(...wrap(para, ctx.cols - 4, '  ')); out.push(''); }
       out.push({ text: `  ${t.HEAD_METRICS || 'KEY METRICS'}`, cls: 'accent' });
@@ -258,7 +306,9 @@ const COMMANDS = [
         const runAch = `achievements ${i + 1}`;
         if (ctx.cols < 62) {
           out.push({ text: `  ${a.year}  ${a.title}`, cls: 'row', run: runAch });
-          out.push({ text: `        ${(t.HINT_DETAIL_N || 'achievements {n}').replace('{n}', i + 1)}`, cls: 'hintline', run: runAch });
+          for (const line of wrap((t.HINT_DETAIL_N || 'achievements {n}').replace('{n}', i + 1), ctx.cols - 10, '        ')) {
+            out.push({ text: line, cls: 'hintline', run: runAch });
+          }
         } else {
           out.push({ text: `  ${pad(a.year, 6)}${pad(a.title, 34)}· ${(t.HINT_DETAIL_N || 'achievements {n}').replace('{n}', i + 1)}`, cls: 'row', run: runAch });
         }

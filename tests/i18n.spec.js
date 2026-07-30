@@ -85,6 +85,14 @@ test('the settings options each get a full row rather than wrapping', async ({ p
   await page.locator('#settingsGear').click();
   const popup = page.locator('#settingsPopup');
   await expect(popup).toBeVisible();
+  // Measure after the card has its own opaque ground, otherwise the panel can
+  // still be laying out and the rows have not settled into place.
+  await expect
+    .poll(async () => page.locator('.settings-card').evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
+    ), { timeout: 10_000 })
+    .not.toMatch(/rgba\(0, 0, 0, 0\)/);
+  await page.waitForTimeout(250);
 
   const tops = await popup.locator('.settings-mode-group .settings-opt')
     .evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
