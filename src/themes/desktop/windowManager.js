@@ -82,12 +82,46 @@ export default class WindowManager {
       document.addEventListener('pointerup', onUp)
     })
 
-    win.addEventListener('click', (e) => {
-      const btn = e.target.closest('.wt-btn')
-      if (!btn) return
+    // Close and minimize, from a pointer as well as from a click.
+    //
+    // iOS drops the synthesised click as soon as the touch drifts a few pixels,
+    // and these are small round targets sitting on the title bar — the surface
+    // that also starts a drag — so a finger that moves at all left the window
+    // with no way to close it. Same treatment as the detail rows: a short,
+    // still press counts, a drag does not.
+    let tap = null
+    let tapHandledAt = 0
+
+    const act = (btn) => {
       const action = btn.dataset.action
       if (action === 'close') this.close(id)
       if (action === 'minimize') this.minimize(id)
+    }
+
+    win.addEventListener('pointerdown', (e) => {
+      const btn = e.target.closest('.wt-btn')
+      tap = btn ? { btn, x: e.clientX, y: e.clientY, at: Date.now() } : null
+    })
+
+    win.addEventListener('pointercancel', () => { tap = null })
+
+    win.addEventListener('pointerup', (e) => {
+      const started = tap
+      tap = null
+      if (!started || e.pointerType === 'mouse') return
+      if (Date.now() - started.at > 600) return
+      if (Math.hypot(e.clientX - started.x, e.clientY - started.y) > 14) return
+      if (e.target.closest('.wt-btn') !== started.btn) return
+      tapHandledAt = Date.now()
+      act(started.btn)
+    })
+
+    win.addEventListener('click', (e) => {
+      // The click that follows a handled tap must not act twice — on close the
+      // window is already gone, but minimize would toggle straight back.
+      if (Date.now() - tapHandledAt < 700) return
+      const btn = e.target.closest('.wt-btn')
+      if (btn) act(btn)
     })
 
     win.addEventListener('pointerdown', () => this.focus(id))

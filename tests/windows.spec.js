@@ -155,3 +155,41 @@ test('a tap does not open the same detail twice', async ({ page, isMobile }) => 
   const details = ids.filter((id) => id.startsWith('win-career-'));
   expect(details.length, `windows: ${ids.join(', ')}`).toBe(1);
 });
+
+test('close and minimize work from a finger', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'touch only');
+  await bootDesktop(page);
+  await page.locator('.desk-icon[data-app="projects"]').tap();
+  const win = page.locator('#win-projects');
+  await expect(win).toBeVisible();
+
+  // These sit on the title bar, which is also the drag surface, and they are
+  // small round targets. iOS drops the click once the touch drifts, so a finger
+  // that moved at all left the window with no way off the screen.
+  const min = await win.locator('.wt-minimize').boundingBox();
+  expect(Math.min(min.width, min.height), 'the control is a full touch target')
+    .toBeGreaterThanOrEqual(44);
+
+  await page.touchscreen.tap(min.x + min.width / 2, min.y + min.height / 2);
+  await expect(win).toBeHidden();
+
+  await page.locator('#taskbar-windows').getByRole('button').first().tap();
+  await expect(win).toBeVisible();
+
+  const close = await win.locator('.wt-close').boundingBox();
+  await page.touchscreen.tap(close.x + close.width / 2, close.y + close.height / 2);
+  await expect(win).toHaveCount(0);
+});
+
+test('a tap on minimize does not bounce the window straight back', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'touch only');
+  await bootDesktop(page);
+  await page.locator('.desk-icon[data-app="about"]').tap();
+  const win = page.locator('#win-about');
+  await expect(win).toBeVisible();
+
+  await win.locator('.wt-minimize').tap();
+  // The click that follows a handled tap must not toggle it visible again.
+  await page.waitForTimeout(900);
+  await expect(win).toBeHidden();
+});
