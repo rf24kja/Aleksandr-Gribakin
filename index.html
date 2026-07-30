@@ -568,11 +568,13 @@
       cursor: not-allowed;
       border-color: var(--border);
     }
+    /* 9px at half opacity on top of an already-dim token: the same
+       opacity-as-dimming pattern found across the rest of the page, and this
+       line explains when the theme switch applies, so it has to be read. */
     .settings-hint {
-      font-size: 9px;
+      font-size: 11px;
       color: var(--text-dim);
-      opacity: .5;
-      margin-top: 4px;
+      margin-top: 6px;
       font-style: italic;
     }
     .settings-close {
@@ -1708,6 +1710,30 @@
     [data-mode="business"][data-theme="light"] .lang-toggle {
       border-color: rgba(0,0,0,.12);
     }
+    /* The panel was styled from the 3D palette — --text-bright #f5efe8,
+       --text-dim rgba(200,180,160,.35) — while the light theme repainted only
+       the card white underneath it. Near-white text on white: the header and
+       every option measured close to 1:1, which is why the panel looked blank.
+       It reads from the business tokens now, which are contrast-checked and
+       theme-aware, so both themes are covered by one set of rules. */
+    [data-mode="business"] .settings-card {
+      background: var(--b-bg);
+      border-color: var(--b-border, rgba(128,128,128,.2));
+    }
+    [data-mode="business"] .settings-header { color: var(--b-text); }
+    [data-mode="business"] .settings-label { color: var(--b-text-mute); }
+    [data-mode="business"] .settings-hint { color: var(--b-text-mute); }
+    [data-mode="business"] .settings-opt {
+      color: var(--b-text);
+      border-color: var(--b-border, rgba(128,128,128,.25));
+    }
+    [data-mode="business"] .settings-opt.active {
+      color: var(--b-accent-text);
+      border-color: var(--b-accent);
+    }
+    [data-mode="business"] .settings-close { color: var(--b-text-mute); }
+    [data-mode="business"] .settings-close:hover { color: var(--b-text); }
+
     [data-mode="business"][data-theme="light"] .settings-card {
       background: #fff;
       border-color: rgba(0,0,0,.12);

@@ -116,3 +116,72 @@ test('the desktop settings window is translated too', async ({ page }) => {
   expect(text).toMatch(/Бизнес/);
   expect(text).toMatch(/Терминал/);
 });
+
+test('overlays that start hidden are still readable when opened', async ({ page }) => {
+  // The contrast sweep skipped anything display:none, so the settings panel was
+  // never measured. It was styled from the 3D palette while the light theme
+  // repainted the card white underneath: near-white text on white, close to
+  // 1:1, which is what "текст слабочитаем" meant.
+  for (const theme of ['light', 'dark']) {
+    await page.goto('/');
+    await page.evaluate((t) => {
+      localStorage.setItem('portfolio-mode', 'business');
+      localStorage.setItem('portfolio-lang', 'RU');
+      localStorage.setItem('theme', t);
+    }, theme);
+    await page.goto(`/?t=${Date.now()}`);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme, { timeout: 15_000 });
+
+    await page.locator('#settingsGear').click();
+    await expect(page.locator('#settingsPopup')).toBeVisible();
+    // Measure only once the card has an opaque background of its own. Under
+    // parallel load the panel can be visible while the theme's styles are still
+    // resolving, and comparing against a transparent card reports contrast that
+    // no one will ever see.
+    await expect
+      .poll(async () => page.locator('.settings-card').evaluate(
+        (el) => getComputedStyle(el).backgroundColor,
+      ))
+      .not.toMatch(/rgba\(0, 0, 0, 0\)/);
+    await page.waitForTimeout(250);
+
+    const failures = await page.evaluate(() => {
+      const lum = (r, g, b) => {
+        const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+      };
+      const parse = (v) => {
+        const m = String(v).match(/rgba?\(([^)]+)\)/);
+        if (!m) return null;
+        const p = m[1].split(',').map(Number);
+        return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+      };
+      const card = document.querySelector('.settings-card');
+      const bg = parse(getComputedStyle(card).backgroundColor) || { r: 255, g: 255, b: 255, a: 1 };
+      const bad = [];
+      card.querySelectorAll('*').forEach((el) => {
+        const text = [...el.childNodes].filter((n) => n.nodeType === 3)
+          .map((n) => n.textContent.trim()).join(' ').trim();
+        if (text.length < 2) return;
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') return;
+        const fg = parse(cs.color);
+        if (!fg) return;
+        const a = (fg.a ?? 1) * (parseFloat(cs.opacity) || 1);
+        const eff = {
+          r: fg.r * a + bg.r * (1 - a),
+          g: fg.g * a + bg.g * (1 - a),
+          b: fg.b * a + bg.b * (1 - a),
+        };
+        const L1 = lum(eff.r, eff.g, eff.b);
+        const L2 = lum(bg.r, bg.g, bg.b);
+        const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+        const size = parseFloat(cs.fontSize);
+        const need = size >= 24 ? 3 : 4.5;
+        if (ratio < need) bad.push(`${text.slice(0, 22)} = ${ratio.toFixed(2)}:1 @${size}px`);
+      });
+      return bad;
+    });
+    expect(failures, `unreadable text in the ${theme} settings panel`).toEqual([]);
+  }
+});
