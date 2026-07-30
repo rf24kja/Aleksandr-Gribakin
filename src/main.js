@@ -420,6 +420,7 @@ function openSettings() {
   const popup = document.getElementById('settingsPopup');
   updateSettingsUI();
   popup.style.display = 'flex';
+  _settingsOpenedAt = Date.now();
 }
 
 function closeSettings() {
@@ -438,9 +439,44 @@ function updateSettingsUI() {
   document.querySelectorAll('[data-smode]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.smode === mode);
   });
+  // Language buttons
+  const lang = orchestrator?.s?.lang || 'EN';
+  document.querySelectorAll('[data-slang]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.slang === lang);
+  });
 }
 
+// iOS drops the synthesised click as soon as a touch drifts a few pixels, and
+// this panel is now the only settings surface on the site — reached from the
+// gear in every mode and from the desktop's Settings icon. A press that ends
+// where it started counts as a tap; a drag still does not.
+const TAP_SELECTOR = '.settings-gear, [data-stheme], [data-smode], [data-slang], #settingsClose, #settingsBackdrop';
+let _tap = null;
+let _tapHandledAt = 0;
+let _settingsOpenedAt = 0;
+
+document.addEventListener('pointerdown', (e) => {
+  const target = e.target.closest(TAP_SELECTOR);
+  _tap = target ? { target, x: e.clientX, y: e.clientY, at: Date.now() } : null;
+}, true);
+
+document.addEventListener('pointercancel', () => { _tap = null; }, true);
+
+document.addEventListener('pointerup', (e) => {
+  const started = _tap;
+  _tap = null;
+  if (!started || e.pointerType === 'mouse') return;
+  if (Date.now() - started.at > 600) return;
+  if (Math.hypot(e.clientX - started.x, e.clientY - started.y) > 14) return;
+  if (e.target.closest(TAP_SELECTOR) !== started.target) return;
+  _tapHandledAt = Date.now();
+  started.target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+}, true);
+
 document.addEventListener('click', (e) => {
+  // The browser's own click follows the one synthesised above; acting on both
+  // would toggle twice. Only the real one is dropped — ours is what does the work.
+  if (e.isTrusted && Date.now() - _tapHandledAt < 700 && e.target.closest(TAP_SELECTOR)) return;
   // Settings gear click
   if (e.target.closest('.settings-gear')) {
     openSettings();
@@ -467,9 +503,19 @@ document.addEventListener('click', (e) => {
       closeSettings(); // auto-close popup — new mode has different layout
       return;
     }
-    // Close button or backdrop
+    // Language option. The panel is the only settings surface, so the switch
+    // has to live here as well as in the corner control.
+    const langOpt = e.target.closest('[data-slang]');
+    if (langOpt) {
+      orchestrator.s.lang = langOpt.dataset.slang;
+      updateSettingsUI();
+      return;
+    }
+    // Close button or backdrop. Ignored briefly after opening: the desktop's
+    // Settings icon takes a double-click, and on touch the second tap of that
+    // gesture landed on the backdrop of the panel the first tap had just opened.
     if (e.target.closest('#settingsClose') || e.target.closest('#settingsBackdrop')) {
-      closeSettings();
+      if (Date.now() - _settingsOpenedAt > 400) closeSettings();
       return;
     }
     return; // block other clicks while popup is open

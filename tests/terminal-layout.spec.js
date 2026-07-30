@@ -94,3 +94,29 @@ test('the log never scrolls sideways', async ({ page }) => {
     expect(overflow, `${command} pushed the log sideways`).toBeLessThanOrEqual(1);
   }
 });
+
+test('a command chip does not raise the keyboard', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'the on-screen keyboard only exists on touch');
+  await bootTerminal(page, 'RU');
+
+  // Focusing an input is what raises the keyboard on a phone. Running a command
+  // from a chip used to focus the prompt unconditionally, so tapping `career`
+  // opened the keyboard and the window resized under the output just asked for.
+  const focused = () => page.evaluate(() => document.activeElement?.id || document.activeElement?.tagName);
+  expect(await focused(), 'the prompt is not focused on arrival').not.toBe('tshInput');
+
+  for (const cmd of ['career', 'projects', 'clear', 'help', 'whoami', 'stats']) {
+    await page.locator(`.tsh-chip[data-cmd="${cmd}"]`).tap();
+    await page.waitForTimeout(500);
+    expect(await focused(), `${cmd} must not focus the prompt`).not.toBe('tshInput');
+  }
+
+  // Tapping the terminal itself is the gesture that does ask for the keyboard.
+  await page.locator('.tsh-body').tap();
+  await expect.poll(focused, { timeout: 5_000 }).toBe('tshInput');
+
+  // And with it open, a chip keeps it open rather than flickering it shut.
+  await page.locator('.tsh-chip[data-cmd="stats"]').tap();
+  await page.waitForTimeout(500);
+  expect(await focused(), 'an open keyboard stays open').toBe('tshInput');
+});

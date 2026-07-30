@@ -63,6 +63,10 @@ function renderStartMenu(container) {
 function openApp(id) {
   const app = apps.find(a => a.id === id)
   if (!app) return
+  // Settings is not a window. Every mode shares one panel — the same one the
+  // tray gear opens — so the desktop app hands off to it rather than drawing a
+  // second, different version of the same controls.
+  if (app.panel) { app.panel(); return }
   wm.open({ id: 'win-' + id, title: appLabel(app), icon: app.svg, content: app.contentFn(), width: app.width || 520, height: app.height || 380 })
 }
 
@@ -312,7 +316,9 @@ export function initDesktop(appState) {
   registerApp('projects', () => _('PROJECTS_TITLE') || 'Projects', SVG.projects, renderProjects, { width: 640, height: 440 })
   registerApp('achievements', () => _('ACHIEVEMENTS_TITLE') || 'Achievements', SVG.achievements, renderAchievements, { width: 560, height: 400 })
   registerApp('mail', () => _('MAIL') || 'Mail', SVG.mail, renderMail, { width: 460, height: 400 })
-  registerApp('settings', () => _('SETTINGS') || 'Settings', SVG.settings, renderSettings, { width: 400, height: 300 })
+  registerApp('settings', () => _('SETTINGS') || 'Settings', SVG.settings, renderSettings, {
+    panel: () => document.querySelector('.settings-gear')?.click(),
+  })
 
   const iconsContainer = document.getElementById('desktop-icons')
   const startMenu = document.getElementById('start-menu')

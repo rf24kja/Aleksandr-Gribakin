@@ -422,6 +422,23 @@ function buildDom(root) {
   shell.hints = root.querySelector('#tshHints');
 }
 
+/**
+ * Returns focus to the prompt — but never summons the keyboard by itself.
+ *
+ * Running a command from a chip or a clickable row used to focus the input
+ * unconditionally, and on a phone focusing an input is what raises the
+ * keyboard: tapping `career` opened the keyboard and the window resized under
+ * the output you had just asked for. The keyboard should answer a tap on the
+ * terminal itself, nothing else. With a mouse there is no keyboard to raise, so
+ * focus follows as before; on touch it follows only when the prompt already had
+ * it, which keeps an open keyboard from flickering shut between commands.
+ */
+function refocusPrompt() {
+  const touch = window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+  if (touch && document.activeElement !== shell.input) return;
+  shell.input.focus();
+}
+
 function wire(root) {
   shell.input.addEventListener('input', () => { shell.mirror.textContent = shell.input.value; });
   shell.input.addEventListener('keydown', onKeyDown);
@@ -436,9 +453,11 @@ function wire(root) {
       printPrompt(cmd);
       pushHistory(cmd);
       await execute(cmd);
-      shell.input.focus();
+      refocusPrompt();
       return;
     }
+    // Tapping the terminal body itself is the gesture that asks for the
+    // keyboard, so this one focuses unconditionally.
     shell.input.focus();
   });
 
@@ -452,7 +471,7 @@ function wire(root) {
     printPrompt(cmd);
     pushHistory(cmd);
     await execute(cmd);
-    shell.input.focus();
+    refocusPrompt();
   });
 
   shell.hints.addEventListener('click', async (e) => {
@@ -462,7 +481,7 @@ function wire(root) {
     printPrompt(cmd);
     pushHistory(cmd);
     await execute(cmd);
-    shell.input.focus();
+    refocusPrompt();
   });
 
   // Focus would move to the chip and dismiss the on-screen keyboard, which the
@@ -558,7 +577,9 @@ export async function initTerminal(appState) {
   } catch { /* ignore */ }
 
   await print(bootLines());
-  shell.input.focus();
+  // Not on touch: arriving in terminal mode should not open the keyboard and
+  // halve the window before the visitor has asked to type anything.
+  refocusPrompt();
 }
 
 export function refreshTerminalLocale() {

@@ -433,6 +433,20 @@
       transition: opacity .3s, color .3s;
       pointer-events: auto;
     }
+    /* The one in the overlay is the corner control; the one inside the heading
+       stays inline beside the name. */
+    [data-mode="business"] #settingsGearUI {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      opacity: 1;
+      color: var(--b-accent-text);
+      font-size: 22px;
+      min-width: 44px;
+      min-height: 44px;
+    }
+    [data-mode="business"] #settingsGearUI:hover { color: var(--b-accent); }
     [data-mode="business"] .settings-gear:hover { opacity: .8; color: var(--b-accent); }
 
     /* Desktop mode — gear in system tray */
@@ -650,8 +664,15 @@
       /* 16px minimum stops iOS Safari zooming the page on focus. */
       .terminal-form input, .terminal-form textarea { font-size: 16px; }
       /* Excludes terminal mode, which parks this control in its title bar —
-         a global `right` here was overriding that placement. */
-      html:not([data-mode="terminal"]) .lang-toggle { top: 18px; right: 12px; padding: 10px 16px; font-size: 12px; }
+         a global `right` here was overriding that placement. Business is
+         excluded too: the gear owns the right corner there, and pinning this to
+         the right put the two controls on top of each other on a phone. */
+      html:not([data-mode="terminal"]):not([data-mode="business"]) .lang-toggle {
+        top: 18px; right: 12px; padding: 10px 16px; font-size: 12px;
+      }
+      [data-mode="business"] .lang-toggle {
+        top: 18px; left: 12px; right: auto; padding: 10px 16px; font-size: 12px;
+      }
       .coffee-egg { width: 44px; height: 44px; }
       #portrait { width: 200px; right: 0; opacity: .06; }
       .pd-scroll { padding: 20px 16px; }
@@ -845,10 +866,13 @@
     }
 
     /* Lang Toggle */
+    /* Left, because the gear now owns the top right — the corner it occupies in
+       terminal mode. One control, one place, whichever interface you are in. */
     [data-mode="business"] .lang-toggle {
       position: fixed;
       top: 20px;
-      right: 20px;
+      left: 20px;
+      right: auto;
       z-index: 100;
       background: #1a1a1a;
       border: 1px solid rgba(255,255,255,.18);
@@ -2463,10 +2487,27 @@
     [data-mode="desktop"] #mainContent,
     [data-mode="desktop"] .spacer,
     [data-mode="desktop"] #ui-overlay { display: none !important; }
+    /* The panel is now the desktop's settings surface too, opened from the
+       Settings icon as well as the tray gear, so its text has to read on this
+       card and not only on the business one. */
     [data-mode="desktop"] .settings-card {
       background: #2d2d2d;
       border-color: rgba(255,255,255,.1);
     }
+    [data-mode="desktop"] .settings-header { color: #fff; }
+    [data-mode="desktop"] .settings-label { color: var(--ubuntu-accent, #e95420); }
+    [data-mode="desktop"] .settings-hint { color: #b8b8b8; }
+    [data-mode="desktop"] .settings-opt {
+      color: #e8e8e8;
+      border-color: rgba(255,255,255,.18);
+    }
+    [data-mode="desktop"] .settings-opt.active {
+      background: var(--ubuntu-accent, #e95420);
+      border-color: var(--ubuntu-accent, #e95420);
+      color: #fff;
+    }
+    [data-mode="desktop"] .settings-close { color: #cfcfcf; }
+    [data-mode="desktop"] .settings-close:hover { color: #fff; }
     #desktop-shell { display:none;position:fixed;inset:0;z-index:100;background:var(--ubuntu-bg);font-family:'Ubuntu','Noto Sans',system-ui,sans-serif;color:var(--ubuntu-text);overflow:hidden;user-select:none;flex-direction:column }
     [data-mode="desktop"] #desktop-shell { display:flex }
     #desktop-wallpaper { flex:1;background:radial-gradient(ellipse at 30% 30%,#5e2750 0%,#3a3a3a 50%,#2d2d2d 100%);position:relative;overflow:hidden }
@@ -3633,6 +3674,14 @@
           <button class="settings-opt" data-smode="business"><span aria-hidden="true">💼</span> <span data-i18n="MODE_BUSINESS">Business</span></button>
           <button class="settings-opt" data-smode="desktop"><span aria-hidden="true">🖥</span> <span data-i18n="MODE_DESKTOP">Desktop</span></button>
           <button class="settings-opt" data-smode="terminal"><span aria-hidden="true">⎔</span> <span data-i18n="MODE_TERMINAL">Terminal</span></button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">◈ <span data-i18n="SETTINGS_LANG">Language</span></div>
+        <div class="settings-theme-group">
+          <button class="settings-opt" data-slang="EN">EN</button>
+          <button class="settings-opt" data-slang="RU">RU</button>
         </div>
       </div>
 

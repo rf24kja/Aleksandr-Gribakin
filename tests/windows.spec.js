@@ -50,7 +50,8 @@ test('a window opens inside the work area', async ({ page }) => {
 test('every app opens inside the work area', async ({ page }) => {
   await bootDesktop(page);
   const area = await workArea(page);
-  for (const id of ['about', 'career', 'projects', 'achievements', 'mail', 'settings']) {
+  // Settings is deliberately absent: it opens the shared panel, not a window.
+  for (const id of ['about', 'career', 'projects', 'achievements', 'mail']) {
     await page.locator(`.desk-icon[data-app="${id}"]`).dblclick();
     const win = page.locator(`#win-${id}`);
     await expect(win).toBeVisible();

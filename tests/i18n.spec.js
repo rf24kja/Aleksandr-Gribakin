@@ -105,28 +105,6 @@ test('the settings options each get a full row rather than wrapping', async ({ p
   expect(new Set(widths).size, 'every option is the same width').toBe(1);
 });
 
-test('the desktop settings window is translated too', async ({ page }) => {
-  await page.goto('/');
-  await page.evaluate(() => {
-    localStorage.setItem('portfolio-mode', 'desktop');
-    localStorage.setItem('portfolio-lang', 'RU');
-  });
-  await page.goto(`/?t=${Date.now()}`);
-  await expect(page.locator('html')).toHaveAttribute('data-mode', 'desktop', { timeout: 15_000 });
-
-  await page.locator('.desk-icon[data-app="settings"]').dblclick();
-  const win = page.locator('#win-settings');
-  await expect(win).toBeVisible();
-
-  // The heading read "Mode" and the buttons capitalised the raw mode id, so
-  // this window stayed English however the site was set.
-  const text = await win.innerText();
-  expect(text).not.toMatch(/\bMode\b/);
-  expect(text).not.toMatch(/\bBusiness\b|\bDesktop\b|\bTerminal\b/);
-  expect(text).toMatch(/Бизнес/);
-  expect(text).toMatch(/Терминал/);
-});
-
 test('overlays that start hidden are still readable when opened', async ({ page }) => {
   // The contrast sweep skipped anything display:none, so the settings panel was
   // never measured. It was styled from the 3D palette while the light theme
@@ -193,5 +171,67 @@ test('overlays that start hidden are still readable when opened', async ({ page 
       return bad;
     });
     expect(failures, `unreadable text in the ${theme} settings panel`).toEqual([]);
+  }
+});
+
+test('the gear sits top right and the language switch top left in business', async ({ page }) => {
+  // Terminal puts the gear at the top right; business had the language switch
+  // there and the gear at the top left, so the same control moved between modes.
+  await page.goto('/');
+  await page.evaluate(() => localStorage.setItem('portfolio-mode', 'business'));
+  await page.goto(`/?t=${Date.now()}`);
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'business', { timeout: 15_000 });
+
+  const gear = await page.locator('#settingsGearUI').boundingBox();
+  const lang = await page.locator('#ui-overlay .lang-toggle').boundingBox();
+  const mid = page.viewportSize().width / 2;
+  expect(gear.x, 'the gear is on the right').toBeGreaterThan(mid);
+  expect(lang.x, 'the language switch is on the left').toBeLessThan(mid);
+});
+
+test('desktop Settings opens the shared panel, not a window of its own', async ({ page }) => {
+  // The desktop app drew its own settings: a different layout from every other
+  // mode, no theme section, and buttons a drifting finger could not reach.
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.setItem('portfolio-mode', 'desktop');
+    localStorage.setItem('portfolio-lang', 'RU');
+  });
+  await page.goto(`/?t=${Date.now()}`);
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'desktop', { timeout: 15_000 });
+  await page.waitForTimeout(900);
+
+  const icon = page.locator('.desk-icon[data-app="settings"]');
+  // Touch opens on a single tap; a mouse needs the desktop's double-click.
+  if (page.viewportSize().width <= 768) await icon.tap();
+  else await icon.dblclick();
+  await expect(page.locator('#settingsPopup')).toBeVisible();
+  await expect(page.locator('#win-settings')).toHaveCount(0);
+
+  // The same controls as everywhere else, and they work from here.
+  const popup = page.locator('#settingsPopup');
+  await expect(popup.locator('[data-stheme="dark"]')).toBeVisible();
+  await popup.locator('[data-smode="terminal"]').click();
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'terminal', { timeout: 15_000 });
+});
+
+test('the settings panel answers a finger in every mode', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'touch only');
+  for (const mode of ['business', 'desktop', 'terminal']) {
+    await page.goto('/');
+    await page.evaluate((m) => localStorage.setItem('portfolio-mode', m), mode);
+    await page.goto(`/?t=${Date.now()}`);
+    await expect(page.locator('html')).toHaveAttribute('data-mode', mode, { timeout: 15_000 });
+    await page.waitForTimeout(900);
+
+    // locator.tap() handles scrolling the target into view and waiting for it to
+    // be actionable; raw coordinates do neither.
+    const gear = page.locator('.settings-gear:visible').first();
+    await gear.tap();
+    await expect(page.locator('#settingsPopup'), `${mode}: the panel opens from a tap`).toBeVisible();
+
+    await page.waitForTimeout(500); // past the guard that ignores the second tap of a double
+    await page.locator('#settingsClose').tap();
+    await expect(page.locator('#settingsPopup'), `${mode}: and closes from a tap`).toBeHidden();
   }
 });

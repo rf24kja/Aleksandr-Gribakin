@@ -49,7 +49,11 @@ async function boot(page, { mode = 'business', lang = null, path = '/' } = {}) {
  * the two clicks already opens it.
  */
 async function openDesktopApp(page, id) {
-  await page.locator(`.desk-icon[data-app="${id}"]`).dblclick();
+  const icon = page.locator(`.desk-icon[data-app="${id}"]`);
+  // A single tap opens on touch; a mouse needs the desktop's double-click. Using
+  // dblclick on touch sends a second tap into whatever the first one opened.
+  if (page.viewportSize().width <= 768) await icon.tap();
+  else await icon.dblclick();
 }
 
 /**
@@ -126,12 +130,13 @@ test('an anchor with no target never shows the 404 wall', async ({ page }) => {
 
 test('desktop: settings change the language of what is on screen', async ({ page }) => {
   await boot(page, { mode: 'desktop', lang: 'EN' });
+  // Settings is the shared panel now, not a window of its own.
   await openDesktopApp(page, 'settings');
-  await expect(page.locator('.stg-lang-btn').first()).toBeVisible();
+  await expect(page.locator('#settingsPopup')).toBeVisible();
 
   const labelsBefore = await page.locator('.desk-icon-label').allInnerTexts();
-  await page.locator('.stg-lang-btn[data-lang="RU"]').click();
-  await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
+  await page.locator('#settingsPopup [data-slang="RU"]').click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ru', { timeout: 15_000 });
 
   // The setting has to be visible in the interface, not only in an attribute.
   await expect
@@ -142,8 +147,9 @@ test('desktop: settings change the language of what is on screen', async ({ page
 test('desktop: settings switch mode', async ({ page }) => {
   await boot(page, { mode: 'desktop' });
   await openDesktopApp(page, 'settings');
-  await page.locator('.stg-mode-btn[data-mode="terminal"]').click();
-  await expect(page.locator('html')).toHaveAttribute('data-mode', 'terminal');
+  await expect(page.locator('#settingsPopup')).toBeVisible();
+  await page.locator('#settingsPopup [data-smode="terminal"]').click();
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'terminal', { timeout: 15_000 });
 });
 
 test('desktop: apps open from the keyboard', async ({ page }) => {
