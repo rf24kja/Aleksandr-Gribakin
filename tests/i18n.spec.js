@@ -66,7 +66,9 @@ test('the settings panel opens, is translated, and switches theme', async ({ pag
   expect(english).toEqual([]);
 
   await popup.locator('[data-stheme="dark"]').click();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  // Generous: with the suite at full width this assertion competed with ten
+  // other browsers for CPU and the default five seconds was occasionally short.
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark', { timeout: 15_000 });
 });
 
 test('the settings options each get a full row rather than wrapping', async ({ page }) => {
