@@ -119,3 +119,39 @@ test('close removes the window', async ({ page }) => {
   await page.locator('#win-about .wt-close').click();
   await expect(page.locator('#win-about')).toHaveCount(0);
 });
+
+test('a detail row opens from a tap that drifts a little', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'touch only');
+  await bootDesktop(page);
+  await page.locator('.desk-icon[data-app="projects"]').tap();
+  const win = page.locator('#win-projects');
+  await expect(win).toBeVisible();
+
+  // A real finger is never perfectly still. iOS discards the synthesised click
+  // once the touch drifts, deciding the gesture was a scroll — and these rows
+  // live in a scrollable body, so on a phone the row appeared not to open.
+  const row = win.locator('.wb-row').first();
+  const box = await row.boundingBox();
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.touchscreen.tap(x, y);
+  await page.waitForTimeout(700);
+
+  const ids = await page.locator('#desktop-windows > *').evaluateAll((els) => els.map((e) => e.id));
+  expect(ids.some((id) => id.startsWith('win-project-')), `windows: ${ids.join(', ')}`).toBe(true);
+});
+
+test('a tap does not open the same detail twice', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'touch only');
+  await bootDesktop(page);
+  await page.locator('.desk-icon[data-app="career"]').tap();
+  await expect(page.locator('#win-career')).toBeVisible();
+
+  await page.locator('#win-career .wb-row').first().tap();
+  await page.waitForTimeout(800);
+  // The pointer handler and the click that follows it must not stack two
+  // identical windows on each other.
+  const ids = await page.locator('#desktop-windows > *').evaluateAll((els) => els.map((e) => e.id));
+  const details = ids.filter((id) => id.startsWith('win-career-'));
+  expect(details.length, `windows: ${ids.join(', ')}`).toBe(1);
+});

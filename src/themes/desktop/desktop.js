@@ -331,7 +331,39 @@ export function initDesktop(appState) {
   })
 
   // Row clicks inside any window open the corresponding detail window.
+  //
+  // A pointer tap is handled separately from click. These rows sit inside a
+  // scrollable window body, and iOS discards the synthesised click as soon as
+  // the finger drifts a few pixels — it decides the gesture was a scroll. On a
+  // phone that reads as a row that simply does not open, intermittently, which
+  // is impossible to reproduce with a synthetic tap because a synthetic tap
+  // never moves. Tracking the pointer ourselves keeps a short, still press
+  // working while a real scroll still scrolls.
+  let tap = null
+  let tapHandledAt = 0
+
+  winContainer.addEventListener('pointerdown', (e) => {
+    const row = e.target.closest('[data-open]')
+    tap = row ? { row, x: e.clientX, y: e.clientY, at: Date.now() } : null
+  })
+
+  winContainer.addEventListener('pointercancel', () => { tap = null })
+
+  winContainer.addEventListener('pointerup', (e) => {
+    const started = tap
+    tap = null
+    if (!started || e.pointerType === 'mouse') return   // the mouse has click
+    if (Date.now() - started.at > 600) return           // a long press is not a tap
+    if (Math.hypot(e.clientX - started.x, e.clientY - started.y) > 12) return // a scroll
+    if (e.target.closest('[data-open]') !== started.row) return // finished elsewhere
+    tapHandledAt = Date.now()
+    openDetail(started.row.dataset.open)
+  })
+
   winContainer.addEventListener('click', (e) => {
+    // A click may still follow the tap above; opening the same detail twice
+    // would stack an identical window on itself.
+    if (Date.now() - tapHandledAt < 700) return
     const row = e.target.closest('[data-open]')
     if (row) openDetail(row.dataset.open)
   })
