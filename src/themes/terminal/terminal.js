@@ -10,6 +10,7 @@ import PONYTAIL from '../../config/ponytail.config.js';
 import { setMode } from '../themeManager.js';
 import { findCommand, commandNames, completionsFor } from './commands.js';
 import { validateForm } from '../../lib/validation.js';
+import { trackEvent } from '../../lib/analytics.js';
 
 const HISTORY_KEY = 'terminal-history';
 const MAX_HISTORY = 60;
@@ -154,14 +155,19 @@ async function transmitAccept(value) {
       // instead. "HTTP 503" alone tells the visitor nothing they can act on.
       const body = await res.json().catch(() => ({}));
       const err = new Error(body.message || `HTTP ${res.status}`);
+      err.status = res.status;
       err.recipient = body.recipient;
       throw err;
     }
+    // The terminal sends on its own, so counting only the form would have lost
+    // every enquiry that came through the shell.
+    trackEvent('consult', { mode: 'terminal' });
     await print([
       { text: `  ${t.SENT || 'TRANSMISSION SENT (200 OK)'}`, cls: 'ok' },
       { text: `  ${(PONYTAIL.LOCALE[lang()] || PONYTAIL.LOCALE.EN).FORM.SUCCESS}`, cls: 'dim' },
     ]);
   } catch (err) {
+    trackEvent('consult_failed', { status: err?.status || 0, mode: 'terminal' });
     await print([
       { text: `  ${(t.SEND_FAIL || 'TRANSMISSION FAILED ({e})').replace('{e}', err.message)}`, cls: 'err' },
       {

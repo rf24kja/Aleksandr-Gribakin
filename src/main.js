@@ -6,9 +6,14 @@ import { initDesktop } from './themes/desktop/desktop.js';
 import { initTerminal, refreshTerminalLocale } from './themes/terminal/terminal.js';
 import PortfolioOrchestrator from './core/orchestrator.js';
 import SceneManager from './core/SceneManager.js';
+import { initAnalytics } from './lib/analytics.js';
 
 gsap.registerPlugin(ScrollTrigger);
 initMode();
+// Before the 3D branch below, which awaits 667 KB of Three.js: a visitor who
+// leaves during that download is still a visitor, and in the mode most of them
+// arrive in there is nothing to wait for anyway.
+initAnalytics();
 
 const IS_BUSINESS = (document.documentElement.getAttribute('data-mode') || 'business') === 'business';
 

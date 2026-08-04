@@ -6,6 +6,7 @@ import { startAmbient, fadeTo as audioFadeTo, initOnUserGesture } from '../lib/s
 import { renderProjectPage, renderCareerPage, renderAchievementPage, setProjectLocale, closeProjectDetail } from '../lib/projectDetail.js';
 import { CAREER_DETAIL } from '../data/projects.js';
 import { computeStats, computeProjectAggregates, projectSortValue } from '../lib/stats.js';
+import { trackEvent } from '../lib/analytics.js';
 import {
   renderStatCards, wireStatCards, animateStatValues,
   renderDashboard, animateDashboard,
@@ -541,8 +542,16 @@ export default class PortfolioOrchestrator {
           throw err;
         }
         this.s.set('_lastSubmission', Date.now());
+        // Counted here and not on the button: the endpoint reports whether the
+        // message actually went anywhere, and a goal that fires on the click
+        // would quietly understate what an enquiry costs.
+        trackEvent('consult', { mode: document.documentElement.dataset.mode || 'business' });
         this._showFormSuccess(form);
       } catch (err) {
+        // A failed send is worth counting too. Delivery has broken once while
+        // the site was being advertised, and a dashboard is checked far more
+        // often than a log.
+        trackEvent('consult_failed', { status: err?.status || 0 });
         btn.classList.remove('loading');
         btn.disabled = false;
         btn.style.pointerEvents = 'auto';

@@ -53,6 +53,21 @@ outside business mode — do not add a static `import 'three'` to `src/main.js`.
 - Secrets live in env vars only (`.env.example` lists them). Nothing with a
   token goes in the repo.
 
+## Analytics
+Three counters, all through `src/lib/analytics.js` — nothing else may call
+`ym`, `gtag` or `va` directly. Ids come from the `yandex-metrica` and
+`google-analytics` meta tags in `index.html`; empty means that counter is not
+loaded at all. Vercel needs no id, only its project toggle.
+
+This is a single-page site, so a pageview is a decision, not an event: Metrica
+is initialised with `defer: true` and GA4 with `send_page_view: false`, and
+`trackPage()` is the only thing that reports one. It de-duplicates by URL
+because the app rewrites the address with `replaceState` on boot.
+
+`trackEvent('consult')` fires on a successful send and nowhere else — never on
+the submit click. Both the business form and the terminal's `contact` flow
+report it, and both report `consult_failed` when delivery fails.
+
 ## Rules for OpenCode (чтобы не тупить)
 
 ### Контекст прежде вопросов
