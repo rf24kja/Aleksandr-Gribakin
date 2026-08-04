@@ -10,7 +10,11 @@
 ## Modes
 Three interfaces switched by `data-mode` on `<html>` (`src/themes/themeManager.js`):
 `business` (default, no WebGL), `desktop` (window manager), `terminal`.
-`business` additionally supports `data-theme="dark|light"`.
+`business` additionally supports `data-theme="dark|light"`. A stored choice wins;
+otherwise `prefers-color-scheme` decides and keeps deciding, so the resolved
+theme is only written to `localStorage` when the visitor picks it themselves.
+The inline script in `<head>` settles this before the first paint — keep the two
+copies of the rule (there and in `src/main.js`) in agreement.
 
 Three.js and the five scene modules are **dynamically imported** and only load
 outside business mode — do not add a static `import 'three'` to `src/main.js`.

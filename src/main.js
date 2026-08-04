@@ -313,7 +313,13 @@ const themeConfigs = {
   // light page if that ever changed.
   light: { bg: 0xf5f3f0, fog: 0.006, bloom: { threshold: 0.8, strength: 0.25, radius: 0.3 } },
 };
-function applyTheme(theme, anim = true) {
+/**
+ * `persist` is off when the theme was decided for the visitor rather than by
+ * them. Storing a system-derived value would pin the site to whatever the OS
+ * happened to be on the first visit and stop following it afterwards, which is
+ * indistinguishable from a stuck switch.
+ */
+function applyTheme(theme, anim = true, persist = true) {
   if (anim) {
     const flash = document.createElement('div');
     flash.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--bg);opacity:0;pointer-events:none;transition:opacity .15s ease';
@@ -325,7 +331,7 @@ function applyTheme(theme, anim = true) {
     }, 150);
   }
   document.documentElement.setAttribute('data-theme', theme);
-  try { localStorage.setItem('theme', theme); } catch {}
+  if (persist) { try { localStorage.setItem('theme', theme); } catch {} }
   // Business mode paints from --b-bg, not --bg, so reading --bg gave the
   // browser chrome the wrong colour in the mode most visitors actually see.
   const metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -345,11 +351,22 @@ function applyTheme(theme, anim = true) {
   if (bloomPass) { bloomPass.threshold = cfg.bloom.threshold; bloomPass.strength = cfg.bloom.strength; bloomPass.radius = cfg.bloom.radius; }
   document.dispatchEvent(new CustomEvent('theme:change', { detail: { theme } }));
 }
-// Light unless the visitor has previously chosen otherwise.
-let savedTheme = 'light';
-try { savedTheme = localStorage.getItem('theme') || 'light'; } catch { /* private mode */ }
-finally { if (!['dark', 'light'].includes(savedTheme)) savedTheme = 'light'; }
-applyTheme(savedTheme, false);
+// Light unless the visitor has chosen otherwise, or their system asks for dark.
+// The head script has already painted this decision; repeating it here is what
+// syncs the 3D scene, the browser chrome and anything listening for the event.
+function storedTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem('theme'); } catch { /* private mode */ }
+  return ['dark', 'light'].includes(saved) ? saved : null;
+}
+const systemDark = window.matchMedia?.('(prefers-color-scheme: dark)');
+applyTheme(storedTheme() || (systemDark?.matches ? 'dark' : 'light'), false, false);
+// Someone who has never touched the switch keeps following their system, so
+// the site turns with it at dusk instead of holding the first answer forever.
+systemDark?.addEventListener?.('change', (e) => {
+  if (storedTheme()) return; // an explicit choice outranks the system
+  applyTheme(e.matches ? 'dark' : 'light', false, false);
+});
 // --- Preloader + Cinematic Reveal ---
 (function() {
   const pl = document.getElementById('preloader');
