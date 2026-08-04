@@ -25,9 +25,12 @@
        that counter is not loaded and nothing is sent.
          yandex-metrica    the counter number, e.g. 98765432
          google-analytics  the GA4 measurement id, e.g. G-XXXXXXXXXX
-       Vercel Web Analytics needs no id, only its toggle in the Vercel project. -->
+         vercel-analytics  `on`, once Web Analytics is enabled in the Vercel
+                           project — until then its script is a 404, and a
+                           browser reports that twice in the console. -->
   <meta name="yandex-metrica" content="" />
   <meta name="google-analytics" content="" />
+  <meta name="vercel-analytics" content="" />
   <meta name="robots" content="index, follow" />
   <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://dev24.pro" />

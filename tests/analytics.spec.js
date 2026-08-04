@@ -22,9 +22,9 @@ const GA = 'G-TEST00000';
 
 /** Serves the real site with the counters configured, and nothing phoning home. */
 async function withCounters(page, { ym = YM, ga = GA, vercel = false } = {}) {
-  await page.route('**/_vercel/insights/**', (route) => (vercel
-    ? route.fulfill({ status: 200, contentType: 'application/javascript', body: 'window.va=function(){};' })
-    : route.fulfill({ status: 404, body: '' })));
+  await page.route('**/_vercel/insights/**', (route) => route.fulfill({
+    status: 200, contentType: 'application/javascript', body: 'window.va=function(){};',
+  }));
   await page.route(/mc\.yandex\.ru|googletagmanager\.com/, (route) => route.abort());
   await page.route('**/*', async (route) => {
     const res = await route.fetch();
@@ -33,7 +33,8 @@ async function withCounters(page, { ym = YM, ga = GA, vercel = false } = {}) {
     }
     const body = (await res.text())
       .replace('<meta name="yandex-metrica" content=""', `<meta name="yandex-metrica" content="${ym}"`)
-      .replace('<meta name="google-analytics" content=""', `<meta name="google-analytics" content="${ga}"`);
+      .replace('<meta name="google-analytics" content=""', `<meta name="google-analytics" content="${ga}"`)
+      .replace('<meta name="vercel-analytics" content=""', `<meta name="vercel-analytics" content="${vercel ? 'on' : ''}"`);
     return route.fulfill({ response: res, body });
   });
 }
@@ -65,15 +66,15 @@ test('an unconfigured build contacts nobody', async ({ page }) => {
   page.on('request', (r) => {
     if (/mc\.yandex\.ru|googletagmanager\.com|google-analytics\.com/.test(r.url())) external.push(r.url());
   });
-  // Vercel's script is a 404 until its toggle is switched on in the project,
-  // and that is the only failure allowed here — anything else is a real one.
+  // Not one failed request, and that includes Vercel's script: its toggle is
+  // off, so asking for it would put two errors in every visitor's console.
   const failures = [];
   page.on('response', (r) => { if (r.status() >= 400) failures.push(`${r.status()} ${r.url()}`); });
 
   await boot(page);
   await page.waitForTimeout(1500);
   expect(external, 'no counter is loaded without an id').toEqual([]);
-  expect(failures.filter((f) => !f.includes('/_vercel/insights/'))).toEqual([]);
+  expect(failures).toEqual([]);
   expect(await metrica(page)).toEqual([]);
 });
 
@@ -174,10 +175,16 @@ test.describe('the enquiry goal', () => {
 });
 
 test.describe('Vercel Web Analytics', () => {
-  test('is requested once per page, and starts counting when the toggle is on', async ({ page }) => {
-    // It has no id, so the only thing to get wrong is asking for it twice, or
-    // not at all. It needs no deploy to start working: the moment the project
-    // toggle is on, this same request stops being a 404.
+  test('is not touched until it is switched on', async ({ page }) => {
+    await withCounters(page, { vercel: false });
+    const loads = [];
+    page.on('request', (r) => { if (r.url().includes('/_vercel/insights/')) loads.push(r.url()); });
+    await boot(page);
+    await page.waitForTimeout(1200);
+    expect(loads, 'a 404 script tag is two console errors per visit').toEqual([]);
+  });
+
+  test('is requested once per page once it is on', async ({ page }) => {
     await withCounters(page, { vercel: true });
     await page.goto('/');
     // Counted across exactly one navigation, so the number means what it says.

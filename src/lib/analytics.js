@@ -22,6 +22,7 @@
 const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 const YM_ID = () => meta('yandex-metrica');
 const GA_ID = () => meta('google-analytics');
+const VERCEL_ON = () => meta('vercel-analytics') === 'on';
 
 let started = false;
 let lastUrl = '';
@@ -74,11 +75,15 @@ function loadGA(id) {
  * hash routes the other two are told about, so it will always read a little
  * lower — that is the trade, not a fault.
  *
- * There is no id to configure, only a toggle in the Vercel project, and while
- * that toggle is off this is a 404 in the console — nothing a visitor sees, but
- * it is there until the toggle is on. Asking whether the file exists before
- * requesting it was tried and dropped: the probe logs the same 404 and costs an
- * extra request on every load, so it bought nothing.
+ * It has no id, only a toggle in the Vercel project, and while that toggle is
+ * off the script is a 404 — which the browser reports twice, once for the
+ * status and once for refusing to run an error page as JavaScript. On a site
+ * whose visitors are engineers, two errors in the console on every load is not
+ * a detail, so the meta tag stands in for the toggle: turn the toggle on, set
+ * the tag to `on`, and nothing is requested before then.
+ *
+ * A probe request was tried first and dropped — it logs the same 404 and costs
+ * an extra round trip on every load, so it bought nothing.
  */
 function loadVercel() {
   window.va = window.va || function va(...args) { (window.vaq = window.vaq || []).push(args); };
@@ -151,7 +156,7 @@ export function initAnalytics() {
     const ga = GA_ID();
     if (ym) loadMetrica(ym);
     if (ga) loadGA(ga);
-    loadVercel();
+    if (VERCEL_ON()) loadVercel();
     trackPage();
     wireRouteChanges();
   };
