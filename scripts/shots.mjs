@@ -11,7 +11,7 @@ import { mkdir } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 
 const ORIGIN = process.argv[2] || 'https://dev24.pro';
-const OUT = 'showcase/shots';
+const OUT = 'reference/screenshots';
 
 const DESKTOP = { width: 1280, height: 800 };
 const PHONE = { width: 390, height: 844 };

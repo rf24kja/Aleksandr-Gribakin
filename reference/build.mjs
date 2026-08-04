@@ -4,14 +4,14 @@
  * A published artifact may not fetch from another host, so nothing can be
  * linked — the images have to travel inside the document.
  *
- *   node showcase/build.mjs
+ *   node reference/build.mjs
  */
 import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SHOTS = join(HERE, 'shots');
+const SHOTS = join(HERE, 'screenshots');
 
 const shots = {};
 for (const file of await readdir(SHOTS)) {
@@ -320,6 +320,6 @@ const html = `<title>dev24.pro — портфолио в трёх интерфе
 </div>
 `;
 
-await writeFile(join(HERE, 'index.html'), html, 'utf8');
+await writeFile(join(HERE, 'showcase.html'), html, 'utf8');
 const kb = Math.round(Buffer.byteLength(html) / 1024);
-console.log(`showcase/index.html — ${kb} KB, ${Object.keys(shots).length} screenshots inlined`);
+console.log(`reference/showcase.html — ${kb} KB, ${Object.keys(shots).length} screenshots inlined`);
