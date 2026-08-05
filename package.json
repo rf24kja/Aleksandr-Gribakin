@@ -16,8 +16,7 @@
     "test:ui": "playwright test --ui"
   },
   "dependencies": {
-    "gsap": "^3.12.2",
-    "three": "^0.160.0"
+    "gsap": "^3.12.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.0",

@@ -16,7 +16,6 @@ import {
 export default class PortfolioOrchestrator {
   constructor() {
     this.s = SUPER;
-    this.sceneManager = null;
     this.scenes = PONYTAIL.SCENES;
     this.currentScene = -1;
     this._rendered = false;
@@ -31,10 +30,9 @@ export default class PortfolioOrchestrator {
     // three — which is what _detectLocale used to do by returning a constant.
     this.s.init();
 
-    await     this._bootSequence();
+    await this._bootSequence();
     this._renderContent();
     this._wireLanguageToggle();
-    this._wireFPSOptimizer();
     this._wireForm();
     this._wireProjectClicks();
     this._wireCareerAchClicks();
@@ -360,9 +358,6 @@ export default class PortfolioOrchestrator {
       { id: 'achievementsOverlay', r: [0.62, 0.80] },
     ];
 
-    const pw = document.getElementById('portrait-wrap');
-    if (pw) pw.classList.toggle('visible', p < 0.20);
-
     defs.forEach(({ id, r: [lo, hi] }) => {
       const el = document.getElementById(id);
       if (el) {
@@ -493,19 +488,6 @@ export default class PortfolioOrchestrator {
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-lang-switch]');
       if (btn) { this.s.toggleLang(); document.querySelectorAll('[data-lang-switch]').forEach(el => el.setAttribute('aria-current', 'true')); }
-    });
-  }
-
-  // --- FPS ---
-  _wireFPSOptimizer() {
-    this.s.on('fps:critical', () => {
-      const b = this.s.fpsQuality();
-      this.s.applyFPSBudget(b);
-      document.dispatchEvent(new CustomEvent('fx:quality', { detail: { type: 'throttle', quality: b } }));
-    });
-    this.s.on('fps:restored', () => {
-      this.s.applyFPSBudget('high');
-      document.dispatchEvent(new CustomEvent('fx:quality', { detail: { type: 'restore', quality: 'high' } }));
     });
   }
 

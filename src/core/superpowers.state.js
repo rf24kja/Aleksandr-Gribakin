@@ -22,12 +22,6 @@ function initialLanguage() {
 const SUPER = (() => {
   const _subs = new Map();
   const _state = new Map();
-  let _frameCount = 0;
-  let _lastFpsCheck = performance.now();
-  let _fps = 60;
-  let _throttled = false;
-  let _rafId = null;
-
 
   const _emit = (event, data) => {
     if (_subs.has(event)) _subs.get(event).forEach(fn => fn(data, _readState()));
@@ -39,23 +33,12 @@ const SUPER = (() => {
     return obj;
   };
 
-  const _fpsLoop = (timestamp) => {
-    _frameCount++;
-    if (timestamp - _lastFpsCheck >= 1000) {
-      _fps = Math.round(_frameCount * 1000 / (timestamp - _lastFpsCheck));
-      _frameCount = 0;
-      _lastFpsCheck = timestamp;
-      if (_fps < 45 && !_throttled) {
-        _throttled = true;
-        _emit('fps:critical', { fps: _fps, threshold: 45 });
-      } else if (_fps >= 55 && _throttled) {
-        _throttled = false;
-        _emit('fps:restored', { fps: _fps });
-      }
-      _emit('fps:tick', { fps: _fps, throttled: _throttled });
-    }
-    _rafId = requestAnimationFrame(_fpsLoop);
-  };
+  // There used to be a frame counter here, driving a requestAnimationFrame loop
+  // for the whole life of the page. It measured FPS in order to lower the
+  // quality of a 3D scene that no longer exists — the readout it fed was hidden
+  // in every mode, and the budget it applied wrote state nothing read. A loop
+  // that wakes the compositor every frame to reach that conclusion is worse
+  // than nothing on a phone, so it is gone with the renderer it served.
 
   return {
     // --- Lifecycle ---
@@ -66,20 +49,16 @@ const SUPER = (() => {
         progress: 0,
         isSubmitting: false,
         audioEnabled: true,
-        quality: 'high',
-        postFX: { bloom: true, motionBlur: true },
       };
       Object.entries({ ...defaults, ...initial }).forEach(([k, v]) => _state.set(k, v));
       // Defaults go straight into the map, bypassing the lang setter, so the
       // document attribute has to be synced here or it keeps the markup's `en`
       // while the page renders in Russian.
       document.documentElement.lang = String(_state.get('active_language')).toLowerCase();
-      _rafId = requestAnimationFrame(_fpsLoop);
       return this;
     },
 
     destroy() {
-      if (_rafId) cancelAnimationFrame(_rafId);
       _subs.clear();
       _state.clear();
       return this;
@@ -125,26 +104,6 @@ const SUPER = (() => {
       _subs.get(event)?.delete(fn);
       return this;
     },
-
-    // --- FPS Optimizer ---
-    get fps() { return _fps; },
-    get isThrottled() { return _throttled; },
-
-    fpsQuality() {
-      if (_fps >= 55) return 'high';
-      if (_fps >= 30) return 'medium';
-      return 'low';
-    },
-
-    applyFPSBudget(budget) {
-      const fx = _state.get('postFX');
-      if (budget === 'high') { fx.bloom = true; fx.motionBlur = true; this.set('quality', 'high'); }
-      else if (budget === 'medium') { fx.bloom = true; fx.motionBlur = false; this.set('quality', 'medium'); }
-      else { fx.bloom = false; fx.motionBlur = false; this.set('quality', 'low'); }
-      this.set('postFX', { ...fx });
-    },
-
-    // --- Audio Ambient (delegated to synthAudio.js) ---
 
     // --- Scene Management ---
     setScene(index, progress) {

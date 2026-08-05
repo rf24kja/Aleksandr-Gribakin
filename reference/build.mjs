@@ -60,7 +60,7 @@ const MODES = [
 const FACTS = [
   ['3', 'режима интерфейса', 'над одним набором данных'],
   ['61', 'адрес в sitemap', 'у каждого проекта и записи свой URL'],
-  ['212', 'автотестов', 'три движка, десктоп и телефон'],
+  ['215', 'автотестов', 'три движка, десктоп и телефон'],
   ['0', 'нарушений контраста', 'обе темы, весь текст'],
 ];
 
@@ -314,7 +314,7 @@ const html = `<title>dev24.pro — портфолио в трёх интерфе
         <p class="eyebrow">Связаться</p>
         <p style="margin:0"><a href="https://dev24.pro" target="_blank" rel="noopener">dev24.pro</a> · <a href="mailto:RF24KRSK@gmail.com">RF24KRSK@gmail.com</a></p>
       </div>
-      <p class="stack">Vite · Three.js · GSAP · Vercel Edge · Playwright</p>
+      <p class="stack">Vite · GSAP · Vercel Edge · Playwright</p>
     </div>
   </footer>
 </div>

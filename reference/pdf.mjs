@@ -40,7 +40,7 @@ const COPY = {
     facts: [
       ['3', 'режима интерфейса над одним набором данных'],
       ['61', 'адрес в sitemap — у каждого проекта и записи свой URL'],
-      ['212', 'автотестов на трёх движках, десктоп и телефон'],
+      ['215', 'автотестов на трёх движках, десктоп и телефон'],
       ['0', 'нарушений контраста в обеих темах'],
     ],
     modes: [
@@ -80,7 +80,7 @@ const COPY = {
       },
     ],
     stackTitle: 'Как сделано',
-    stack: 'Vite · Three.js · GSAP · Vercel Edge Functions · Playwright · GitHub Actions',
+    stack: 'Vite · GSAP · Vercel Edge Functions · Playwright · GitHub Actions',
     note: 'Скриншоты сняты с работающего сайта автоматически, а не нарисованы.',
     contact: 'Связаться',
   },
@@ -99,7 +99,7 @@ const COPY = {
     facts: [
       ['3', 'interfaces over one set of data'],
       ['61', 'URLs in the sitemap — every project and entry has its own'],
-      ['212', 'automated tests across three engines, desktop and phone'],
+      ['215', 'automated tests across three engines, desktop and phone'],
       ['0', 'contrast failures in either theme'],
     ],
     modes: [
@@ -139,7 +139,7 @@ const COPY = {
       },
     ],
     stackTitle: 'Built with',
-    stack: 'Vite · Three.js · GSAP · Vercel Edge Functions · Playwright · GitHub Actions',
+    stack: 'Vite · GSAP · Vercel Edge Functions · Playwright · GitHub Actions',
     note: 'Screenshots are captured from the running site automatically, not mocked up.',
     contact: 'Contact',
   },

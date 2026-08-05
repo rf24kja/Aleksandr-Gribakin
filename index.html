@@ -143,14 +143,6 @@
     [data-scroll-container] { height: 100vh; overflow-y: scroll; scrollbar-width: none; }
     [data-scroll-container]::-webkit-scrollbar { display: none; }
 
-    canvas#webgl { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
-    #scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, var(--scanline-color) 0px, var(--scanline-color) 1px, transparent 1px, transparent 3px); }
-    [data-theme="dark"] #scanlines {
-      background: transparent !important;
-    }
-    [data-theme="dark"] #scanlines::after {
-      display: none !important;
-    }
     /* Holds the only global controls (language, settings), so it has to sit
        above the page content. At z-index 1 it was below .section-overlay's
        z-index 2: the buttons stayed visible but stopped being clickable as
@@ -196,30 +188,6 @@
     @keyframes glitch-1 { 0% { clip: rect(0,900px,0,0); } 50% { clip: rect(20px,900px,40px,0); } 100% { clip: rect(0,900px,0,0); } }
     @keyframes glitch-2 { 0% { clip: rect(0,900px,0,0); } 50% { clip: rect(40px,900px,80px,0); } 100% { clip: rect(0,900px,0,0); } }
 
-    /* Scroll Progress */
-    #scrollProgress {
-      position: fixed; top: 0; left: 0; width: 100%; height: 2px; z-index: 9998;
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
-      pointer-events: none; opacity: 0; transition: opacity .6s;
-    }
-    #scrollProgress.ready { opacity: 1; }
-    #scrollProgress .sp-bar {
-      height: 100%; width: 0%; background: var(--accent);
-      box-shadow: 0 0 8px var(--glow-strong);
-      transition: width .1s linear;
-    }
-    #scrollProgress .sp-labels {
-      position: absolute; top: 6px; left: 0; width: 100%; display: flex; justify-content: space-between;
-      font-family: var(--font-mono); font-size: 7px; letter-spacing: .15em; text-transform: uppercase;
-      color: var(--text-dim); padding: 0 24px; opacity: 0; transition: opacity .6s .4s;
-    }
-    #scrollProgress.ready .sp-labels { opacity: .6; }
-    #scrollProgress .sp-dot {
-      position: absolute; top: -2px; width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent); transform: translateX(-50%);
-      box-shadow: 0 0 12px var(--glow-strong);
-    }
-
     /* Lang Toggle */
     .lang-toggle {
       position: fixed; top: 24px; right: 24px; z-index: 100;
@@ -229,16 +197,6 @@
       cursor: pointer; transition: all .3s; letter-spacing: .05em; text-transform: uppercase;
     }
     .lang-toggle:hover { border-color: var(--accent); background: var(--section-bg); box-shadow: 0 0 16px var(--glow); }
-
-    /* HUD */
-    .hud-top { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 24px 24px 0; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
-    .hud-top > * { pointer-events: auto; }
-    .fps-counter { font-family: var(--font-mono); font-size: 10px; color: color-mix(in srgb, var(--accent) 40%, transparent); letter-spacing: .05em; }
-    .fps-counter.warning { color: color-mix(in srgb, var(--accent3) 60%, transparent); }
-    .fps-counter.ok { color: color-mix(in srgb, var(--accent2) 50%, transparent); }
-    .scroll-progress { position: fixed; bottom: 0; left: 0; height: 2px; z-index: 100; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .05s linear; box-shadow: 0 0 10px var(--glow), 0 0 20px var(--glow); }
-    #scene-label { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 90; font-family: var(--font-mono); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--text); opacity: .25; text-align: center; pointer-events: none; transition: opacity .4s; }
-    .spacer { height: 600vh; position: relative; z-index: 0; }
 
     /* Section Overlays */
     .section-overlay {
@@ -260,44 +218,6 @@
     .intro-text h1 .accent { font-weight: 400; color: var(--accent); -webkit-text-fill-color: initial; }
     .intro-text .sub { font-size: clamp(11px,1.3vw,15px); color: var(--text-dim); font-family: var(--font-mono); letter-spacing: .15em; margin-top: 10px; }
     .intro-text .tagline { font-size: 9px; letter-spacing: .35em; text-transform: uppercase; color: color-mix(in srgb, var(--accent) 40%, transparent); font-family: var(--font-mono); margin-top: 18px; }
-    /* Portrait Background */
-    #portrait-wrap { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; overflow: hidden; opacity: 0; transition: opacity 2s; }
-    #portrait-wrap.visible { opacity: 1; }
-    #portrait {
-      position: absolute; width: 360px; height: 360px; object-fit: cover;
-      right: 6vw; top: 50%; transform: translateY(-50%);
-      border-radius: 4px; opacity: .15;
-      filter: grayscale(.6) contrast(1.2) brightness(.7);
-      transition: filter .8s ease, opacity .8s ease, transform .6s ease;
-    }
-    /* Hologram border */
-    #portrait-wrap::before {
-      content: ''; position: absolute;
-      right: calc(6vw - 2px); top: 50%; transform: translateY(-50%);
-      width: 364px; height: 364px; border-radius: 4px;
-      border: 1px solid transparent;
-      background: linear-gradient(135deg, #c9a86c, #a67c52, #8b7355, #c9a86c, #a67c52) border-box;
-      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      opacity: .3;
-    }
-    /* Hologram iridescent overlay */
-    #portrait-wrap::after {
-      content: ''; position: absolute;
-      right: 6vw; top: 50%; transform: translateY(-50%);
-      width: 360px; height: 360px; border-radius: 4px;
-      background: linear-gradient(135deg, rgba(201,168,108,.08), rgba(100,200,255,.03), rgba(201,168,108,.06));
-      mix-blend-mode: overlay; pointer-events: none;
-    }
-    /* Scanline overlay on hover */
-    #portrait-wrap:hover #portrait { opacity: .25; filter: grayscale(.3) contrast(1.1) brightness(.9); }
-    #portrait-wrap:hover::before { opacity: .6; }
-
-    /* Hologram glitch line animation */
-    @keyframes hologram-scan { 0% { opacity: 0; transform: translateY(-50%) translateX(0); } 50% { opacity: .15; } 100% { opacity: 0; transform: translateY(-50%) translateX(4px); } }
-    #portrait-wrap::before { animation: hologram-border 4s ease-in-out infinite; }
-    @keyframes hologram-border { 0%,100% { opacity: .3; } 50% { opacity: .5; } }
 
     /* Stats */
     .stats-grid { display: flex; flex-wrap: wrap; gap: 10px; max-width: 680px; width: 100%; padding: 0 20px; }
@@ -685,7 +605,6 @@
         top: 18px; left: 12px; right: auto; padding: 10px 16px; font-size: 12px;
       }
 
-      #portrait { width: 200px; right: 0; opacity: .06; }
       .pd-scroll { padding: 20px 16px; }
       .pd-panel { max-height: 94vh; }
       .project-card { -webkit-tap-highlight-color: rgba(201,168,108,.15); }
@@ -764,7 +683,6 @@
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
       }
-      #scanlines { display: none !important; }
       #preloader .pl-logo.glitch,
       #preloader .pl-logo.glitch::before,
       #preloader .pl-logo.glitch::after {
@@ -828,25 +746,14 @@
     [data-mode="business"] body {
       background: var(--b-bg);
     }
-    /* Hide 3D / effects / gimmicks */
-    [data-mode="business"] canvas#webgl,
-    [data-mode="business"] #scanlines,
-    [data-mode="business"] #portrait-wrap,
+    /* Hide effects / gimmicks */
     [data-mode="business"] #preloader,
-    [data-mode="business"] #scrollProgress,
-    [data-mode="business"] #fpsCounter,
-    [data-mode="business"] #scene-label,
-    [data-mode="business"] .scroll-progress,
-    [data-mode="business"] .spacer,
     [data-mode="business"] .year-label,
-    [data-mode="business"] .hud-top,
     [data-mode="business"] .section-overlay::before {
       display: none !important;
     }
-    /* Override theme-specific scanlines that show via ::after on body */
     [data-mode="business"] body::before,
-    [data-mode="business"] body::after,
-    [data-mode="business"] #scanlines::after {
+    [data-mode="business"] body::after {
       display: none !important;
     }
 
@@ -1869,21 +1776,9 @@
       font-family: var(--t-font);
     }
     /* Hide elements not relevant to terminal mode */
-    [data-mode="terminal"] canvas#webgl,
-    [data-mode="terminal"] #scanlines,
-    [data-mode="terminal"] #portrait-wrap,
-    [data-mode="terminal"] #preloader,
-    [data-mode="terminal"] #scrollProgress,
-    [data-mode="terminal"] #scene-label,
-    [data-mode="terminal"] #spBar,
-    [data-mode="terminal"] #spDot,
-    [data-mode="terminal"] #fpsCounter { display: none !important; }
+    [data-mode="terminal"] #preloader { display: none !important; }
     [data-mode="terminal"] #introText { display: none !important; }
     [data-mode="terminal"] #mainContent { display: block !important; }
-    /* The spacer exists to give the scroll-driven WebGL scenes room to play.
-       This mode hides the canvas, so it was 4320px of blank page before any
-       content — the page opened on four screens of nothing. */
-    [data-mode="terminal"] .spacer { display: none !important; }
 
     /* Terminal Intro */
     /* This container used to hold a single .ti-box, so a row flexbox was fine.
@@ -2479,20 +2374,13 @@
       --ubuntu-start-bg: #3c3c3c;
       --ubuntu-purple: #5e2750;
     }
-    [data-mode="desktop"] canvas#webgl,
-    [data-mode="desktop"] #scanlines,
-    [data-mode="desktop"] #portrait-wrap,
     [data-mode="desktop"] .intro-text,
     [data-mode="desktop"] .section-overlay,
-    [data-mode="desktop"] #scrollProgress,
-    [data-mode="desktop"] .hud-top,
-    [data-mode="desktop"] #scene-label,
     [data-mode="desktop"] .form-section,
     [data-mode="desktop"] #preloader,
     [data-mode="desktop"] #projectDetail,
     [data-mode="desktop"] #page404,
     [data-mode="desktop"] #mainContent,
-    [data-mode="desktop"] .spacer,
     [data-mode="desktop"] #ui-overlay { display: none !important; }
     /* The panel is now the desktop's settings surface too, opened from the
        Settings icon as well as the tray gear, so its text has to read on this
@@ -3484,37 +3372,10 @@
     <div class="pl-sub">ALEKSANDR GRIBAKIN</div>
   </div>
   <!-- Scroll Progress -->
-  <div id="scrollProgress"><div class="sp-bar" id="spBar"></div><div class="sp-dot" id="spDot"></div><div class="sp-labels"><span>INTRO</span><span>CRAFT</span><span>STACK</span><span>MILESTONES</span><span>CONTACT</span></div></div>
-
-  <canvas id="webgl"></canvas>
-  <div id="scanlines"></div>
-  <div id="portrait-wrap">
-    <!-- Was a 6.1 MB PNG with a srcset pointing at /img_2025_12_23@2x.png,
-         which does not exist and 404'd on every retina display. -->
-    <picture>
-      <source type="image/webp" srcset="/portrait@1x.webp 512w, /portrait.webp 1024w"
-              sizes="(max-width: 768px) 60vw, 40vw" />
-      <img id="portrait"
-        src="/portrait.jpg"
-        width="1024" height="1109"
-        alt="Aleksandr Gribakin"
-        fetchpriority="high"
-        decoding="async" />
-    </picture>
-  </div>
-
   <div id="ui-overlay">
     <button class="settings-gear" id="settingsGearUI" title="Settings" aria-label="Open settings"><span class="gear-glyph" aria-hidden="true">⚙</span></button>
     <button class="lang-toggle" data-lang-switch></button>
   </div>
-
-  <div class="hud-top">
-    <div class="fps-counter" id="fpsCounter">-- FPS</div>
-  </div>
-  <div class="scroll-progress"></div>
-  <div id="scene-label" aria-live="polite" role="status">INITIALIZING...</div>
-
-  <div class="spacer" id="scrollSpacer"></div>
 
   <div id="mainContent">
   <!-- Intro -->

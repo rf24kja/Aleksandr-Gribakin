@@ -1,7 +1,7 @@
 # Portfolio — Aleksandr Gribakin
 
 ## Stack
-- Vite + Three.js + GSAP (ScrollTrigger)
+- Vite + GSAP (ScrollTrigger). No framework, no WebGL.
 - State: custom ESM module (`src/core/superpowers.state.js`)
 - Config + copy: `PONYTAIL` in `src/config/ponytail.config.js`
 - API: Vercel Edge function at `/api/consult`
@@ -16,8 +16,11 @@ theme is only written to `localStorage` when the visitor picks it themselves.
 The inline script in `<head>` settles this before the first paint — keep the two
 copies of the rule (there and in `src/main.js`) in agreement.
 
-Three.js and the five scene modules are **dynamically imported** and only load
-outside business mode — do not add a static `import 'three'` to `src/main.js`.
+There is no 3D. All three modes hid `canvas#webgl` in CSS, so Three.js, the five
+scene modules, the render loop and the FPS-budget machinery that fed them never
+ran for a single visitor; they are gone, along with a hidden portrait image that
+every visit downloaded at high priority. Do not reintroduce a renderer without
+first making a mode that actually shows the canvas.
 
 ## Statistics
 - **All headline numbers are computed, never typed in.** `src/lib/stats.js`

@@ -10,7 +10,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          three: ['three'],
           gsap: ['gsap'],
           core: ['./src/core/orchestrator.js', './src/core/superpowers.state.js'],
         },
