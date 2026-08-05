@@ -100,6 +100,7 @@ test('the site ships with a working GA4 id and no Metrica yet', async ({ page })
   // which of them is meant to be live right now.
   const html = await (await page.request.get('/')).text();
   expect(html).toMatch(/<meta name="google-analytics" content="G-[A-Z0-9]{8,}"/);
+  expect(html, 'Vercel is on — its endpoint serves the script').toContain('<meta name="vercel-analytics" content="on"');
   expect(html, 'Metrica is waiting on the account').toContain('<meta name="yandex-metrica" content=""');
 });
 
