@@ -11,6 +11,7 @@ import { setMode } from '../themeManager.js';
 import { findCommand, commandNames, completionsFor } from './commands.js';
 import { validateForm } from '../../lib/validation.js';
 import { trackEvent } from '../../lib/analytics.js';
+import { attribution } from '../../lib/attribution.js';
 
 const HISTORY_KEY = 'terminal-history';
 const MAX_HISTORY = 60;
@@ -148,7 +149,7 @@ async function transmitAccept(value) {
     const res = await fetch('/api/consult', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Locale': lang() },
-      body: JSON.stringify({ ...payload, timestamp: new Date().toISOString() }),
+      body: JSON.stringify({ ...payload, timestamp: new Date().toISOString(), source: attribution() }),
     });
     if (!res.ok) {
       // The endpoint says whether the message went anywhere and where to write

@@ -7,6 +7,7 @@ import { renderProjectPage, renderCareerPage, renderAchievementPage, setProjectL
 import { CAREER_DETAIL } from '../data/projects.js';
 import { computeStats, computeProjectAggregates, projectSortValue } from '../lib/stats.js';
 import { trackEvent } from '../lib/analytics.js';
+import { attribution } from '../lib/attribution.js';
 import {
   renderStatCards, wireStatCards, animateStatValues,
   renderDashboard, animateDashboard,
@@ -529,7 +530,13 @@ export default class PortfolioOrchestrator {
         const res = await fetch('/api/consult', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Locale': lang },
-          body: JSON.stringify({ ...data, to: 'RF24KRSK@gmail.com', timestamp: new Date().toISOString() }),
+          body: JSON.stringify({
+            ...data,
+            to: 'RF24KRSK@gmail.com',
+            timestamp: new Date().toISOString(),
+            // So the enquiry arrives labelled with the advert that produced it.
+            source: attribution(),
+          }),
         });
         if (!res.ok) {
           // The endpoint reports whether the message actually went anywhere.

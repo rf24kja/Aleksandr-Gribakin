@@ -40,7 +40,7 @@ const COPY = {
     facts: [
       ['3', 'режима интерфейса над одним набором данных'],
       ['61', 'адрес в sitemap — у каждого проекта и записи свой URL'],
-      ['194', 'автотеста на трёх движках, десктоп и телефон'],
+      ['212', 'автотестов на трёх движках, десктоп и телефон'],
       ['0', 'нарушений контраста в обеих темах'],
     ],
     modes: [
@@ -99,7 +99,7 @@ const COPY = {
     facts: [
       ['3', 'interfaces over one set of data'],
       ['61', 'URLs in the sitemap — every project and entry has its own'],
-      ['194', 'automated tests across three engines, desktop and phone'],
+      ['212', 'automated tests across three engines, desktop and phone'],
       ['0', 'contrast failures in either theme'],
     ],
     modes: [

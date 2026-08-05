@@ -68,6 +68,13 @@ because the app rewrites the address with `replaceState` on boot.
 the submit click. Both the business form and the terminal's `contact` flow
 report it, and both report `consult_failed` when delivery fails.
 
+`src/lib/attribution.js` captures the campaign parameters at arrival, because
+`_routeFromPath()` replaces the address — query string included — as soon as it
+resolves a prerendered URL. `captureAttribution()` must therefore stay at the
+top of `src/main.js`, ahead of the orchestrator. Both submit paths attach
+`attribution()` as `source`, and `api/consult.js` whitelists the keys again
+before they reach the email.
+
 ## Rules for OpenCode (чтобы не тупить)
 
 ### Контекст прежде вопросов

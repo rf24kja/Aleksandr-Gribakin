@@ -7,6 +7,11 @@ import { initTerminal, refreshTerminalLocale } from './themes/terminal/terminal.
 import PortfolioOrchestrator from './core/orchestrator.js';
 import SceneManager from './core/SceneManager.js';
 import { initAnalytics } from './lib/analytics.js';
+import { captureAttribution } from './lib/attribution.js';
+
+// First, before anything rewrites the address: the campaign parameters are in
+// the query string and the router replaces it as soon as it resolves a route.
+captureAttribution();
 
 gsap.registerPlugin(ScrollTrigger);
 initMode();

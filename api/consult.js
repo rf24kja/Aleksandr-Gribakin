@@ -89,6 +89,24 @@ function clean(value, max) {
   return value.replace(CONTROL_CHARS, ' ').trim().slice(0, max);
 }
 
+// What the page collected about where this visitor came from. Whitelisted and
+// re-cleaned here rather than trusted: it arrives in the request body like
+// everything else, and it ends up in an email that gets read.
+const SOURCE_KEYS = [
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
+  'yclid', 'gclid', 'fbclid', 'referrer', 'landing',
+];
+
+function sourceOf(raw) {
+  if (!raw || typeof raw !== 'object') return {};
+  const out = {};
+  for (const key of SOURCE_KEYS) {
+    const value = clean(raw[key], 120);
+    if (value) out[key] = value;
+  }
+  return out;
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -99,15 +117,17 @@ function json(data, status = 200) {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Returns true only if Telegram actually accepted the message. */
-async function notifyTelegram({ name, email, message }) {
+async function notifyTelegram({ name, email, message, source = {} }) {
   const token = env('TELEGRAM_BOT_TOKEN');
   const chatId = env('TELEGRAM_CHAT_ID');
   if (env('TELEGRAM_NOTIFY') !== '1' || !token || !chatId) return false;
+  const from = [source.utm_source, source.utm_campaign].filter(Boolean).join(' / ');
   const text = [
     'New consult submission',
     '----------------',
     `Name: ${name}`,
     `Email: ${email}`,
+    ...(from ? [`From: ${from}`] : []),
     `Message: ${message.slice(0, 400)}`,
   ].join('\n');
   // Direct HTTP call — importing telegram-bot.js here would pull a filesystem
@@ -175,6 +195,9 @@ export default async function handler(request) {
     return json({ error: 'rate_limit', message: m.rateEmail }, 429);
   }
 
+  const source = sourceOf(body.source);
+  const sourceLines = Object.entries(source).map(([k, v]) => `  ${k}: ${v}`);
+
   const text = [
     `Name: ${name}`,
     `Email: ${email}`,
@@ -182,10 +205,16 @@ export default async function handler(request) {
     `Locale: ${request.headers.get('x-locale') || 'EN'}`,
     `Timestamp: ${clean(body.timestamp, 40) || new Date().toISOString()}`,
     `IP: ${ip}`,
+    ...(sourceLines.length ? ['', 'Source:', ...sourceLines] : []),
     '---',
     `Submitted at: ${new Date().toISOString()}`,
     `Response time: ${Date.now() - start}ms`,
   ].join('\n');
+
+  // The campaign rides in the subject as well, so a mailbox can be filtered and
+  // sorted by it without opening anything.
+  const campaign = source.utm_campaign || source.utm_source || '';
+  const subject = `[Consult] ${name}${campaign ? ` · ${campaign}` : ''}`;
 
   // Nothing configured means the message goes nowhere. Saying "delivered"
   // anyway loses the lead silently, so fail loudly and let the UI offer the
@@ -215,7 +244,7 @@ export default async function handler(request) {
           to: RECIPIENT_ADDR,
           from: SENDER,
           reply_to: email,
-          subject: `[Consult] ${name}`,
+          subject,
           text,
         }),
       });
@@ -251,7 +280,7 @@ export default async function handler(request) {
     }
   }
 
-  if (await notifyTelegram({ name, email, message })) delivered = true;
+  if (await notifyTelegram({ name, email, message, source })) delivered = true;
 
   if (!delivered) {
     return json({
