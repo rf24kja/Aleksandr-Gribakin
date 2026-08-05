@@ -8,6 +8,12 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
+  // Capped deliberately. The default is half the logical cores, which on a
+  // developer machine meant eleven workers driving three browser engines at
+  // once: WebKit starved, page.goto passed thirty seconds, and six tests failed
+  // for no reason but contention. The same run at four workers is green and
+  // each test is five times faster. A suite that cries wolf gets ignored.
+  workers: process.env.CI ? 2 : 4,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['list']] : 'list',

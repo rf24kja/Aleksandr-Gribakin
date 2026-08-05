@@ -20,7 +20,19 @@ import { expect, test } from '@playwright/test';
 const YM = '99999999';
 const GA = 'G-TEST00000';
 
-/** Serves the real site with the counters configured, and nothing phoning home. */
+/**
+ * Rewrites one of the counter meta tags in the served HTML.
+ *
+ * By value rather than by exact string: the tags carry real ids as counters are
+ * connected, and a replace that only matched `content=""` would quietly stop
+ * applying the moment one was filled in — leaving the tests passing while
+ * measuring the live configuration instead of the one they set up.
+ */
+const setMeta = (html, name, value) => html.replace(
+  new RegExp(`(<meta name="${name}" content=")[^"]*(")`), `$1${value}$2`,
+);
+
+/** Serves the real site with the counters as given, and nothing phoning home. */
 async function withCounters(page, { ym = YM, ga = GA, vercel = false } = {}) {
   await page.route('**/_vercel/insights/**', (route) => route.fulfill({
     status: 200, contentType: 'application/javascript', body: 'window.va=function(){};',
@@ -31,10 +43,10 @@ async function withCounters(page, { ym = YM, ga = GA, vercel = false } = {}) {
     if (!(res.headers()['content-type'] || '').includes('text/html')) {
       return route.fulfill({ response: res });
     }
-    const body = (await res.text())
-      .replace('<meta name="yandex-metrica" content=""', `<meta name="yandex-metrica" content="${ym}"`)
-      .replace('<meta name="google-analytics" content=""', `<meta name="google-analytics" content="${ga}"`)
-      .replace('<meta name="vercel-analytics" content=""', `<meta name="vercel-analytics" content="${vercel ? 'on' : ''}"`);
+    let body = await res.text();
+    body = setMeta(body, 'yandex-metrica', ym);
+    body = setMeta(body, 'google-analytics', ga);
+    body = setMeta(body, 'vercel-analytics', vercel ? 'on' : '');
     return route.fulfill({ response: res, body });
   });
 }
@@ -59,15 +71,17 @@ const goals = (calls) => calls.filter((c) => c[1] === 'reachGoal');
 // error attributed to no test at all.
 test.afterEach(async ({ page }) => { await page.unrouteAll({ behavior: 'ignoreErrors' }); });
 
-test('an unconfigured build contacts nobody', async ({ page }) => {
-  // This is what production serves until the ids are filled in, and it has to
-  // be indistinguishable from the site before any of this existed.
+test('a counter with no id configured contacts nobody', async ({ page }) => {
+  // Every counter is connected one at a time, and each must be inert until it
+  // is — an empty tag has to leave the site exactly as it was before analytics
+  // existed, with no request and no console error to show for it.
+  await withCounters(page, { ym: '', ga: '', vercel: false });
   const external = [];
   page.on('request', (r) => {
     if (/mc\.yandex\.ru|googletagmanager\.com|google-analytics\.com/.test(r.url())) external.push(r.url());
   });
-  // Not one failed request, and that includes Vercel's script: its toggle is
-  // off, so asking for it would put two errors in every visitor's console.
+  // Not one failed request, and that includes Vercel's script: while its
+  // toggle is off, asking for it puts two errors in every visitor's console.
   const failures = [];
   page.on('response', (r) => { if (r.status() >= 400) failures.push(`${r.status()} ${r.url()}`); });
 
@@ -76,6 +90,17 @@ test('an unconfigured build contacts nobody', async ({ page }) => {
   expect(external, 'no counter is loaded without an id').toEqual([]);
   expect(failures).toEqual([]);
   expect(await metrica(page)).toEqual([]);
+  expect(await ga4(page)).toEqual([]);
+});
+
+test('the site ships with a working GA4 id and no Metrica yet', async ({ page }) => {
+  // Guards the handover itself. A measurement id is one typo away from
+  // silently collecting nothing, and it is a value no test would otherwise
+  // look at — the counters are configured one at a time, and this records
+  // which of them is meant to be live right now.
+  const html = await (await page.request.get('/')).text();
+  expect(html).toMatch(/<meta name="google-analytics" content="G-[A-Z0-9]{8,}"/);
+  expect(html, 'Metrica is waiting on the account').toContain('<meta name="yandex-metrica" content=""');
 });
 
 test.describe('with the counters configured', () => {
