@@ -16,7 +16,8 @@ const EN = {
     ACHIEVEMENTS: 'Milestones & Recognition',
   },
   WEB_LABELS: {
-    ROLE: 'Role', PERIOD: 'Period', STACK: 'Stack', VISIT: 'Open the site',
+    // No "open the site" link: the clients are named, not linked to.
+    ROLE: 'Role', PERIOD: 'Period', STACK: 'Stack',
     SITUATION: 'Situation', WORK: 'What was done', OUTCOME: 'What changed', EVIDENCE: 'Evidence',
     UNNAMED: 'Client not named at their request',
   },
@@ -184,7 +185,7 @@ const RU = {
     ACHIEVEMENTS: 'Вехи и признание',
   },
   WEB_LABELS: {
-    ROLE: 'Роль', PERIOD: 'Период', STACK: 'Стек', VISIT: 'Открыть сайт',
+    ROLE: 'Роль', PERIOD: 'Период', STACK: 'Стек',
     SITUATION: 'Ситуация', WORK: 'Что сделано', OUTCOME: 'Что изменилось', EVIDENCE: 'Чем подтверждается',
     UNNAMED: 'Заказчик не называется по его просьбе',
   },

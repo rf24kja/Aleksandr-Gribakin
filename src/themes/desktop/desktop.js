@@ -271,9 +271,6 @@ function renderCaseWindow(id) {
       ${beat(L.WORK, c.work)}
       ${beat(L.OUTCOME, c.outcome)}
       ${beat(L.EVIDENCE, c.evidence)}
-      ${c.named && c.url
-    ? `<div class="wb-text"><a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">${esc(L.VISIT || 'Open')} ↗</a></div>`
-    : ''}
     </div>`
 }
 

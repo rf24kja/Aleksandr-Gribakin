@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import PONYTAIL from '../src/config/ponytail.config.js';
+import { webProjects } from '../src/data/webProjects.js';
 
 /**
  * Everything the site says should live at a URL of its own.
@@ -52,6 +53,7 @@ test('the sitemap lists every page and nothing that redirects', async ({ request
   const en = PONYTAIL.LOCALE.EN;
   const expected = 3 // /, /en, /ru
     + en.PROJECTS.length * 2
+    + webProjects('EN').length * 2 // client cases, both locales
     + en.CAREER.length * 2
     + en.ACHIEVEMENTS.length * 2;
   expect(locs.length, `sitemap has ${locs.length} entries`).toBe(expected);

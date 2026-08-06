@@ -384,10 +384,6 @@ export function renderWebCasePage(id) {
           <h3 class="pd-section-title">${L.STACK}</h3>
           <div class="pd-stack-tags">${item.stack.map((t) => `<span class="pd-stack-tag">${t}</span>`).join('')}</div>
         </div>` : ''}
-
-        ${item.named && item.url ? `<div style="margin-bottom:24px">
-          <a class="pd-link" href="${item.url}" target="_blank" rel="noopener noreferrer">${L.VISIT} ↗</a>
-        </div>` : ''}
       </div>
     </div>`;
 

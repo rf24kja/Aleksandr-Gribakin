@@ -26,17 +26,28 @@ test.describe('the gate', () => {
 
   test('published but incomplete is also refused', () => {
     // Half a case is the shape a guess arrives in.
-    for (const missing of ['period', 'capacity', 'stack', 'case']) {
+    for (const missing of ['period', 'capacity', 'case']) {
       const entry = {
         status: 'published',
         period: '2019–2021',
         capacity: 'contractor',
-        stack: ['React'],
         case: { EN: { situation: 'x' } },
       };
       delete entry[missing];
       expect(isPublishable(entry), `missing ${missing} must not publish`).toBe(false);
     }
+  });
+
+  test('a missing stack does not block a case', () => {
+    // Stack is the one field readable off the live site rather than recalled,
+    // so it is filled in from what each domain serves — and three of them sit
+    // behind a WAF and give up nothing. Requiring it would have forced a guess.
+    expect(isPublishable({
+      status: 'published',
+      period: '2022',
+      capacity: 'solo',
+      case: { EN: { situation: 'x' } },
+    })).toBe(true);
   });
 
   test('every shipped entry is either published-and-complete, or invisible', () => {

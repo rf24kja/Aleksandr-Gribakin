@@ -282,10 +282,6 @@ const COMMANDS = [
         out.push({ text: `  ${label}`, cls: 'accent' });
         for (const line of wrap(body, ctx.cols - 4, '  ')) out.push({ text: line, cls: 'dim' });
       }
-      if (c.named && c.url) {
-        out.push('');
-        out.push({ text: `  ${c.url}`, cls: 'kv' });
-      }
       return out;
     },
   },
