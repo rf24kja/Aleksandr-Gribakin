@@ -12,6 +12,7 @@ import { computeStats, computeProjectAggregates, projectSortValue } from '../lib
 import { trackEvent } from '../lib/analytics.js';
 import { attribution } from '../lib/attribution.js';
 import { webProjects } from '../data/webProjects.js';
+import { PROCESS, CONTACTS, LEGAL, hoursLine } from '../data/process.js';
 import {
   renderStatCards, wireStatCards, animateStatValues,
   renderDashboard, animateDashboard,
@@ -122,6 +123,8 @@ export default class PortfolioOrchestrator {
     this._renderCategoryTabs();
     this._renderProjects();
     this._renderAchievements();
+    this._renderProcess();
+    this._renderFooter();
     this._applyI18n();
     this._observeEntrance();
   }
@@ -134,12 +137,20 @@ export default class PortfolioOrchestrator {
     this._renderCategoryTabs();
     this._renderProjects();
     this._renderAchievements();
+    this._renderProcess();
+    this._renderFooter();
     this._applyI18n();
     this._entranceObserved = false;
     this._observeEntrance();
   }
 
   _applyI18n() {
+    // The policy is a real page per locale, so the link has to follow the
+    // language the same way the copy above it does.
+    const privacyHref = LEGAL.privacy[this.s.lang] || LEGAL.privacy.EN;
+    document.querySelectorAll('[data-privacy-link]').forEach((a) => {
+      a.setAttribute('href', privacyHref);
+    });
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.dataset.i18n;
       const val = key.split('.').reduce((o, k) => o?.[k], PONYTAIL.LOCALE[this.s.lang]);
@@ -201,6 +212,60 @@ export default class PortfolioOrchestrator {
           </button>`).join('')}
       </div>`;
     if (!existing) anchor.parentNode.insertBefore(section, anchor);
+  }
+
+  /**
+   * "How I work", placed after the proof and before the form: a visitor who
+   * has just been convinced asks what it is like to work with him, and that is
+   * the question the cases cannot answer.
+   */
+  _renderProcess() {
+    const anchor = document.getElementById('ctaSection');
+    if (!anchor) return;
+    const lang = this.s.lang;
+    const t = this._l().SECTION_TITLES || {};
+    const section = document.getElementById('processOverlay') || document.createElement('div');
+    section.className = 'section-overlay';
+    section.id = 'processOverlay';
+    section.innerHTML = `
+      <h2 class="section-title">${t.PROCESS || 'How I Work'}</h2>
+      <p class="section-sub">${t.PROCESS_SUB || ''}</p>
+      <div class="process-list">
+        ${PROCESS.map((s) => `
+          <div class="process-step">
+            <span class="ps-n">${s.n}</span>
+            <span class="ps-t">${s.title[lang] || s.title.EN}</span>
+            <span class="ps-b">${s.body[lang] || s.body.EN}</span>
+          </div>`).join('')}
+      </div>`;
+    if (!section.parentNode) anchor.parentNode.insertBefore(section, anchor);
+  }
+
+  /**
+   * The footer exists so a corporate buyer can answer three questions without
+   * asking: who is this, when are they reachable, and can they invoice me.
+   * Built from data rather than typed into the markup, so the hours here and
+   * the hours in step 04 can never disagree.
+   */
+  _renderFooter() {
+    const el = document.getElementById('siteFooter');
+    if (!el) return;
+    const lang = this.s.lang;
+    const f = this._l().FOOTER || {};
+    const pick = (o) => o?.[lang] || o?.EN || '';
+    el.innerHTML = `
+      <div class="f-name">${pick(LEGAL.name)}</div>
+      <div class="f-row">${pick(LEGAL.role)}</div>
+      <div class="f-row">
+        <a href="mailto:${CONTACTS.email}">${CONTACTS.email}</a> ·
+        <a href="${CONTACTS.telegramUrl}" target="_blank" rel="noopener">${CONTACTS.telegram}</a>
+      </div>
+      <div class="f-row">${f.HOURS || 'Working hours'}: ${hoursLine(lang)}</div>
+      <div class="f-legal">
+        ${pick(LEGAL.basis)}. ${pick(LEGAL.details)}.
+        · <a href="${pick(LEGAL.privacy)}" data-privacy-link>${f.PRIVACY || 'Privacy policy'}</a>
+        · © ${new Date().getFullYear()}
+      </div>`;
   }
 
   _renderCareer() {
@@ -545,7 +610,13 @@ export default class PortfolioOrchestrator {
       const btn = form.querySelector('[type="submit"]');
       const lang = this.s.lang;
       const fd = new FormData(form);
-      const data = { name: fd.get('name'), email: fd.get('email'), message: fd.get('message'), _website: fd.get('_website') };
+      const data = {
+        name: fd.get('name'),
+        email: fd.get('email'),
+        message: fd.get('message'),
+        consent: fd.get('consent'),
+        _website: fd.get('_website'),
+      };
       if (data._website) return;
       const { valid, errors } = validateForm(data);
       this._renderFormErrors(form, errors);
@@ -561,6 +632,7 @@ export default class PortfolioOrchestrator {
             ...data,
             to: 'RF24KRSK@gmail.com',
             timestamp: new Date().toISOString(),
+            consent: true,
             // So the enquiry arrives labelled with the advert that produced it.
             source: attribution(),
           }),

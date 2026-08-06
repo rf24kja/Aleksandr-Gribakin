@@ -110,12 +110,23 @@ function syncPrompt() {
 // Contact flow
 // ---------------------------------------------------------------------------
 
-const TRANSMIT_STEPS = ['name', 'email', 'message'];
+// Consent is the last step rather than a checkbox, because this mode has no
+// checkboxes. It is asked the same way as everything else here, and answering
+// anything but yes stops the send — the shell must not be a way around the
+// agreement the other two modes require.
+const TRANSMIT_STEPS = ['name', 'email', 'message', 'consent'];
+const YES = /^(y|yes|да|д)$/i;
 
 function transmitAsk() {
   const t = T();
   const field = TRANSMIT_STEPS[shell.transmit.step];
-  const labels = { name: t.ASK_NAME, email: t.ASK_EMAIL, message: t.ASK_MESSAGE };
+  const form = (PONYTAIL.LOCALE[lang()] || PONYTAIL.LOCALE.EN).FORM || {};
+  const labels = {
+    name: t.ASK_NAME,
+    email: t.ASK_EMAIL,
+    message: t.ASK_MESSAGE,
+    consent: form.CONSENT_ASK,
+  };
   print([{ text: `  ${labels[field] || field}`, cls: 'accent' }], { instant: true });
   syncPrompt();
 }
@@ -123,10 +134,22 @@ function transmitAsk() {
 async function transmitAccept(value) {
   const t = T();
   const field = TRANSMIT_STEPS[shell.transmit.step];
-  shell.transmit.data[field] = value;
+
+  if (field === 'consent') {
+    if (!YES.test(String(value).trim())) {
+      const form = (PONYTAIL.LOCALE[lang()] || PONYTAIL.LOCALE.EN).FORM_ERRORS || {};
+      shell.transmit = null;
+      syncPrompt();
+      await print([{ text: `  ✗ ${form.CONSENT_REQUIRED || 'Consent is required.'}`, cls: 'err' }], { instant: true });
+      return;
+    }
+    shell.transmit.data.consent = true;
+  } else {
+    shell.transmit.data[field] = value;
+  }
 
   // Validate the field as soon as it is entered rather than at the end.
-  const probe = { name: 'xx', email: 'a@b.co', message: '0123456789', ...shell.transmit.data };
+  const probe = { name: 'xx', email: 'a@b.co', message: '0123456789', consent: true, ...shell.transmit.data };
   const { errors } = validateForm(probe);
   if (errors[field]) {
     const messages = (PONYTAIL.LOCALE[lang()] || PONYTAIL.LOCALE.EN).FORM_ERRORS || {};

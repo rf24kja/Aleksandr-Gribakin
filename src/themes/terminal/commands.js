@@ -11,6 +11,8 @@
 import PONYTAIL from '../../config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js';
 import { webProjects, webProjectCount } from '../../data/webProjects.js';
+import { PROCESS, TERMS, CONTACTS, LEGAL, hoursLine } from '../../data/process.js';
+import { PRIVACY } from '../../data/privacy.js';
 import { computeStats, techFrequency, parseMetric } from '../../lib/stats.js';
 
 const L = (lang) => PONYTAIL.LOCALE[lang] || PONYTAIL.LOCALE.EN;
@@ -372,12 +374,66 @@ const COMMANDS = [
     },
   },
   {
+    name: 'process', aliases: ['how', 'terms'], key: 'PROCESS_CMD',
+    run(ctx) {
+      const t = T(ctx.lang);
+      const out = [...head(t.HEAD_PROCESS || 'HOW I WORK', ctx.cols)];
+      for (const s of PROCESS) {
+        out.push({ text: `  ${s.n} · ${s.title[ctx.lang] || s.title.EN}`, cls: 'accent' });
+        for (const line of wrap(s.body[ctx.lang] || s.body.EN, ctx.cols - 6, '    ')) {
+          out.push({ text: line, cls: 'dim' });
+        }
+        out.push('');
+      }
+      out.push({ text: `  ${t.HINT_LEGAL || 'legal — terms and privacy'}`, cls: 'dim' });
+      return out;
+    },
+  },
+  {
+    name: 'legal', aliases: ['privacy', 'license'], key: 'LEGAL_CMD',
+    run(ctx) {
+      const t = T(ctx.lang);
+      const pick = (o) => o?.[ctx.lang] || o?.EN || '';
+      const doc = PRIVACY[ctx.lang] || PRIVACY.EN;
+      const out = [...head(t.HEAD_LEGAL || 'LEGAL', ctx.cols)];
+      out.push({ text: `  ${pick(LEGAL.name)}`, cls: 'kv' });
+      for (const line of wrap(`${pick(LEGAL.basis)}. ${pick(LEGAL.details)}.`, ctx.cols - 4, '  ')) {
+        out.push({ text: line, cls: 'dim' });
+      }
+      out.push('');
+      out.push({ text: `  ${doc.title} — ${doc.updated}`, cls: 'accent' });
+      for (const s of doc.sections) {
+        out.push('');
+        out.push({ text: `  ${s.h}`, cls: 'kv' });
+        for (const p of s.p || []) {
+          for (const line of wrap(p, ctx.cols - 6, '    ')) out.push({ text: line, cls: 'dim' });
+        }
+        for (const li of s.list || []) {
+          for (const line of wrap(`· ${li}`, ctx.cols - 6, '    ')) out.push({ text: line, cls: 'dim' });
+        }
+        for (const p of s.after || []) {
+          for (const line of wrap(p, ctx.cols - 6, '    ')) out.push({ text: line, cls: 'dim' });
+        }
+      }
+      out.push('');
+      out.push({ text: `  dev24.pro${pick(LEGAL.privacy)}`, cls: 'kv' });
+      return out;
+    },
+  },
+  {
     name: 'contact', aliases: ['transmit', 'mail'], key: 'CONTACT',
     run(ctx) {
       const t = T(ctx.lang);
       ctx.startTransmit();
       return [
         ...head(t.HEAD_TRANSMIT || 'TRANSMIT', ctx.cols),
+        // The direct addresses come first: some people never fill in a form,
+        // and making them run the flow to find an email address is a toll.
+        { text: `  ${pad(t.LABEL_EMAIL || 'Email', 12)}${CONTACTS.email}`, cls: 'kv' },
+        { text: `  ${pad(t.LABEL_TG || 'Telegram', 12)}${CONTACTS.telegram}`, cls: 'kv' },
+        { text: `  ${pad(t.LABEL_HOURS || 'Hours', 12)}${hoursLine(ctx.lang)}`, cls: 'kv' },
+        { text: `  ${pad(t.LABEL_REPLY || 'Reply', 12)}${TERMS.response.typical[ctx.lang] || TERMS.response.typical.EN}`, cls: 'kv' },
+        '',
         { text: `  ${t.TRANSMIT_INTRO || 'Direct line. Three questions, then it sends.'}`, cls: 'dim' },
         { text: `  ${t.TRANSMIT_CANCEL || 'Ctrl+C to abort.'}`, cls: 'dim' },
         '',

@@ -187,7 +187,9 @@ export default async function handler(request) {
 
   // Mirrors src/lib/validation.js so client and server agree on what is valid.
   // The recipient is a server-side constant — it is never taken from the body.
-  if (name.length < 2 || !EMAIL_RE.test(email) || message.length < 10) {
+  // Consent is checked here too: a client-side tick is a courtesy, not a
+  // record, and this endpoint is reachable without the page.
+  if (name.length < 2 || !EMAIL_RE.test(email) || message.length < 10 || !body.consent) {
     return json({ error: 'validation', message: m.validation }, 400);
   }
 

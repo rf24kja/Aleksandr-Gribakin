@@ -27,6 +27,8 @@ async function submit(page) {
   await form.locator('input[name="name"]').fill('Александр');
   await form.locator('input[name="email"]').fill('test@example.com');
   await form.locator('textarea[name="message"]').fill('Проверка меток, длина сообщения достаточная.');
+  // Consent is required now; without it nothing leaves the browser at all.
+  await form.locator('input[name="consent"]').check();
   await form.locator('[type="submit"]').click();
   return JSON.parse((await posted).postData());
 }

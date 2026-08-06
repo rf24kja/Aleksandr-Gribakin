@@ -4,6 +4,8 @@ import { computeStats, buildMetricScale } from '../../lib/stats.js'
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js'
 import { renderStatsForDesktop, renderMetricGrid, animateMetricGrid, esc } from '../../lib/statsUI.js'
 import { webProjects, webProjectCount } from '../../data/webProjects.js'
+import { PROCESS, CONTACTS, LEGAL, hoursLine } from '../../data/process.js'
+import { PRIVACY } from '../../data/privacy.js'
 import WindowManager from './windowManager.js'
 
 const apps = []
@@ -139,6 +141,43 @@ function renderCareer() {
       <span class="wb-row-go">${esc(_('DETAIL.OPEN_DETAIL') || 'Open')} →</span>
     </button>
   `).join('')
+}
+
+function renderProcess() {
+  const lang = state?.lang || 'EN'
+  const rows = PROCESS.map(s => `
+    <div class="wb-text">
+      <b>${esc(s.n)} · ${esc(s.title[lang] || s.title.EN)}</b><br>
+      ${esc(s.body[lang] || s.body.EN)}
+    </div>`).join('')
+  return `<div class="wb-doc">${rows}</div>`
+}
+
+/**
+ * The policy as a window. Same source as the page and the terminal output —
+ * a document that said something different depending on which interface opened
+ * it would be worse than not having one.
+ */
+function renderLegal() {
+  const lang = state?.lang || 'EN'
+  const doc = PRIVACY[lang] || PRIVACY.EN
+  const pick = (o) => esc(o?.[lang] || o?.EN || '')
+  const body = doc.sections.map(s => `
+    <div class="wb-text">
+      <b>${esc(s.h)}</b><br>
+      ${(s.p || []).map(esc).join('<br>')}
+      ${(s.list || []).length ? '<br>' + s.list.map(li => '· ' + esc(li)).join('<br>') : ''}
+      ${(s.after || []).length ? '<br>' + s.after.map(esc).join('<br>') : ''}
+    </div>`).join('')
+  return `
+    <div class="wb-doc">
+      <div class="wb-title">${esc(doc.title)}</div>
+      <div class="wb-text">${esc(doc.updated)}</div>
+      <hr class="wb-divider">
+      <div class="wb-text">${pick(LEGAL.basis)}. ${pick(LEGAL.details)}.</div>
+      <hr class="wb-divider">
+      ${body}
+    </div>`
 }
 
 function renderWebProjects() {
@@ -310,10 +349,23 @@ function renderMail() {
       <label style="display:block;margin-bottom:4px;opacity:.7">${_('FORM.MESSAGE')}</label>
       <textarea name="message" placeholder="${_('FORM.PLACEHOLDER_MSG')}" style="width:100%;margin-bottom:10px;padding:6px 10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:inherit;font-family:inherit;resize:vertical;min-height:60px"></textarea>
       <span data-field-error="message" style="font-size:10px;color:#e74c3c;opacity:0;transition:opacity .2s"></span>
+      <label class="consent-row" style="font-size:11px">
+        <input type="checkbox" name="consent" value="on">
+        <span>${_('FORM.CONSENT')}
+          <a href="#" data-privacy-link data-open-legal>${_('FORM.CONSENT_LINK')}</a></span>
+      </label>
+      <span data-field-error="consent" style="font-size:10px;color:#e74c3c;opacity:0;transition:opacity .2s"></span>
       <div data-form-errors style="font-size:10px;color:#e74c3c;margin-bottom:8px"></div>
       <div data-form-success style="font-size:11px;color:#2ecc71;opacity:0;transition:opacity .3s"></div>
       <button type="submit" style="padding:6px 16px;background:var(--ubuntu-accent);border:none;border-radius:4px;color:#fff;font-family:inherit;font-size:12px;cursor:pointer">${_('FORM.SUBMIT')}</button>
     </form>
+    <hr class="wb-divider">
+    <div class="wb-text" style="font-size:11px">
+      <b>${esc(_('FOOTER.WRITE') || 'Write to me')}:</b>
+      <a href="mailto:${esc(CONTACTS.email)}">${esc(CONTACTS.email)}</a> ·
+      <a href="${esc(CONTACTS.telegramUrl)}" target="_blank" rel="noopener">${esc(CONTACTS.telegram)}</a><br>
+      ${esc(_('FOOTER.HOURS') || 'Working hours')}: ${esc(hoursLine(state?.lang || 'EN'))}
+    </div>
   `
 }
 
@@ -366,7 +418,11 @@ export function initDesktop(appState) {
     registerApp('webprojects', () => _('SECTION_TITLES.WEB') || 'Client Projects', SVG.projects,
       renderWebProjects, { width: 640, height: 440 })
   }
-  registerApp('mail', () => _('MAIL') || 'Mail', SVG.mail, renderMail, { width: 460, height: 400 })
+  registerApp('process', () => _('SECTION_TITLES.PROCESS') || 'How I Work', SVG.about,
+    renderProcess, { width: 600, height: 460 })
+  registerApp('mail', () => _('MAIL') || 'Mail', SVG.mail, renderMail, { width: 460, height: 440 })
+  registerApp('legal', () => _('FOOTER.PRIVACY') || 'Privacy', SVG.about,
+    renderLegal, { width: 620, height: 480 })
   registerApp('settings', () => _('SETTINGS') || 'Settings', SVG.settings, renderSettings, {
     panel: () => document.querySelector('.settings-gear')?.click(),
   })
@@ -417,10 +473,21 @@ export function initDesktop(appState) {
     openDetail(started.row.dataset.open)
   })
 
+  // The policy link inside the Mail window opens the Legal window rather than
+  // navigating away: leaving the desktop to read a policy and having to find
+  // your way back is not what this mode promises.
+  winContainer.addEventListener('click', (e) => {
+    const legal = e.target.closest('[data-open-legal]')
+    if (!legal) return
+    e.preventDefault()
+    openApp('legal')
+  })
+
   winContainer.addEventListener('click', (e) => {
     // A click may still follow the tap above; opening the same detail twice
     // would stack an identical window on itself.
     if (Date.now() - tapHandledAt < 700) return
+    if (e.target.closest('[data-open-legal]')) return
     const row = e.target.closest('[data-open]')
     if (row) openDetail(row.dataset.open)
   })

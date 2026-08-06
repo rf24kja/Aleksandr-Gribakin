@@ -144,7 +144,9 @@ test('contact collects a message and reports the outcome', async ({ page }) => {
   const input = page.locator('.tsh-window input');
 
   await run(page, 'contact');
-  for (const answer of ['Terminal Check', `ci-${Date.now()}@example.com`, 'Checking the transmit flow end to end.']) {
+  // The flow asks four things now: the fourth is consent, and 'y' is the
+  // only answer that lets it send.
+  for (const answer of ['Terminal Check', `ci-${Date.now()}@example.com`, 'Checking the transmit flow end to end.', 'y']) {
     await input.fill(answer);
     await input.press('Enter');
     await page.waitForTimeout(500);

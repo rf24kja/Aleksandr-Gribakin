@@ -51,13 +51,18 @@ test('every app opens inside the work area', async ({ page }) => {
   await bootDesktop(page);
   const area = await workArea(page);
   // Settings is deliberately absent: it opens the shared panel, not a window.
-  for (const id of ['about', 'career', 'projects', 'achievements', 'mail']) {
+  for (const id of ['about', 'career', 'projects', 'achievements', 'process', 'mail', 'legal']) {
     await page.locator(`.desk-icon[data-app="${id}"]`).dblclick();
     const win = page.locator(`#win-${id}`);
     await expect(win).toBeVisible();
     const box = await win.boundingBox();
     expect(box.x + box.width, `${id} runs off the right`).toBeLessThanOrEqual(area.width + 1);
     expect(box.y + box.height, `${id} runs off the bottom`).toBeLessThanOrEqual(area.height + 1);
+    // Closed before the next one: the cascade eventually covers the icon
+    // column, and then this test would be measuring its own leftovers rather
+    // than where a window opens.
+    await win.locator('.wt-close').click();
+    await expect(win).toHaveCount(0);
   }
 });
 

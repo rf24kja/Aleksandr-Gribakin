@@ -990,6 +990,87 @@
     [data-mode="business"] .web-outcome { font-size: 14px; color: var(--b-text-dim); margin-top: 2px; }
     [data-mode="business"] .web-nda { font-size: 12px; color: var(--b-text-mute); font-style: italic; }
 
+    /* How I work. Numbered because these really are a sequence — the order a
+       client meets them in — not because numbers decorate a page. */
+    [data-mode="business"] .process-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 14px;
+    }
+    [data-mode="business"] .process-step {
+      background: var(--b-bg2);
+      border: 1px solid rgba(255,255,255,.04);
+      border-radius: var(--b-radius);
+      padding: 20px 22px;
+    }
+    [data-mode="business"] .process-step .ps-n {
+      font-family: var(--b-font-mono); font-size: 11px; letter-spacing: .18em;
+      color: var(--b-accent-text); display: block; margin-bottom: 6px;
+    }
+    [data-mode="business"] .process-step .ps-t {
+      display: block; font-size: 16px; font-weight: 500; color: var(--b-text); margin-bottom: 7px;
+    }
+    [data-mode="business"] .process-step .ps-b { font-size: 14px; line-height: 1.6; color: var(--b-text-mute); }
+
+    /* Consent. A control, so it is sized like one — the row is the tap target,
+       not just the twelve pixels of the box.
+
+       The selectors carry .terminal-form because the form's own `label` rule
+       lives at that specificity in three different mode blocks, and it sets
+       display:block plus uppercase mono. Left alone it stacked the checkbox
+       above the sentence and shouted the sentence in capitals — a legal
+       agreement has to read like one. */
+    .terminal-form label.consent-row,
+    .consent-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin: 4px 0 14px; cursor: pointer;
+      font-size: 13px; line-height: 1.5; letter-spacing: normal;
+      text-transform: none; text-align: left;
+      min-height: 44px; padding: 6px 0;
+    }
+    /* `.terminal-form input { width: 100% }` is written once per mode, at the
+       same specificity as a plain `.consent-row input` and later in the file —
+       so it won, and the checkbox stretched across the whole row, leaving the
+       sentence beside it at zero width. Scoped through .terminal-form here to
+       outrank it wherever it is declared. */
+    .terminal-form .consent-row input[type="checkbox"],
+    [data-mode="business"] .terminal-form .consent-row input[type="checkbox"],
+    [data-mode="terminal"] .terminal-form .consent-row input[type="checkbox"],
+    .consent-row input[type="checkbox"] {
+      width: 18px; height: 18px; margin: 2px 0 0; padding: 0; flex: none;
+      accent-color: var(--b-accent, #e95420);
+    }
+    /* Without this the sentence is a flex item at min-content — it collapsed to
+       a 59px column and read as blank space next to a lone checkbox. */
+    .consent-row > span { flex: 1 1 auto; min-width: 0; }
+    [data-mode="business"] .terminal-form label.consent-row {
+      display: flex;
+      text-transform: none;
+      letter-spacing: normal;
+      font-family: var(--b-font);
+      font-size: 13px;
+      color: var(--b-text-mute);
+    }
+    [data-mode="business"] .consent-row a { color: var(--b-accent-text); }
+    [data-mode="terminal"] .terminal-form label.consent-row {
+      display: flex; text-transform: none; letter-spacing: normal;
+    }
+
+    /* Footer */
+    #siteFooter { display: none; }
+    [data-mode="business"] #siteFooter {
+      display: block;
+      border-top: 1px solid rgba(255,255,255,.06);
+      margin-top: 40px; padding: 32px 8% 44px;
+      font-size: 13px; line-height: 1.7; color: var(--b-text-mute);
+    }
+    [data-mode="business"] #siteFooter .f-name { color: var(--b-text); font-size: 15px; font-weight: 500; }
+    [data-mode="business"] #siteFooter .f-row { margin-top: 6px; }
+    [data-mode="business"] #siteFooter a { color: var(--b-accent-text); text-decoration: none; }
+    [data-mode="business"] #siteFooter a:hover { text-decoration: underline; }
+    [data-mode="business"] #siteFooter .f-legal { margin-top: 14px; font-size: 12px; }
+    [data-mode="business"][data-theme="light"] #siteFooter { border-top-color: rgba(0,0,0,.08); }
+
     /* Stats */
     /* Flex rather than a fixed grid, because the hints are sentences now, not
        fragments. A rigid track count left the last row with one orphan card and
@@ -3532,12 +3613,22 @@
       <textarea name="message" data-i18n="FORM.PLACEHOLDER_MSG" placeholder="Tell me about your product, team, and what you are building..."></textarea>
       <span data-field-error="message"></span>
       <input type="text" name="_website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;top:-9999px;height:0;width:0;opacity:0" />
+      <label class="consent-row">
+        <input type="checkbox" name="consent" value="on" />
+        <span><span data-i18n="FORM.CONSENT">I agree to my details being processed as described in the</span>
+        <a href="/privacy" data-privacy-link data-i18n="FORM.CONSENT_LINK" target="_blank" rel="noopener">privacy policy</a></span>
+      </label>
+      <span data-field-error="consent"></span>
       <div data-form-errors></div>
       <div data-form-success></div>
       <button type="submit" data-i18n="FORM.SUBMIT" aria-label="Submit contact form">Initiate Consult</button>
     </form>
       </section>
   </div>
+
+  <!-- Built by the orchestrator so the hours, the address and the legal basis
+       come from src/data/process.js rather than being typed here as well. -->
+  <footer id="siteFooter"></footer>
 
   <div id="projectDetail"></div>
   <div id="page404" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9997;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;font-family:var(--font-mono);text-align:center;gap:12px;">

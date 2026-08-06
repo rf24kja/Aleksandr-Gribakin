@@ -52,6 +52,7 @@ test('the sitemap lists every page and nothing that redirects', async ({ request
 
   const en = PONYTAIL.LOCALE.EN;
   const expected = 3 // /, /en, /ru
+    + 2 // /privacy and /ru/privacy
     + en.PROJECTS.length * 2
     + webProjects('EN').length * 2 // client cases, both locales
     + en.CAREER.length * 2

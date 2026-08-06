@@ -42,7 +42,22 @@ export function validateForm(data) {
     if (err) { errors[field] = err; valid = false; }
   }
 
-  return { valid, errors, data: { name: data.name?.trim(), email: data.email?.trim().toLowerCase(), message: data.message?.trim() } };
+  // Consent is not a text field and has no rule of its own: it is either given
+  // or it is not. Checked here rather than in the markup's `required`, because
+  // the same function guards the desktop window and the terminal flow, neither
+  // of which has a browser form to lean on.
+  if (!data.consent) { errors.consent = 'required'; valid = false; }
+
+  return {
+    valid,
+    errors,
+    data: {
+      name: data.name?.trim(),
+      email: data.email?.trim().toLowerCase(),
+      message: data.message?.trim(),
+      consent: Boolean(data.consent),
+    },
+  };
 }
 
 const HACKER_CHARS = '!<>-_\\/[]{}—=+*^?#________';

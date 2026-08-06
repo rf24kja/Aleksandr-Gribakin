@@ -176,6 +176,7 @@ test.describe('the enquiry goal', () => {
     await form.locator('input[name="name"]').fill('Александр');
     await form.locator('input[name="email"]').fill('test@example.com');
     await form.locator('textarea[name="message"]').fill('Проверка отправки формы, десять символов есть.');
+    await form.locator('input[name="consent"]').check();
     await form.locator('[type="submit"]').click();
     await page.waitForTimeout(1800);
   }

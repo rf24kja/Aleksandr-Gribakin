@@ -27,6 +27,7 @@ import PONYTAIL from '../src/config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../src/data/projects.js';
 import { computeStats } from '../src/lib/stats.js';
 import { webProjects } from '../src/data/webProjects.js';
+import { PRIVACY } from '../src/data/privacy.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -274,6 +275,36 @@ function casePage(shell, lang, item, canonical, prefix) {
   });
 }
 
+/**
+ * The privacy policy as a real document.
+ *
+ * Prerendered like everything else, and for the same reason: a policy that only
+ * exists once JavaScript has run is not a policy a regulator, a crawler or a
+ * visitor with scripts blocked can read.
+ */
+function privacyPage(shell, lang, canonical, prefix) {
+  const doc = PRIVACY[lang] || PRIVACY.EN;
+  const body = `
+      <article class="prerender-detail" data-prerendered="privacy">
+        <h2>${esc(doc.title)}</h2>
+        <p class="prerender-meta">${esc(doc.updated)}</p>
+        <p>${esc(doc.intro)}</p>
+        ${doc.sections.map((s) => `<h3>${esc(s.h)}</h3>
+        ${(s.p || []).map((p) => `<p>${esc(p)}</p>`).join('\n        ')}
+        ${(s.list || []).length ? `<ul>${s.list.map((li) => `<li>${esc(li)}</li>`).join('')}</ul>` : ''}
+        ${(s.after || []).map((p) => `<p>${esc(p)}</p>`).join('\n        ')}`).join('\n        ')}
+      </article>`;
+
+  let html = localePage(shell, lang, canonical, prefix);
+  html = html.replace('<div id="projectDetail"></div>', `<div id="projectDetail"></div>\n  ${body}`);
+  return setHead(html, {
+    lang: lang.toLowerCase(),
+    canonical,
+    title: `${doc.title} — dev24.pro`,
+    description: doc.intro,
+  });
+}
+
 /** A milestone's page. */
 function achievementPage(shell, lang, entry, detail, canonical, prefix) {
   const l = PONYTAIL.LOCALE[lang];
@@ -361,6 +392,14 @@ async function main() {
     }
   }
 
+  let privacyPages = 0;
+  for (const [lang, prefix] of [['EN', ''], ['RU', 'ru/']]) {
+    const loc = `${ORIGIN}/${prefix}privacy`;
+    pending.push([`${prefix}privacy/index.html`, privacyPage(shell, lang, loc, prefix)]);
+    urls.push({ loc, priority: '0.3' });
+    privacyPages += 1;
+  }
+
   let careerPages = 0;
   let achievementPages = 0;
   for (const [lang, prefix] of [['EN', ''], ['RU', 'ru/']]) {
@@ -391,7 +430,8 @@ async function main() {
   await writeFile(join(DIST, 'sitemap.xml'), sitemap(urls), 'utf8');
 
   console.log(`prerender: ${roots.length} locale pages, ${projectPages} project, `
-    + `${casePages} case, ${careerPages} career, ${achievementPages} milestone pages, `
+    + `${casePages} case, ${careerPages} career, ${achievementPages} milestone, `
+    + `${privacyPages} privacy pages, `
     + `${urls.length} sitemap entries`);
 }
 
