@@ -5,6 +5,11 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  # A push once failed to produce a run at all, and the one before it sat
+  # fifteen minutes without ever reaching a step and was cancelled. Neither was
+  # the code's doing, but without this there was no way to ask for a verdict on
+  # the current commit short of pushing something.
+  workflow_dispatch:
 
 jobs:
   check:
