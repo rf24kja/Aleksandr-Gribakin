@@ -814,121 +814,111 @@ export const CAREER_DETAIL = {
 };
 
 export const ACHIEVEMENT_DETAIL = {
-  // No public records. Every entry describes work inside an employer, or —
-  // for the conference entry — attendance and floor discussion, which is what
-  // actually happened and is not a claim on a published speaker programme.
+  // No public records here, and none implied. Each entry is a turning point
+  // inside an employer, told for what it taught rather than for what was built:
+  // the reference architectures already describe the solutions, and repeating
+  // them under a second heading made the site say everything twice.
+  //
+  // The conference entry is gone. It said, in a section headed "recognition",
+  // that the author attended and joined discussions from the floor rather than
+  // speaking — an honest sentence, but an anti-credential in that position,
+  // and worse than a shorter list.
   EN: [
     {
-      title: 'Off Bare Metal',
+      title: 'The Last Physical Server',
       details: [
-        'Moved a legacy estate off physical servers and classic virtualisation into a hybrid AWS/GCP footprint. The first phase was discovery rather than provisioning, because no complete inventory of the old estate existed anywhere except in people’s heads.',
-        'Maintenance spend fell 30-40%. The more durable outcome was that the infrastructure ended the migration described as code, which is what made every later change reviewable instead of remembered.'
+        'The final rack went dark. The long part of the migration was never the move — it was the inventory: no complete list of what ran on that hardware existed anywhere except in three people’s heads, and half of it turned out to matter.',
+        'That is why discovery is now the first phase of anything I take on. Architecture proposed before the estate is written down is a guess wearing a diagram.'
       ],
       links: {}
     },
     {
-      title: 'Release Time: Days to Minutes',
+      title: 'Releases Stopped Being Events',
       details: [
-        'Standardised CI/CD across dozens of microservices that had each grown a private pipeline. One template, opted into by declaring a service type, replaced a set of copies that drifted apart the moment they were duplicated.',
-        'Deployment went from a multi-day coordinated event to roughly fifteen minutes with no downtime. The second-order effect mattered more: cheap releases mean smaller changes shipped more often, and smaller changes are what actually reduces incidents.'
+        'Deployment went from a multi-day coordinated operation to roughly fifteen minutes, with no downtime and no war room.',
+        'The second-order effect mattered more than the number. When a release is cheap, people stop saving changes up for it — fixes reach users the same day instead of riding the next sprint, and smaller changes are what actually reduces incidents.'
       ],
       links: {}
     },
     {
-      title: 'Conferences and Community',
+      title: 'The End of Oral Tradition',
       details: [
-        'A regular at HighLoad++, DevOpsConf and regional meetups through the years the industry was rebuilding itself — as a practitioner in the room rather than a billed speaker.',
-        'Took the floor in discussions on migrating a monolith without stopping the business, building resilient CI/CD before Docker was ubiquitous, and tuning databases under load. The value of those rooms was rarely the talks; it was the arguments afterwards with people solving the same problem differently.'
+        'Environments stopped being unique. Until then "works on mine" was not a joke but a working state: development, staging and production were assembled by hand and drifted apart quietly between deployments.',
+        'Since then I treat a difference between environments as a defect rather than a fact of life. It is the cheapest class of bug to prevent and among the most expensive to debug once it reaches a customer.'
       ],
       links: {}
     },
     {
-      title: 'Infrastructure as Code',
+      title: 'It Is Rarely the Database',
       details: [
-        'Automated configuration management and environment provisioning end to end, so development, staging and production became reproducible rather than hand-assembled artefacts that had drifted apart over years.',
-        'The honest test of this work is destroying a non-production environment and rebuilding it. Once that stopped being frightening, the human factor had genuinely been removed rather than merely documented.'
+        'A year spent on storage under load taught the thing that keeps being true: the bottleneck is almost never the engine, it is the shape of the questions being asked of it.',
+        'Sharding, replication and caching all help. A corrected query usually helps more, costs nothing to run, and does not add a component that has to be operated for the next five years.'
       ],
       links: {}
     },
     {
-      title: 'Databases Under Load',
+      title: 'DevOps When It Was Two Departments',
       details: [
-        'Tuned relational and non-relational stores for highload: streaming replication to take reads off the primary, partitioning to keep the hot set small, and sharding where a single writer had become the ceiling.',
-        'Most of the improvement came from reading execution plans rather than adding capacity — a missing composite index, a query sorting before filtering, an ORM fetching a hundred rows to count them. Hardware hides those for a quarter and then stops.'
-      ],
-      links: {}
-    },
-    {
-      title: 'DevOps as a Practice',
-      details: [
-        'Became the link between development and operations back when those were separate departments with separate incentives, and a release was a negotiation between them rather than a pipeline stage.',
-        'The work was as much cultural as technical: getting developers to care what happens after merge, and operations to accept change as normal rather than as risk. Mentored engineers on both sides of that line.'
+        'Development and operations had different targets and different definitions of the word "done" — one was measured on shipping, the other on nothing breaking, and each was rewarded for the other’s caution being wrong.',
+        'Standing between them is where I learned the part that has not changed: an incident is almost never purely technical. The technical cause is real, and the reason nobody caught it earlier is organisational.'
       ],
       links: {}
     },
     {
       title: 'First Production Commit',
       details: [
-        'A PHP application on a physical server, deployed over FTP. There was no review, no tests, and no way back if it went wrong. It worked. Mostly.',
-        'That period is unfashionable now and remains the most useful of the fifteen years. Every abstraction that came later is easier to reason about when you have already debugged the thing it replaced.'
+        'PHP on a physical server, deployed over FTP. It worked. Almost.',
+        'Everything above this line is a sequence of answers to why "almost" is not good enough — which is why it is still on the list.'
       ],
       links: {}
     }
   ],
   RU: [
     {
-      title: 'Уход с bare-metal',
+      title: 'Последний физический сервер',
       details: [
-        'Перевёл legacy-инфраструктуру с физических серверов и классической виртуализации в гибридное облако на AWS и GCP. Первой фазой было обнаружение, а не провижининг: полной описи старого хозяйства не существовало нигде, кроме как в головах людей.',
-        'Расходы на обслуживание упали на 30-40%. Более долговечным результатом стало то, что к концу миграции инфраструктура была описана кодом — и именно это сделало каждое последующее изменение проверяемым, а не вспоминаемым.'
+        'Погасла последняя стойка. Долгой в миграции была не перевозка, а инвентаризация: полного списка того, что крутится на железе, не существовало нигде, кроме как в головах трёх человек, — и половина оказалась важной.',
+        'С тех пор опись стала первым этапом любой моей работы. Архитектура, предложенная до того, как хозяйство переписано, — это догадка с диаграммой.'
       ],
       links: {}
     },
     {
-      title: 'Релиз: с дней до минут',
+      title: 'Релиз перестал быть событием',
       details: [
-        'Стандартизировал CI/CD для десятков микросервисов, каждый из которых отрастил собственный пайплайн. Один шаблон, подключаемый объявлением типа сервиса, заменил набор копий, разошедшихся сразу после дублирования.',
-        'Развёртывание превратилось из многодневного согласованного события примерно в пятнадцать минут без простоя. Эффект второго порядка оказался важнее: дешёвый релиз означает меньшие изменения чаще, а именно это снижает число инцидентов.'
+        'Выкатка сократилась с многодневной согласованной операции примерно до пятнадцати минут — без простоя и без дежурной комнаты.',
+        'Побочный эффект оказался важнее цифры. Когда релиз стоит дёшево, правки перестают копить: они доезжают до пользователя в тот же день, а не в следующем спринте. А мелкие изменения — это и есть то, что реально снижает число инцидентов.'
       ],
       links: {}
     },
     {
-      title: 'Конференции и сообщество',
+      title: 'Конец устной традиции',
       details: [
-        'Постоянный участник HighLoad++, DevOpsConf и региональных митапов в годы, когда индустрия себя перестраивала — как практик из зала, а не заявленный докладчик.',
-        'Выступал в обсуждениях о миграции монолита без остановки бизнеса, построении устойчивых CI/CD до повсеместного Docker и тюнинге баз под нагрузкой. Ценность этих залов редко была в докладах; она была в спорах после, с людьми, решавшими ту же задачу иначе.'
+        'Среды перестали быть уникальными. До этого «работает у меня» было не мемом, а рабочим состоянием: development, staging и production собирались руками и тихо расходились между выкатками.',
+        'С тех пор считаю расхождение сред дефектом, а не особенностью. Это самый дешёвый класс ошибок для предотвращения и один из самых дорогих для отладки, когда он доехал до клиента.'
       ],
       links: {}
     },
     {
-      title: 'Инфраструктура как код',
+      title: 'Упирается почти никогда не база',
       details: [
-        'Автоматизировал управление конфигурациями и развёртывание сред целиком, чтобы development, staging и production стали воспроизводимыми, а не собранными вручную артефактами, разошедшимися за годы.',
-        'Честная проверка этой работы — снести непродакшен-окружение и собрать заново. Когда это перестало быть страшным, человеческий фактор оказался действительно устранён, а не просто задокументирован.'
+        'Год работы с хранилищами под нагрузкой научил тому, что продолжает подтверждаться: узкое место — почти никогда не движок, а форма вопросов, которые ему задают.',
+        'Шардирование, репликация и кэш помогают. Исправленный запрос обычно помогает больше, ничего не стоит в эксплуатации и не добавляет компонент, который придётся обслуживать следующие пять лет.'
       ],
       links: {}
     },
     {
-      title: 'Базы под нагрузкой',
+      title: 'DevOps, когда это были два отдела',
       details: [
-        'Настраивал реляционные и нереляционные хранилища под highload: потоковая репликация, чтобы снять чтение с мастера, партиционирование, чтобы удержать горячий набор небольшим, и шардирование там, где единственный писатель стал потолком.',
-        'Основная часть улучшений пришла от чтения планов выполнения, а не от добавления мощности: отсутствующий составной индекс, запрос с сортировкой до фильтрации, ORM, вытягивающий сотню строк ради подсчёта. Железо прячет такое на квартал, а потом перестаёт.'
-      ],
-      links: {}
-    },
-    {
-      title: 'DevOps как практика',
-      details: [
-        'Стал связующим звеном между разработкой и эксплуатацией тогда, когда это были разные отделы с разными интересами, а релиз был переговорами между ними, а не стадией пайплайна.',
-        'Работа была в равной степени культурной и технической: заставить разработчиков интересоваться тем, что происходит после мержа, а эксплуатацию — принять изменения как норму, а не как риск. Менторил инженеров по обе стороны этой границы.'
+        'У разработки и эксплуатации были разные цели и разные представления о слове «готово»: одних мерили выкаткой, других — тем, что ничего не упало, и каждый получал премию за то, что осторожность другого оказалась лишней.',
+        'Стоять между ними — там я вынес то, что с тех пор не изменилось: инцидент почти никогда не бывает чисто техническим. Техническая причина реальна, но то, почему её никто не поймал раньше, — организационное.'
       ],
       links: {}
     },
     {
       title: 'Первый коммит в продакшен',
       details: [
-        'PHP-приложение на физическом сервере, деплой по FTP. Ни ревью, ни тестов, ни пути назад, если что-то пойдёт не так. Работало. Почти.',
-        'Сегодня этот период немоден и остаётся самым полезным из пятнадцати лет. Любая пришедшая позже абстракция понимается легче, когда ты уже отлаживал то, что она заменила.'
+        'PHP на физическом сервере, деплой по FTP. Работало. Почти.',
+        'Всё, что выше в этом списке, — последовательность ответов на то, почему «почти» недостаточно. Поэтому запись и осталась.'
       ],
       links: {}
     }

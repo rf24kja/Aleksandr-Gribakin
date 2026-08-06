@@ -18,7 +18,15 @@
  *     rename it here too.
  */
 
+import { CONTACTS } from './process.js';
+
 export const PRIVACY_UPDATED = '2026-08-07';
+
+// The policy is where someone exercises a right, so the address in it has to be
+// one that receives mail. Read from the same constant the footer uses rather
+// than typed out four times: this document had hello@dev24.pro in it while that
+// mailbox was silently discarding everything sent to it.
+const MAIL = CONTACTS.email;
 
 export const PRIVACY = {
   EN: {
@@ -28,7 +36,7 @@ export const PRIVACY = {
     sections: [
       {
         h: 'Who handles your data',
-        p: ['Aleksandr Gribakin, owner of dev24.pro. For any question about this policy: hello@dev24.pro.'],
+        p: [`Aleksandr Gribakin, owner of dev24.pro. For any question about this policy: ${MAIL}.`],
       },
       {
         h: 'What the contact form sends',
@@ -75,7 +83,7 @@ export const PRIVACY = {
       },
       {
         h: 'Your rights',
-        p: ['You can ask what data of yours I hold, ask for it to be corrected or deleted, and withdraw your consent. Write to hello@dev24.pro and I will answer within 30 days.'],
+        p: [`You can ask what data of yours I hold, ask for it to be corrected or deleted, and withdraw your consent. Write to ${MAIL} and I will answer within 30 days.`],
       },
       {
         h: 'Changes',
@@ -91,7 +99,7 @@ export const PRIVACY = {
     sections: [
       {
         h: 'Кто обрабатывает данные',
-        p: ['Александр Грибакин, владелец сайта dev24.pro. По любым вопросам об этой политике: hello@dev24.pro.'],
+        p: [`Александр Грибакин, владелец сайта dev24.pro. По любым вопросам об этой политике: ${MAIL}.`],
       },
       {
         h: 'Что отправляет форма',
@@ -138,7 +146,7 @@ export const PRIVACY = {
       },
       {
         h: 'Ваши права',
-        p: ['Вы можете запросить, какие ваши данные у меня есть, потребовать их исправления или удаления и отозвать согласие. Напишите на hello@dev24.pro — отвечу в течение 30 дней.'],
+        p: [`Вы можете запросить, какие ваши данные у меня есть, потребовать их исправления или удаления и отозвать согласие. Напишите на ${MAIL} — отвечу в течение 30 дней.`],
       },
       {
         h: 'Изменения',
