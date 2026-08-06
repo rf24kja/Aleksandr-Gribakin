@@ -30,6 +30,22 @@
 const SOLO = { EN: 'Fullstack developer, solo', RU: 'Fullstack-разработчик, соло' };
 
 /**
+ * Four of the ten belong to companies with large product teams of their own,
+ * and "solo" there read as "I built their site" — the most checkable sentence
+ * on the page, and the easiest to disprove. The author supplied what the work
+ * actually was: a regional module, a franchise office, a sub-module of a
+ * portal. Narrower, and impossible to argue with.
+ */
+const CONTRACTOR_FE = {
+  EN: 'Front end, in a contractor\'s team',
+  RU: 'Фронтенд, в составе команды подрядчика',
+};
+const FE_MODULE = (what) => ({
+  EN: `Front-end developer, ${what.EN}`,
+  RU: `Фронтенд-разработчик, ${what.RU}`,
+});
+
+/**
  * The standing evidence line. These were contracts: there is no public
  * repository to point at and no dashboard to open, and the figures are the
  * clients' own. Saying so is worth more than implying a measurement nobody can
@@ -50,18 +66,21 @@ export const WEB_PROJECTS = [
     period: '2023',
     capacity: SOLO,
     stack: ['Next.js', 'React'],
-    sector: { EN: 'Luxury real estate, global', RU: 'Люксовая недвижимость, глобально' },
+    sector: {
+      EN: 'Luxury real estate — a regional office of the network',
+      RU: 'Люксовая недвижимость — региональное представительство сети',
+    },
     observed: 'Next.js behind Cloudflare',
     case: {
       EN: {
         situation: 'A luxury listing lives on its media: galleries, floor plans, commissioned photography. The same files that sell the property are what make the page slow.',
-        work: 'Built the catalogue front end and back end — media galleries, filtering by location, an interactive map — and took the weight out of the media path with lazy loading and WebP.',
+        work: 'Built the site and property catalogue for a regional office of the network — media galleries, filtering by location, an interactive map — and took the weight out of the media path with lazy loading and WebP.',
         outcome: 'Listings are browsed deeper: visitors go further into the catalogue instead of leaving on the first heavy page.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
         situation: 'Элитный объект продаётся медиа: галереями, планировками, съёмкой. Те же файлы, что продают, и тормозят страницу.',
-        work: 'Разработал интерфейс и бэкенд каталога — медиагалереи, фильтрация по локациям, интерактивная карта — и разгрузил отдачу медиа: отложенная загрузка и WebP.',
+        work: 'Разработал веб-ресурс и каталог объектов для регионального представительства сети — медиагалереи, фильтрация по локациям, интерактивная карта — и разгрузил отдачу медиа: отложенная загрузка и WebP.',
         outcome: 'Листинги стали смотреть глубже: посетитель уходит дальше по каталогу, а не закрывает первую тяжёлую страницу.',
         evidence: UNDER_CONTRACT.RU,
       },
@@ -73,20 +92,23 @@ export const WEB_PROJECTS = [
     url: 'https://www.sixt.com',
     status: 'published',
     period: '2022',
-    capacity: SOLO,
-    sector: { EN: 'Car rental, international', RU: 'Прокат автомобилей, международный' },
+    capacity: CONTRACTOR_FE,
+    sector: {
+      EN: 'Car rental — a regional booking module',
+      RU: 'Прокат автомобилей — региональный модуль бронирования',
+    },
     observed: 'Behind a WAF — no platform signals available',
     case: {
       EN: {
-        situation: 'Booking is the whole reason anyone opens a rental site: a location, a pair of dates, a class of car, and a payment that has to go through the first time.',
-        work: 'Designed and built the online booking module — search by location, dates and vehicle class — with payment gateway integration.',
-        outcome: 'The module holds through the holiday peak, when a rental site takes its year in a few weeks.',
+        situation: 'Booking is the whole reason anyone opens a rental site: a location, a pair of dates, a class of car, and a checkout that has to work on the phone it is opened on.',
+        work: 'Built and optimised the front end of the regional booking module for one market, as part of a contractor\'s team — search by location, dates and vehicle class, and the responsive integration of the checkout forms.',
+        outcome: 'The interfaces hold through the holiday peak, when a rental business takes its year in a few weeks.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
-        situation: 'Бронирование — то, ради чего вообще открывают сайт проката: локация, даты, класс авто и оплата, которая должна пройти с первого раза.',
-        work: 'Спроектировал и реализовал модуль онлайн-бронирования — поиск по локациям, датам и классам авто — с интеграцией платёжных шлюзов.',
-        outcome: 'Модуль держит пиковый сезон отпусков, когда прокат зарабатывает год за несколько недель.',
+        situation: 'Бронирование — то, ради чего вообще открывают сайт проката: локация, даты, класс авто и оформление, которое обязано работать на том телефоне, с которого его открыли.',
+        work: 'Разрабатывал и оптимизировал фронтенд-интерфейсы регионального модуля бронирования под конкретный рынок, в составе команды подрядчика — поиск по локациям, датам и классам авто и адаптивная интеграция форм оформления заказа.',
+        outcome: 'Интерфейсы держат пиковый сезон отпусков, когда прокат зарабатывает год за несколько недель.',
         evidence: UNDER_CONTRACT.RU,
       },
     },
@@ -97,19 +119,22 @@ export const WEB_PROJECTS = [
     url: 'https://www.99acres.com',
     status: 'published',
     period: '2021',
-    capacity: SOLO,
-    sector: { EN: 'Property portal, India', RU: 'Портал недвижимости, Индия' },
+    capacity: FE_MODULE({ EN: 'catalogue module', RU: 'модуль каталога' }),
+    sector: {
+      EN: 'Property portal, India — catalogue search',
+      RU: 'Портал недвижимости, Индия — поиск по каталогу',
+    },
     observed: 'Behind a WAF — no platform signals available',
     case: {
       EN: {
-        situation: 'A property portal lives on the size of its catalogue, and is read mostly on a phone, often on a connection that cannot afford a heavy page.',
-        work: 'Built the portal: geo search and multi-criteria filtering across a large body of listings.',
+        situation: 'A portal of that size is read mostly on a phone, often on a connection that cannot afford a heavy page — and the filters are the part people actually use.',
+        work: 'Designed and built the geo search module and the interactive catalogue filters, and the property card that opens from them.',
         outcome: 'Filters answer immediately over that volume, and the interface is built for a weak mobile connection rather than an office one.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
-        situation: 'Портал недвижимости живёт объёмом каталога, а смотрят его в основном с телефона и часто на связи, которая тяжёлой страницы не выдержит.',
-        work: 'Разработал портал: GEO-поиск и многокритериальная фильтрация по большому массиву объектов.',
+        situation: 'Портал такого размера смотрят в основном с телефона и часто на связи, которая тяжёлой страницы не выдержит, — а фильтры и есть то, чем реально пользуются.',
+        work: 'Спроектировал и сверстал модуль GEO-поиска и интерактивные фильтры каталога, а также карточку объекта, которая из них открывается.',
         outcome: 'Фильтры отвечают мгновенно на таком объёме, а интерфейс рассчитан на слабый мобильный интернет, а не на офисный.',
         evidence: UNDER_CONTRACT.RU,
       },
@@ -131,13 +156,13 @@ export const WEB_PROJECTS = [
     case: {
       EN: {
         situation: 'Heavy plant was rented without a working shop window: to match a machine to a job, or to get a price, you had to go through a manager.',
-        work: 'Designed and built the rental catalogue from scratch — filtering by equipment specification and an interactive cost calculator — and made it work on a phone, because enquiries come from the site rather than the office.',
+        work: 'Designed and built the rental catalogue from scratch: filters by lifting capacity, lift height and jib radius, and a calculator that prices a shift or a rental period. Made to work on a phone, because enquiries come from the site rather than the office.',
         outcome: 'Enquiry conversion up 35%.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
         situation: 'Технику сдавали без работающей витрины: подобрать машину под задачу или узнать цену можно было только через менеджера.',
-        work: 'С нуля спроектировал и разработал каталог аренды — фильтрация по параметрам оборудования и интерактивный калькулятор стоимости — и сделал его пригодным для телефона: заявки приходят со стройки, а не из офиса.',
+        work: 'С нуля спроектировал и разработал каталог аренды: фильтры по грузоподъёмности, высоте подъёма и вылету стрелы, калькулятор стоимости смены и периода аренды. Сделал пригодным для телефона — заявки приходят со стройки, а не из офиса.',
         outcome: 'Конверсия в заявку выросла на 35%.',
         evidence: UNDER_CONTRACT.RU,
       },
@@ -184,13 +209,13 @@ export const WEB_PROJECTS = [
     case: {
       EN: {
         situation: 'A data centre sells something hard to put on a page: server configurations, colocation, capacity. A static brochure leaves the buyer to work it out.',
-        work: 'Built the corporate site with an interactive server configuration calculator and a quote request flow, so a B2B buyer can price a shape before talking to anyone.',
+        work: 'Built the corporate site with a capacity calculator for dedicated and VPS configurations — rack and unit count, bandwidth, and Tier III/IV service levels — and a quote request flow, so a B2B buyer can price a shape before talking to anyone.',
         outcome: 'Pages open in under 1.2 seconds.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
         situation: 'ЦОД продаёт то, что трудно уместить на страницу: конфигурации серверов, размещение, мощности. Статичная брошюра оставляет покупателя разбираться самому.',
-        work: 'Сделал корпоративный сайт с интерактивным калькулятором конфигураций серверов и формой запроса коммерческого предложения — B2B-покупатель может прикинуть конфигурацию до разговора с менеджером.',
+        work: 'Сделал корпоративный сайт с калькулятором мощности под Dedicated и VPS — стойки и юниты (U), полоса пропускания, уровни SLA Tier III/IV — и формой запроса коммерческого предложения: B2B-покупатель прикидывает конфигурацию до разговора с менеджером.',
         outcome: 'Страницы открываются быстрее 1.2 секунды.',
         evidence: UNDER_CONTRACT.RU,
       },
@@ -208,13 +233,13 @@ export const WEB_PROJECTS = [
     case: {
       EN: {
         situation: 'A management company handled tenants by hand: payments, maintenance requests, questions — all of it through a person.',
-        work: 'Built the site and a tenant account area, with payment processing and maintenance requests submitted online.',
+        work: 'Built the site and the tenant portal: maintenance requests, rent paid online, and a credit check on prospective tenants.',
         outcome: '80% of routine enquiries moved to online forms.',
         evidence: 'Delivered under contract in 2020; the domain has since been rebuilt on a website builder, so what is there today is not this work.',
       },
       RU: {
         situation: 'Управляющая компания вела жильцов вручную: платежи, заявки на обслуживание, вопросы — всё через человека.',
-        work: 'Сделал сайт и личный кабинет: приём платежей и подача заявок на обслуживание онлайн.',
+        work: 'Сделал сайт и личный кабинет жильца: заявки на ремонт, оплата аренды онлайн и проверка кредитного рейтинга при заселении.',
         outcome: '80% рутинных обращений ушли в онлайн-формы.',
         evidence: 'Работа по договору, 2020 год. С тех пор сайт по этому адресу пересобран на конструкторе — то, что там сейчас, к этой работе отношения не имеет.',
       },
@@ -226,19 +251,22 @@ export const WEB_PROJECTS = [
     url: 'https://www.properstar.com',
     status: 'published',
     period: '2023',
-    capacity: SOLO,
-    sector: { EN: 'Global property search', RU: 'Глобальный поиск недвижимости' },
+    capacity: FE_MODULE({ EN: 'localisation modules', RU: 'модули локализации' }),
+    sector: {
+      EN: 'Global property search — currency and locale',
+      RU: 'Глобальный поиск недвижимости — валюта и локали',
+    },
     observed: 'Behind Azure WAF — no platform signals available',
     case: {
       EN: {
         situation: 'Searching for property across borders breaks on the small things: which currency, which language, and whether the area is in metres or feet.',
-        work: 'Built the international search with multi-currency, multi-language and automatic unit conversion.',
+        work: 'Built the user-facing modules for currency conversion, unit conversion and catalogue localisation.',
         outcome: 'One interface that reads the same way to buyers in more than fifty countries.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
         situation: 'Поиск недвижимости за границей спотыкается о мелочи: в какой валюте, на каком языке и в метрах или футах указана площадь.',
-        work: 'Разработал международный поисковик с мультивалютностью, многоязычностью и автоконвертацией единиц измерения.',
+        work: 'Разработал пользовательские модули конвертации валют, единиц измерения и локализации каталога.',
         outcome: 'Один интерфейс, который одинаково читается покупателями более чем из пятидесяти стран.',
         evidence: UNDER_CONTRACT.RU,
       },
