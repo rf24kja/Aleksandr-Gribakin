@@ -351,25 +351,19 @@ function qualityPercentages(lang) {
   return rows.sort((a, b) => b.value - a.value);
 }
 
-/**
- * Shipped capabilities per project.
- *
- * This replaced a GitHub star tally. Every repository here is private, so a
- * star count could not be real — and inventing one fabricates a public record
- * anyone can check in seconds.
- */
-function capabilitiesByProject(lang, projects) {
-  const detail = PROJECTS_DETAIL[lang] || PROJECTS_DETAIL.EN;
-  return projects
-    .map((p) => ({ id: p.id, label: p.name, value: detail[p.id]?.features?.length || 0 }))
-    .filter((r) => r.value > 0)
-    .sort((a, b) => b.value - a.value);
-}
+// A 30-day month, which is the period an availability figure is normally quoted
+// against. Kept explicit so the arithmetic behind the downtime sentence is
+// visible rather than a magic 43200.
+const MINUTES_PER_MONTH = 30 * 24 * 60;
 
 /**
- * The six headline figures. Each carries a `breakdown` the UI can expand —
- * that is what turns the block from a row of numbers into something a visitor
- * can actually interrogate.
+ * The headline figures. Each carries a `breakdown` the UI can expand — that is
+ * what turns the block from a row of numbers into something a visitor can
+ * actually interrogate.
+ *
+ * Each one also has to survive the same question: what does this change for the
+ * person reading it? A figure that only answers "how many" belongs in a
+ * breakdown, not in the headline row.
  */
 export function computeStats(lang) {
   const locale = PONYTAIL.LOCALE[lang] || PONYTAIL.LOCALE.EN;
@@ -377,7 +371,6 @@ export function computeStats(lang) {
   const projects = locale.PROJECTS;
   const career = locale.CAREER;
   const categories = PONYTAIL.CATEGORIES;
-  const detail = PROJECTS_DETAIL[lang] || PROJECTS_DETAIL.EN;
 
   // 1. Years in production — measured, not typed in.
   const startYear = professionalStartYear(career);
@@ -403,13 +396,12 @@ export function computeStats(lang) {
   // 3. Technologies in production.
   const tech = techFrequency(projects);
 
-  // 4. Capabilities shipped across all systems.
-  const capabilities = capabilitiesByProject(lang, projects);
-  const totalCapabilities = capabilities.reduce((sum, r) => sum + r.value, 0);
-
-  // 5. Availability and quality percentages.
+  // 4. Availability and quality percentages.
   const quality = qualityPercentages(lang);
   const best = quality.find((r) => AVAILABILITY_ONLY.test(r.metric)) || quality[0];
+  // A nine is an abstraction; minutes are not. Derived rather than typed in, so
+  // the sentence stays true if the underlying figure ever changes.
+  const downtime = best ? Math.round((1 - best.value / 100) * MINUTES_PER_MONTH) : null;
   const qualityItems = quality.slice(0, 8).map((r) => ({
     label: r.metric,
     value: r.value,
@@ -450,18 +442,19 @@ export function computeStats(lang) {
       hint: (t.STACK_HINT || 'Most used: {top}').replace('{top}', tech[0]?.label || '—'),
       breakdown: { type: 'bar', unit: t.UNIT_PROJECTS || 'projects', items: tech.slice(0, 8) },
     },
-    {
-      id: 'capabilities',
-      display: String(totalCapabilities),
-      label: t.CAPABILITIES || 'Capabilities Shipped',
-      hint: (t.CAPABILITIES_HINT || 'Across {n} systems').replace('{n}', capabilities.length),
-      breakdown: { type: 'bar', items: capabilities.slice(0, 8) },
-    },
+    // "Capabilities shipped" used to sit here: 85, counted across the reference
+    // architectures. It answered "how many", which nobody asks — a feature
+    // tally is a fact about the writing, not about anything a client receives.
+    // The same information survives where it means something: the per-project
+    // breakdown on the projects dashboard.
     {
       id: 'availability',
       display: best ? best.display : '—',
       label: t.AVAILABILITY || 'Availability Target',
-      hint: (t.AVAILABILITY_HINT || 'Best of {n} tracked quality metrics').replace('{n}', quality.length),
+      hint: downtime === null
+        ? (t.AVAILABILITY_HINT_NONE || '')
+        : (t.AVAILABILITY_HINT || 'At most {mins} min of downtime a month')
+          .replace('{mins}', String(downtime)),
       breakdown: { type: 'bar', unit: '%', items: qualityItems },
     },
     {

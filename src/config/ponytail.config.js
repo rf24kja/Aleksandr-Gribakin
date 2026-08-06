@@ -9,11 +9,18 @@ const EN = {
   // Headline numbers are computed in src/lib/stats.js from the content below —
   // only their wording lives here, so a figure can never contradict the data.
   STATS_LABELS: {
-    EXPERIENCE: 'Years in Production', EXPERIENCE_HINT: 'Shipping professionally since {year}',
-    PROJECTS: 'Projects Shipped', PROJECTS_HINT: 'Across {n} domains',
-    STACK: 'Technologies Shipped', STACK_HINT: 'Most used: {top}',
-    CAPABILITIES: 'Capabilities Shipped', CAPABILITIES_HINT: 'Across {n} systems, all closed-source',
-    AVAILABILITY: 'Availability Target', AVAILABILITY_HINT: 'Highest of {n} tracked quality metrics',
+    // Every hint below carries money, time or risk. A number that cannot be
+    // given such a sentence does not belong in this row — which is why the
+    // "85 capabilities shipped" tile is gone.
+    EXPERIENCE: 'Years in Production',
+    EXPERIENCE_HINT: 'In production since {year} — migrating systems that were not allowed to stop',
+    PROJECTS: 'Reference Architectures',
+    PROJECTS_HINT: 'Proven approaches across {n} disciplines — the method, not a client list',
+    STACK: 'Technologies in Production',
+    STACK_HINT: 'Front end, back end and infrastructure from one contractor instead of three. Most used: {top}',
+    AVAILABILITY: 'Availability Target',
+    AVAILABILITY_HINT: 'That is at most {mins} min of downtime a month',
+    AVAILABILITY_HINT_NONE: 'No availability figure is tracked yet',
     MILESTONES: 'Milestones & Recognition', MILESTONES_HINT: '{from} → {to}',
     UNIT_YEARS: 'yrs', UNIT_PROJECTS: 'projects',
     EXPAND: 'Show breakdown', COLLAPSE: 'Hide breakdown',
@@ -152,11 +159,15 @@ const RU = {
   SECTION_TITLES: { STATS: 'Влияние в цифрах', CAREER: 'Карьерный путь', PROJECTS: 'Проекты и влияние', ACHIEVEMENTS: 'Вехи и признание' },
   BOOT_LINES: ['ДЕШИФРОВКА_ЛИЧНОСТИ... OK', 'ПРОВЕРКА_ПОЛНОМОЧИЙ... OK', 'ЗАГРУЗКА_ПОРТФОЛИО... OK', 'УСТАНОВКА_БЕЗОПАСНОГО_КАНАЛА... OK', 'ДОБРО_ПОЖАЛОВАТЬ://АЛЕКСАНДР.ГРИБАКИН'],
   STATS_LABELS: {
-    EXPERIENCE: 'Лет в продакшене', EXPERIENCE_HINT: 'Профессионально с {year} года',
-    PROJECTS: 'Проектов в продакшене', PROJECTS_HINT: 'В {n} направлениях',
-    STACK: 'Технологий в бою', STACK_HINT: 'Чаще всего: {top}',
-    CAPABILITIES: 'Реализовано возможностей', CAPABILITIES_HINT: 'В {n} системах, все с закрытым кодом',
-    AVAILABILITY: 'Целевая доступность', AVAILABILITY_HINT: 'Лучший из {n} отслеживаемых показателей качества',
+    EXPERIENCE: 'Лет в продакшене',
+    EXPERIENCE_HINT: 'В продакшене с {year} года — мигрировал то, что нельзя было останавливать',
+    PROJECTS: 'Отработанных архитектур',
+    PROJECTS_HINT: 'Решения, доведённые до продакшена, в {n} направлениях — это метод, а не список заказчиков',
+    STACK: 'Технологий в работе',
+    STACK_HINT: 'Фронт, бэк и инфраструктура — один подрядчик вместо трёх. Чаще всего: {top}',
+    AVAILABILITY: 'Целевая доступность',
+    AVAILABILITY_HINT: 'Это не больше {mins} мин простоя в месяц',
+    AVAILABILITY_HINT_NONE: 'Показатель доступности пока не отслеживается',
     MILESTONES: 'Вехи и признание', MILESTONES_HINT: '{from} → {to}',
     UNIT_YEARS: 'лет', UNIT_PROJECTS: 'проектов',
     EXPAND: 'Показать разбивку', COLLAPSE: 'Скрыть разбивку',

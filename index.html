@@ -941,14 +941,19 @@
     }
 
     /* Stats */
+    /* Flex rather than a fixed grid, because the hints are sentences now, not
+       fragments. A rigid track count left the last row with one orphan card and
+       squeezed the longest sentence into three-word lines; here the final row
+       stretches to fill, so any number of tiles lands looking deliberate. */
     [data-mode="business"] .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      display: flex;
+      flex-wrap: wrap;
       gap: 12px;
       max-width: 100%;
       padding: 0;
     }
     [data-mode="business"] .stat-item {
+      flex: 1 1 200px;
       padding: 24px;
       background: var(--b-bg2);
       border: 1px solid rgba(255,255,255,.04);
@@ -1705,8 +1710,9 @@
       [data-mode="business"] .form-section {
         padding: 50px 5% 80px;
       }
-      [data-mode="business"] .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+      [data-mode="business"] .stat-item {
+        /* Two per row on a phone; the trailing card takes the full width. */
+        flex: 1 1 calc(50% - 6px);
       }
       [data-mode="business"] .career-item {
         grid-template-columns: 1fr;
