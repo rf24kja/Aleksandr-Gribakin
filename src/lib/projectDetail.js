@@ -1,6 +1,7 @@
 import PONYTAIL from '../config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../data/projects.js';
 import { snippetFor } from '../data/snippets.js';
+import { webProjects } from '../data/webProjects.js';
 import { buildMetricScale } from './stats.js';
 import { renderMetricGrid, animateMetricGrid } from './statsUI.js';
 
@@ -330,6 +331,69 @@ export function renderCareerPage(idx) {
   });
 }
 
+
+/**
+ * A client case, in the four beats the plan settled on: situation, what was
+ * done, what changed, and what backs it up.
+ *
+ * The fourth is the one that distinguishes a case from a story, and it is
+ * allowed to say plainly that there is no measurement — that reads as more
+ * trustworthy than a number from nowhere, and it is the only honest option for
+ * work done years ago under someone else's contract.
+ */
+export function renderWebCasePage(id) {
+  _r();
+  const item = webProjects(PONYTAIL_LOCALE).find((p) => p.id === id);
+  const L = l().WEB_LABELS || {};
+  if (!item) { _renderNotFound(l().SECTION_TITLES?.WEB || 'Case'); return; }
+
+  const wrap = document.getElementById('projectDetail');
+  const scrollContainer = document.querySelector('[data-scroll-container]');
+  if (scrollContainer) scrollContainer.style.overflow = 'hidden';
+
+  const beat = (title, body) => (body
+    ? `<div style="margin-bottom:22px">
+         <h3 class="pd-section-title">${title}</h3>
+         <p class="pd-para">${body}</p>
+       </div>`
+    : '');
+
+  wrap.innerHTML = `
+    <div class="pd-backdrop" data-pd-close></div>
+    <div class="pd-panel">
+      <div class="pd-header">
+        <button class="pd-back" data-pd-close>← ${l().DETAIL.BACK}</button>
+      </div>
+      <div class="pd-scroll">
+        <div class="pd-hero">
+          <span class="pd-tag">${item.sector}</span>
+          <h1 class="pd-title">${item.name}</h1>
+          <p class="pd-para">${[
+    item.period && `${L.PERIOD}: ${item.period}`,
+    item.capacity && `${L.ROLE}: ${item.capacity}`,
+  ].filter(Boolean).join(' · ')}</p>
+          ${item.named ? '' : `<p class="pd-para">${L.UNNAMED || ''}</p>`}
+        </div>
+
+        ${beat(L.SITUATION, item.situation)}
+        ${beat(L.WORK, item.work)}
+        ${beat(L.OUTCOME, item.outcome)}
+        ${beat(L.EVIDENCE, item.evidence)}
+
+        ${item.stack?.length ? `<div style="margin-bottom:24px">
+          <h3 class="pd-section-title">${L.STACK}</h3>
+          <div class="pd-stack-tags">${item.stack.map((t) => `<span class="pd-stack-tag">${t}</span>`).join('')}</div>
+        </div>` : ''}
+
+        ${item.named && item.url ? `<div style="margin-bottom:24px">
+          <a class="pd-link" href="${item.url}" target="_blank" rel="noopener noreferrer">${L.VISIT} ↗</a>
+        </div>` : ''}
+      </div>
+    </div>`;
+
+  wrap.classList.add('active');
+  _wireGenericDetail();
+}
 
 export function renderAchievementPage(idx) {
   _r(); const achievements = l().ACHIEVEMENTS;

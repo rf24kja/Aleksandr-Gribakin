@@ -3,6 +3,7 @@ import { getMode, setMode, MODES } from '../themeManager.js'
 import { computeStats, buildMetricScale } from '../../lib/stats.js'
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js'
 import { renderStatsForDesktop, renderMetricGrid, animateMetricGrid, esc } from '../../lib/statsUI.js'
+import { webProjects, webProjectCount } from '../../data/webProjects.js'
 import WindowManager from './windowManager.js'
 
 const apps = []
@@ -140,6 +141,19 @@ function renderCareer() {
   `).join('')
 }
 
+function renderWebProjects() {
+  const items = webProjects(state?.lang || 'EN')
+  if (!items.length) return '<div class="wb-text">—</div>'
+  return items.map(p => `
+    <button type="button" class="wb-row" data-open="case:${esc(p.id)}">
+      <span class="wb-row-title">${esc(p.name)}</span>
+      <span class="wb-row-meta">${esc([p.period, p.capacity].filter(Boolean).join(' · '))}</span>
+      <span class="wb-row-desc">${esc(p.outcome || p.sector)}</span>
+      <span class="wb-row-go">${esc(_('DETAIL.OPEN_DETAIL') || 'Open')} →</span>
+    </button>
+  `).join('')
+}
+
 function renderProjects() {
   const projects = _('PROJECTS')
   if (!Array.isArray(projects)) return '<div class="wb-text">No data</div>'
@@ -235,9 +249,41 @@ function renderAchievementWindow(i) {
   `
 }
 
+/**
+ * A case as a document rather than a dashboard — this mode's metaphor is a
+ * file, and the four beats read as a memo about a job.
+ */
+function renderCaseWindow(id) {
+  const c = webProjects(state?.lang || 'EN').find(x => x.id === id)
+  if (!c) return '<div class="wb-text">—</div>'
+  const L = _('WEB_LABELS') || {}
+  // Reusing .wb-text rather than inventing a class: an unstyled wrapper is how
+  // "Period" and its value ended up printed as one word.
+  const field = (k, v) => (v ? `<div class="wb-text"><b>${esc(k)}:</b> ${esc(v)}</div>` : '')
+  const beat = (k, v) => (v ? `<div class="wb-text"><b>${esc(k)}</b><br>${esc(v)}</div>` : '')
+  return `
+    <div class="wb-doc">
+      ${field(L.PERIOD, c.period)}
+      ${field(L.ROLE, c.capacity)}
+      ${field(L.STACK, (c.stack || []).join(', '))}
+      ${c.named ? '' : `<div class="wb-text">${esc(L.UNNAMED || '')}</div>`}
+      ${beat(L.SITUATION, c.situation)}
+      ${beat(L.WORK, c.work)}
+      ${beat(L.OUTCOME, c.outcome)}
+      ${beat(L.EVIDENCE, c.evidence)}
+      ${c.named && c.url
+    ? `<div class="wb-text"><a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">${esc(L.VISIT || 'Open')} ↗</a></div>`
+    : ''}
+    </div>`
+}
+
 function openDetail(token) {
   const [kind, ref] = String(token).split(':')
-  if (kind === 'project') {
+  if (kind === 'case') {
+    const c = webProjects(state?.lang || 'EN').find(x => x.id === ref)
+    wm.open({ id: 'win-case-' + ref, title: c ? c.name : ref, icon: SVG.projects,
+      content: renderCaseWindow(ref), width: 600, height: 460 })
+  } else if (kind === 'project') {
     const p = (_('PROJECTS') || []).find(x => x.id === ref)
     wm.open({ id: 'win-project-' + ref, title: p ? p.name : ref, icon: SVG.projects,
       content: renderProjectWindow(ref), width: 600, height: 460 })
@@ -315,6 +361,14 @@ export function initDesktop(appState) {
   registerApp('career', () => _('CAREER_TITLE') || 'Career', SVG.career, renderCareer, { width: 600, height: 440 })
   registerApp('projects', () => _('PROJECTS_TITLE') || 'Projects', SVG.projects, renderProjects, { width: 640, height: 440 })
   registerApp('achievements', () => _('ACHIEVEMENTS_TITLE') || 'Achievements', SVG.achievements, renderAchievements, { width: 560, height: 400 })
+  // Client work gets its own folder rather than joining the Projects window:
+  // one holds jobs done for other companies, the other holds an approach. The
+  // icon only exists when there is something inside it — an empty folder on a
+  // desktop is a promise the site cannot keep.
+  if (webProjectCount() > 0) {
+    registerApp('webprojects', () => _('SECTION_TITLES.WEB') || 'Client Projects', SVG.projects,
+      renderWebProjects, { width: 640, height: 440 })
+  }
   registerApp('mail', () => _('MAIL') || 'Mail', SVG.mail, renderMail, { width: 460, height: 400 })
   registerApp('settings', () => _('SETTINGS') || 'Settings', SVG.settings, renderSettings, {
     panel: () => document.querySelector('.settings-gear')?.click(),

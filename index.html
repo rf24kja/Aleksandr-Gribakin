@@ -209,6 +209,10 @@
     .section-overlay.visible > * { pointer-events: auto; }
     /* These are <h2> so the document has a heading outline; the UA's own
        margin and weight are not wanted. */
+    /* Hidden outside business mode: desktop and terminal present these sections
+       as windows and command output, where a standing subtitle has nowhere to
+       sit. */
+    .section-sub { display: none; }
     .section-overlay .section-title { font-family: var(--font-mono); font-size: clamp(9px, 1.2vw, 12px); font-weight: 400; letter-spacing: .3em; text-transform: uppercase; margin: 0 0 28px; opacity: .8; background: var(--gradient-title); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* Intro */
@@ -937,8 +941,54 @@
       opacity: 1;
       background: none;
       -webkit-text-fill-color: initial;
-      margin-bottom: 24px;
+      margin-bottom: 10px;
     }
+    /* The line that keeps the two project sections from being mistaken for each
+       other. Sentence case on purpose: the title above it is a label, this is
+       something to read. */
+    [data-mode="business"] .section-overlay .section-sub {
+      display: block; /* overrides the global hide two hundred lines up */
+      font-family: var(--b-font);
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--b-text-mute);
+      max-width: 62ch;
+      margin: 0 0 26px;
+    }
+
+    /* Client project cards. Wider than the architecture cards on purpose: a
+       case carries a client, a period, a role and an outcome, and squeezing
+       that into the same tile as a one-line description is what made the two
+       look interchangeable. */
+    [data-mode="business"] .web-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+    }
+    [data-mode="business"] .web-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+      padding: 22px;
+      background: var(--b-bg2);
+      border: 1px solid rgba(255,255,255,.04);
+      border-radius: var(--b-radius);
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+      transition: border-color .2s, transform .2s;
+    }
+    [data-mode="business"] .web-card:hover { border-color: var(--b-accent); transform: translateY(-2px); }
+    [data-mode="business"] .web-card:focus-visible { outline: 2px solid var(--b-accent); outline-offset: 2px; }
+    [data-mode="business"] .web-client { font-size: 17px; font-weight: 500; color: var(--b-text); }
+    [data-mode="business"] .web-sector { font-size: 13px; color: var(--b-text-mute); }
+    [data-mode="business"] .web-meta {
+      font-family: var(--b-font-mono); font-size: 11px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--b-accent-text);
+    }
+    [data-mode="business"] .web-outcome { font-size: 14px; color: var(--b-text-dim); margin-top: 2px; }
+    [data-mode="business"] .web-nda { font-size: 12px; color: var(--b-text-mute); font-style: italic; }
 
     /* Stats */
     /* Flex rather than a fixed grid, because the hints are sentences now, not
@@ -1622,6 +1672,7 @@
     [data-mode="business"][data-theme="light"] .stat-item,
     [data-mode="business"][data-theme="light"] .career-item,
     [data-mode="business"][data-theme="light"] .project-card,
+    [data-mode="business"][data-theme="light"] .web-card,
     [data-mode="business"][data-theme="light"] .achievement-item,
     [data-mode="business"][data-theme="light"] .pd-chart-item,
     [data-mode="business"][data-theme="light"] .pd-feature-item,
@@ -3453,7 +3504,8 @@
 
   <!-- Projects -->
   <div class="section-overlay" id="projectsOverlay">
-    <h2 class="section-title" data-i18n="SECTION_TITLES.PROJECTS">Projects &amp; Impact</h2>
+    <h2 class="section-title" data-i18n="SECTION_TITLES.PROJECTS">Reference Architectures</h2>
+    <p class="section-sub" data-i18n="SECTION_TITLES.PROJECTS_SUB">How I solve these classes of problem — the method, not a client list</p>
     <div class="cat-tabs" id="catTabs"></div>
     <div class="projects-dash" id="projectsDash"></div>
     <div class="projects-grid" id="projectsGrid"></div>

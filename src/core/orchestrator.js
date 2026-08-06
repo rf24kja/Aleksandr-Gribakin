@@ -3,11 +3,15 @@ import SUPER from './superpowers.state.js';
 import { gsap } from 'gsap';
 import { validateForm, animateSubmission } from '../lib/validation.js';
 import { startAmbient, fadeTo as audioFadeTo, initOnUserGesture } from '../lib/synthAudio.js';
-import { renderProjectPage, renderCareerPage, renderAchievementPage, setProjectLocale, closeProjectDetail } from '../lib/projectDetail.js';
+import {
+  renderProjectPage, renderCareerPage, renderAchievementPage, renderWebCasePage,
+  setProjectLocale, closeProjectDetail,
+} from '../lib/projectDetail.js';
 import { CAREER_DETAIL } from '../data/projects.js';
 import { computeStats, computeProjectAggregates, projectSortValue } from '../lib/stats.js';
 import { trackEvent } from '../lib/analytics.js';
 import { attribution } from '../lib/attribution.js';
+import { webProjects } from '../data/webProjects.js';
 import {
   renderStatCards, wireStatCards, animateStatValues,
   renderDashboard, animateDashboard,
@@ -114,6 +118,7 @@ export default class PortfolioOrchestrator {
     this._activeCat = this._l().CATEGORIES[0];
     this._renderStats();
     this._renderCareer();
+    this._renderWebProjects();
     this._renderCategoryTabs();
     this._renderProjects();
     this._renderAchievements();
@@ -125,6 +130,7 @@ export default class PortfolioOrchestrator {
     this._activeCat = this._l().CATEGORIES[0];
     this._renderStats();
     this._renderCareer();
+    this._renderWebProjects();
     this._renderCategoryTabs();
     this._renderProjects();
     this._renderAchievements();
@@ -156,6 +162,45 @@ export default class PortfolioOrchestrator {
     const labels = this._l().STATS_LABELS || {};
     renderStatCards(grid, this._stats, labels);
     wireStatCards(grid, labels);
+  }
+
+  /**
+   * Client work, above the reference architectures because it is the stronger
+   * proof — someone else paid for it.
+   *
+   * The whole section is built here rather than sitting in index.html, so that
+   * an empty list leaves no trace: no heading, no prerendered markup, nothing
+   * for a crawler to index as a promise the page does not keep. While the case
+   * facts are outstanding every entry is a draft, the list is empty, and the
+   * site is exactly what it was.
+   */
+  _renderWebProjects() {
+    const existing = document.getElementById('webOverlay');
+    const items = webProjects(this.s.lang);
+    if (!items.length) { existing?.remove(); return; }
+
+    const t = this._l().SECTION_TITLES || {};
+    const L = this._l().WEB_LABELS || {};
+    const anchor = document.getElementById('projectsOverlay');
+    if (!anchor) return;
+
+    const section = existing || document.createElement('div');
+    section.className = 'section-overlay';
+    section.id = 'webOverlay';
+    section.innerHTML = `
+      <h2 class="section-title">${t.WEB || 'Client Projects'}</h2>
+      <p class="section-sub">${t.WEB_SUB || ''}</p>
+      <div class="web-grid">
+        ${items.map((p) => `
+          <button type="button" class="web-card" data-web="${p.id}">
+            <span class="web-client">${p.name}</span>
+            <span class="web-sector">${p.sector}</span>
+            <span class="web-meta">${[p.period, p.capacity].filter(Boolean).join(' · ')}</span>
+            <span class="web-outcome">${p.outcome || ''}</span>
+            ${p.named ? '' : `<span class="web-nda">${L.UNNAMED || ''}</span>`}
+          </button>`).join('')}
+      </div>`;
+    if (!existing) anchor.parentNode.insertBefore(section, anchor);
   }
 
   _renderCareer() {
@@ -620,6 +665,14 @@ export default class PortfolioOrchestrator {
   // --- Detail Pages ---
   _wireProjectClicks() {
     document.addEventListener('click', (e) => {
+      const web = e.target.closest('.web-card');
+      if (web?.dataset.web) {
+        setProjectLocale(this.s.lang);
+        this._showSkeleton();
+        renderWebCasePage(web.dataset.web);
+        history.replaceState(null, '', `#/case/${web.dataset.web}`);
+        return;
+      }
       const card = e.target.closest('.project-card');
       if (!card) return;
       // Keyed by id rather than by position: the grid can be re-sorted, so an
@@ -670,7 +723,7 @@ export default class PortfolioOrchestrator {
    */
   _routeFromPath() {
     const path = window.location.pathname;
-    const m = path.match(/^\/(?:(en|ru)\/)?(project|career|achievement)\/([^/]+)\/?$/i);
+    const m = path.match(/^\/(?:(en|ru)\/)?(project|career|achievement|case)\/([^/]+)\/?$/i);
     if (!m) return;
     const [, langPrefix, kind, slug] = m;
     const base = langPrefix ? `/${langPrefix.toLowerCase()}/` : '/';
@@ -680,7 +733,9 @@ export default class PortfolioOrchestrator {
     // day an entry is inserted. The router works in indices, so the slug is
     // resolved back to one here.
     let hash = null;
-    if (kind.toLowerCase() === 'project') {
+    if (kind.toLowerCase() === 'case') {
+      hash = `#/case/${slug}`;
+    } else if (kind.toLowerCase() === 'project') {
       hash = `#/project/${slug}`;
     } else if (kind.toLowerCase() === 'career') {
       const want = decodeURIComponent(slug);
@@ -710,7 +765,9 @@ export default class PortfolioOrchestrator {
       const project = h.match(/^#\/project\/(.+)$/);
       const career = h.match(/^#\/career\/(\d+)$/);
       const achievement = h.match(/^#\/achievement\/(\d+)$/);
-      if (project) { this._showSkeleton(); renderProjectPage(project[1]); handled = true; }
+      const webCase = h.match(/^#\/case\/(.+)$/);
+      if (webCase) { this._showSkeleton(); renderWebCasePage(webCase[1]); handled = true; }
+      else if (project) { this._showSkeleton(); renderProjectPage(project[1]); handled = true; }
       else if (career) { this._showSkeleton(); renderCareerPage(parseInt(career[1])); handled = true; }
       else if (achievement) { this._showSkeleton(); renderAchievementPage(parseInt(achievement[1])); handled = true; }
 

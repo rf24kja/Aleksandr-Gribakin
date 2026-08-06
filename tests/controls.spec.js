@@ -57,14 +57,23 @@ async function openDesktopApp(page, id) {
 }
 
 /**
- * Elements that draw as controls but cannot receive a click, because something
- * else sits on top of their own centre or pointer events are switched off.
+ * Elements that draw as controls but cannot receive a click.
+ *
+ * "Cannot" means at no scroll position, not at some scroll position. The page
+ * carries fixed chrome — the language toggle and the gear float above the
+ * content on a phone — so at any given offset something is passing underneath
+ * one of them, and a visitor scrolls a hair and taps it. Reporting those made
+ * the check fire on a layout change that harmed nobody.
+ *
+ * What it still catches is the defect it was written for: a control that is
+ * never reachable at any offset, whether because pointer events are switched
+ * off (the homepage CTA, which looked and hovered like a button and swallowed
+ * every click) or because something permanently covers it.
  */
 async function unreachableControls(page) {
   return page.evaluate(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-    const found = [];
-    const seen = new Set();
+    const records = new Map(); // element → { reachedOnce, report }
     const scan = () => {
       const sel = 'a[href], button, input:not([type=hidden]), select, textarea,'
         + ' [role="button"], [data-scroll-to], [data-cmd], [data-run], [data-app]';
@@ -79,25 +88,38 @@ async function unreachableControls(page) {
         const y = Math.round(r.top + r.height / 2);
         if (x < 0 || x >= innerWidth || y < 0 || y >= innerHeight) return;
         const top = document.elementFromPoint(x, y);
-        const reachable = !!top && (el.contains(top) || top === el);
-        if (reachable && cs.pointerEvents !== 'none') return;
-        const key = `${el.className}|${(el.textContent || '').trim().slice(0, 16)}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        found.push({
-          control: `${el.tagName.toLowerCase()}.${String(el.className || '').split(' ')[0]}`,
-          text: (el.textContent || '').trim().slice(0, 24),
-          pointerEvents: cs.pointerEvents,
-          coveredBy: top ? `${top.tagName.toLowerCase()}#${top.id || ''}.${String(top.className || '').split(' ')[0]}` : 'nothing',
-        });
+        const reachable = !!top && (el.contains(top) || top === el) && cs.pointerEvents !== 'none';
+        const record = records.get(el) || { reachedOnce: false, report: null };
+        if (reachable) record.reachedOnce = true;
+        else {
+          record.report = {
+            control: `${el.tagName.toLowerCase()}.${String(el.className || '').split(' ')[0]}`,
+            text: (el.textContent || '').trim().slice(0, 24),
+            pointerEvents: cs.pointerEvents,
+            coveredBy: top ? `${top.tagName.toLowerCase()}#${top.id || ''}.${String(top.className || '').split(' ')[0]}` : 'nothing',
+          };
+        }
+        records.set(el, record);
       });
     };
-    for (let y = 0; y <= document.body.scrollHeight; y += Math.round(innerHeight * 0.8)) {
+    // Half-viewport steps rather than 80%: a control has to be sampled more
+    // than once for "never reachable" to mean anything.
+    for (let y = 0; y <= document.body.scrollHeight; y += Math.round(innerHeight * 0.5)) {
       window.scrollTo(0, y);
       await wait(160);
       scan();
     }
     window.scrollTo(0, 0);
+
+    const found = [];
+    const seen = new Set();
+    for (const { reachedOnce, report } of records.values()) {
+      if (reachedOnce || !report) continue;
+      const key = `${report.control}|${report.text}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      found.push(report);
+    }
     return found;
   });
 }

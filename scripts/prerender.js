@@ -26,6 +26,7 @@ import { fileURLToPath } from 'node:url';
 import PONYTAIL from '../src/config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../src/data/projects.js';
 import { computeStats } from '../src/lib/stats.js';
+import { webProjects } from '../src/data/webProjects.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -240,6 +241,39 @@ function careerPage(shell, lang, entry, detail, canonical, prefix) {
   });
 }
 
+/**
+ * A client case's page.
+ *
+ * Only published cases reach this function — a draft has no URL, no sitemap
+ * entry and no document, which is the difference between "not written yet" and
+ * "written from guesswork".
+ */
+function casePage(shell, lang, item, canonical, prefix) {
+  const l = PONYTAIL.LOCALE[lang];
+  const L = l.WEB_LABELS || {};
+  const beat = (label, body) => (body ? `<h3>${esc(label)}</h3>\n        <p>${esc(body)}</p>` : '');
+  const body = `
+      <article class="prerender-detail" data-prerendered="case">
+        <h2>${esc(item.name)}</h2>
+        <p class="prerender-meta">${esc([item.sector, item.period, item.capacity].filter(Boolean).join(' · '))}</p>
+        ${beat(L.SITUATION, item.situation)}
+        ${beat(L.WORK, item.work)}
+        ${beat(L.OUTCOME, item.outcome)}
+        ${beat(L.EVIDENCE, item.evidence)}
+        ${item.stack?.length ? `<h3>${esc(L.STACK || 'Stack')}</h3>
+        <p>${esc(item.stack.join(' · '))}</p>` : ''}
+      </article>`;
+
+  let html = localePage(shell, lang, canonical, prefix);
+  html = html.replace('<div id="projectDetail"></div>', `<div id="projectDetail"></div>\n  ${body}`);
+  return setHead(html, {
+    lang: lang.toLowerCase(),
+    canonical,
+    title: `${item.name} — ${l.ROLE}`,
+    description: item.outcome || item.situation || item.sector,
+  });
+}
+
 /** A milestone's page. */
 function achievementPage(shell, lang, entry, detail, canonical, prefix) {
   const l = PONYTAIL.LOCALE[lang];
@@ -314,6 +348,19 @@ async function main() {
     }
   }
 
+  let casePages = 0;
+  for (const [lang, prefix] of [['EN', ''], ['RU', 'ru/']]) {
+    for (const item of webProjects(lang)) {
+      const loc = `${ORIGIN}/${prefix}case/${item.id}`;
+      pending.push([`${prefix}case/${item.id}/index.html`,
+        casePage(shell, lang, item, loc, prefix)]);
+      // Above the reference architectures: work someone paid for outranks a
+      // description of how such work is done.
+      urls.push({ loc, priority: '0.8' });
+      casePages += 1;
+    }
+  }
+
   let careerPages = 0;
   let achievementPages = 0;
   for (const [lang, prefix] of [['EN', ''], ['RU', 'ru/']]) {
@@ -344,7 +391,7 @@ async function main() {
   await writeFile(join(DIST, 'sitemap.xml'), sitemap(urls), 'utf8');
 
   console.log(`prerender: ${roots.length} locale pages, ${projectPages} project, `
-    + `${careerPages} career, ${achievementPages} milestone pages, `
+    + `${casePages} case, ${careerPages} career, ${achievementPages} milestone pages, `
     + `${urls.length} sitemap entries`);
 }
 

@@ -4,7 +4,22 @@ const EN = {
   NAME: 'ALEKSANDR GRIBAKIN', TAGLINE: '15 Years in Code', SKIP_LINK: 'Skip to content',
   ROLE: 'Lead Full Stack & DevOps Engineer',
   INTRO_SUB: 'Building systems that scale. Automating what should never have been manual.',
-  SECTION_TITLES: { STATS: 'Impact By The Numbers', CAREER: 'Career Timeline', PROJECTS: 'Projects & Impact', ACHIEVEMENTS: 'Milestones & Recognition' },
+  // "Projects & Impact" promised delivered jobs and delivered a method, which
+  // is what made the section read as empty. The two are now named apart.
+  SECTION_TITLES: {
+    STATS: 'Impact By The Numbers',
+    CAREER: 'Career Timeline',
+    PROJECTS: 'Reference Architectures',
+    PROJECTS_SUB: 'How I solve these classes of problem — the method, not a client list',
+    WEB: 'Client Projects',
+    WEB_SUB: 'Commercial sites, and exactly which part of them was mine',
+    ACHIEVEMENTS: 'Milestones & Recognition',
+  },
+  WEB_LABELS: {
+    ROLE: 'Role', PERIOD: 'Period', STACK: 'Stack', VISIT: 'Open the site',
+    SITUATION: 'Situation', WORK: 'What was done', OUTCOME: 'What changed', EVIDENCE: 'Evidence',
+    UNNAMED: 'Client not named at their request',
+  },
   BOOT_LINES: ['DECRYPTING_IDENTITY... OK', 'SCANNING_CREDENTIALS... OK', 'LOADING_PORTFOLIO... OK', 'ESTABLISHING_SECURE_CHANNEL... OK', 'WELCOME://ALEKSANDR.GRIBAKIN'],
   // Headline numbers are computed in src/lib/stats.js from the content below —
   // only their wording lives here, so a figure can never contradict the data.
@@ -42,12 +57,15 @@ const EN = {
     WELCOME: 'Type `help` to see what this thing does.',
     HEAD_HELP: 'AVAILABLE COMMANDS', HEAD_ID: 'IDENTITY', HEAD_ABOUT: 'ABOUT',
     HEAD_STATS: 'SYSTEM PROFILE', HEAD_CAREER: 'CAREER LOG', HEAD_TARGETS: 'TARGETS',
+    HEAD_WEB: 'CLIENT PROJECTS', HINT_WEB: 'web <id> for the case',
+    WEB_EMPTY: 'No client cases published yet.',
     HEAD_STACK: 'TECHNOLOGY', HEAD_MILESTONES: 'MILESTONES', HEAD_TRANSMIT: 'TRANSMIT',
     HEAD_METRICS: 'KEY METRICS', HEAD_FEATURES: 'FEATURES',
     CMD: {
       HELP: 'this list', WHOAMI: 'who you are talking to', ABOUT: 'the short version',
       STATS: 'headline numbers, computed from the content', CAREER: 'career log, or one entry in full',
       PROJECTS: 'list the reference architectures', OPEN: 'full brief on one of them',
+      WEB: 'client sites, and one case in full',
       STACK: 'technology, by how often it appears', ACH: 'milestones, or one in full',
       CONTACT: 'send a message from here', LANG: 'switch language', MODE: 'leave for another interface',
       NEOFETCH: 'the obligatory one', COFFEE: 'buy me one', HISTORY: 'what you have typed',
@@ -156,7 +174,20 @@ const RU = {
   NAME: 'АЛЕКСАНДР ГРИБАКИН', TAGLINE: '15 лет в коде', SKIP_LINK: 'Перейти к содержанию',
   ROLE: 'Lead Full Stack & DevOps Engineer',
   INTRO_SUB: 'Строю системы, которые масштабируются. Автоматизирую то, что никогда не должно было делаться руками.',
-  SECTION_TITLES: { STATS: 'Влияние в цифрах', CAREER: 'Карьерный путь', PROJECTS: 'Проекты и влияние', ACHIEVEMENTS: 'Вехи и признание' },
+  SECTION_TITLES: {
+    STATS: 'Влияние в цифрах',
+    CAREER: 'Карьерный путь',
+    PROJECTS: 'Отработанные архитектуры',
+    PROJECTS_SUB: 'Как я решаю эти классы задач — метод, а не список заказчиков',
+    WEB: 'Клиентские проекты',
+    WEB_SUB: 'Коммерческие сайты и то, какая именно часть в них моя',
+    ACHIEVEMENTS: 'Вехи и признание',
+  },
+  WEB_LABELS: {
+    ROLE: 'Роль', PERIOD: 'Период', STACK: 'Стек', VISIT: 'Открыть сайт',
+    SITUATION: 'Ситуация', WORK: 'Что сделано', OUTCOME: 'Что изменилось', EVIDENCE: 'Чем подтверждается',
+    UNNAMED: 'Заказчик не называется по его просьбе',
+  },
   BOOT_LINES: ['ДЕШИФРОВКА_ЛИЧНОСТИ... OK', 'ПРОВЕРКА_ПОЛНОМОЧИЙ... OK', 'ЗАГРУЗКА_ПОРТФОЛИО... OK', 'УСТАНОВКА_БЕЗОПАСНОГО_КАНАЛА... OK', 'ДОБРО_ПОЖАЛОВАТЬ://АЛЕКСАНДР.ГРИБАКИН'],
   STATS_LABELS: {
     EXPERIENCE: 'Лет в продакшене',
@@ -189,12 +220,15 @@ const RU = {
     WELCOME: 'Введите `help`, чтобы узнать, что тут умеют.',
     HEAD_HELP: 'ДОСТУПНЫЕ КОМАНДЫ', HEAD_ID: 'ЛИЧНОСТЬ', HEAD_ABOUT: 'О СЕБЕ',
     HEAD_STATS: 'ПРОФИЛЬ СИСТЕМЫ', HEAD_CAREER: 'ЖУРНАЛ КАРЬЕРЫ', HEAD_TARGETS: 'ЦЕЛИ',
+    HEAD_WEB: 'КЛИЕНТСКИЕ ПРОЕКТЫ', HINT_WEB: 'web <id> — кейс целиком',
+    WEB_EMPTY: 'Клиентские кейсы пока не опубликованы.',
     HEAD_STACK: 'ТЕХНОЛОГИИ', HEAD_MILESTONES: 'ВЕХИ', HEAD_TRANSMIT: 'ПЕРЕДАЧА',
     HEAD_METRICS: 'КЛЮЧЕВЫЕ МЕТРИКИ', HEAD_FEATURES: 'ВОЗМОЖНОСТИ',
     CMD: {
       HELP: 'этот список', WHOAMI: 'с кем вы говорите', ABOUT: 'коротко о главном',
       STATS: 'цифры, вычисленные из контента', CAREER: 'журнал карьеры или одна запись целиком',
       PROJECTS: 'список референсных архитектур', OPEN: 'полная справка по одной из них',
+      WEB: 'клиентские сайты и один кейс целиком',
       STACK: 'технологии по частоте появления', ACH: 'вехи или одна целиком',
       CONTACT: 'отправить сообщение прямо отсюда', LANG: 'сменить язык', MODE: 'уйти в другой интерфейс',
       NEOFETCH: 'та самая команда', COFFEE: 'угостить кофе', HISTORY: 'что вы вводили',

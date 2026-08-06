@@ -10,6 +10,7 @@
 
 import PONYTAIL from '../../config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js';
+import { webProjects, webProjectCount } from '../../data/webProjects.js';
 import { computeStats, techFrequency, parseMetric } from '../../lib/stats.js';
 
 const L = (lang) => PONYTAIL.LOCALE[lang] || PONYTAIL.LOCALE.EN;
@@ -227,6 +228,64 @@ const COMMANDS = [
       }
       out.push('');
       out.push({ text: `  ${t.HINT_OPEN || 'open <id> for the full brief'}`, cls: 'dim' });
+      return out;
+    },
+  },
+  // Client work has its own verb rather than joining `projects`. `ls` and `cat`
+  // are already taken by the reference architectures, and the two lists answer
+  // different questions — conflating them here would undo the separation the
+  // rest of the site now makes.
+  {
+    name: 'web', aliases: ['sites', 'clients'], usage: '[<id>]', key: 'WEB',
+    hidden: webProjectCount() === 0,
+    complete: (ctx) => webProjects(ctx.lang).map((p) => p.id),
+    run(ctx, args) {
+      const t = T(ctx.lang);
+      const L2 = L(ctx.lang).WEB_LABELS || {};
+      const items = webProjects(ctx.lang);
+      if (!items.length) return [{ text: `  ${t.WEB_EMPTY || 'No client cases published.'}`, cls: 'dim' }];
+
+      const id = (args[0] || '').replace(/\/$/, '');
+      if (!id) {
+        const out = [...head(`${t.HEAD_WEB || 'CLIENT PROJECTS'} (${items.length})`, ctx.cols)];
+        for (const p of items) {
+          const runOpen = `web ${p.id}`;
+          if (ctx.cols < 62) {
+            out.push({ text: `  ${p.id}`, cls: 'accent', run: runOpen });
+            for (const line of wrap(`${p.name} · ${p.sector}`, ctx.cols - 6, '    ')) {
+              out.push({ text: line, cls: 'dim', run: runOpen });
+            }
+          } else {
+            out.push({ text: `  ${pad(p.id, 20)}${pad(p.period || '', 12)}${p.name}`, cls: 'row', run: runOpen });
+          }
+        }
+        out.push('');
+        out.push({ text: `  ${t.HINT_WEB || 'web <id> for the case'}`, cls: 'dim' });
+        return out;
+      }
+
+      const c = items.find((x) => x.id === id);
+      if (!c) return [{ text: `  ${(t.NO_TARGET || 'No target "{id}".').replace('{id}', id)}`, cls: 'err' }];
+
+      const out = [...head(c.name, ctx.cols)];
+      const kv = (k, v) => { if (v) out.push({ text: `  ${pad(k, 16)}${v}`, cls: 'kv' }); };
+      kv(L2.PERIOD, c.period);
+      kv(L2.ROLE, c.capacity);
+      kv(L2.STACK, (c.stack || []).join(', '));
+      if (!c.named) out.push({ text: `  ${L2.UNNAMED || ''}`, cls: 'dim' });
+      for (const [label, body] of [
+        [L2.SITUATION, c.situation], [L2.WORK, c.work],
+        [L2.OUTCOME, c.outcome], [L2.EVIDENCE, c.evidence],
+      ]) {
+        if (!body) continue;
+        out.push('');
+        out.push({ text: `  ${label}`, cls: 'accent' });
+        for (const line of wrap(body, ctx.cols - 4, '  ')) out.push({ text: line, cls: 'dim' });
+      }
+      if (c.named && c.url) {
+        out.push('');
+        out.push({ text: `  ${c.url}`, cls: 'kv' });
+      }
       return out;
     },
   },
