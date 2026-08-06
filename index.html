@@ -956,6 +956,112 @@
       margin: 0 0 26px;
     }
 
+    /* Case metrics: before against after.
+       Grid rather than flex so the label column cannot be squeezed out on a
+       narrow screen, and one column below 560px — two bars side by side at
+       phone width leaves neither enough room to be read. */
+    .cm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .cm-item {
+      padding: 14px 16px;
+      background: var(--sb-surface, rgba(255,255,255,.03));
+      border: 1px solid var(--sb-border, rgba(255,255,255,.06));
+      border-radius: var(--sb-radius, 8px);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .4s ease, transform .4s ease;
+      min-width: 0;
+    }
+    .cm-item.pd-visible { opacity: 1; transform: none; }
+    .cm-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--sb-dim, #888);
+      margin-bottom: 10px;
+    }
+    .cm-pair {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      min-width: 0;
+    }
+    .cm-side {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--sb-dim, #888);
+      white-space: nowrap;
+    }
+    .cm-track {
+      display: block;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--sb-track, rgba(255,255,255,.07));
+      overflow: hidden;
+      min-width: 0;
+    }
+    .cm-fill {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: 4px;
+      transition: width .8s cubic-bezier(.22,.75,.3,1);
+    }
+    .cm-was { background: var(--sb-dim, #888); opacity: .45; }
+    .cm-now { background: var(--sb-accent, #e95420); }
+    .cm-num {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      color: var(--sb-text, inherit);
+    }
+    .cm-was-num { opacity: .6; }
+    .cm-change {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin-top: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .cm-good-down, .cm-good-up { color: #2ecc71; }
+    .cm-note {
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: var(--sb-dim, #888);
+      margin-top: 8px;
+    }
+    .cm-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: color-mix(in srgb, var(--sb-accent, #e95420) 14%, transparent);
+      color: var(--sb-accent, #e95420);
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+    /* What was built / why it was hard. */
+    .pd-scope { margin: 0; padding-left: 18px; }
+    .pd-scope li { margin-bottom: 7px; line-height: 1.6; color: var(--sb-dim, #999); font-size: 14px; }
+    .pd-scope li::marker { color: var(--sb-accent, #e95420); }
+
+    @media (max-width: 560px) {
+      .cm-grid { grid-template-columns: 1fr; }
+      .cm-item { padding: 12px 13px; }
+      .cm-num { font-size: 12px; }
+      .pd-scope li { font-size: 13.5px; }
+    }
+
     /* Client project cards. Wider than the architecture cards on purpose: a
        case carries a client, a period, a role and an outcome, and squeezing
        that into the same tile as a one-line description is what made the two

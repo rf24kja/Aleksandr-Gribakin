@@ -12,6 +12,7 @@ import PONYTAIL from '../../config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js';
 import { webProjects, webProjectCount } from '../../data/webProjects.js';
 import { PROCESS, TERMS, CONTACTS, LEGAL, hoursLine } from '../../data/process.js';
+import { renderCaseMetricsAscii } from '../../lib/statsUI.js';
 import { PRIVACY } from '../../data/privacy.js';
 import { computeStats, techFrequency, parseMetric } from '../../lib/stats.js';
 
@@ -275,15 +276,33 @@ const COMMANDS = [
       kv(L2.ROLE, c.capacity);
       kv(L2.STACK, (c.stack || []).join(', '));
       if (!c.named) out.push({ text: `  ${L2.UNNAMED || ''}`, cls: 'dim' });
-      for (const [label, body] of [
-        [L2.SITUATION, c.situation], [L2.WORK, c.work],
-        [L2.OUTCOME, c.outcome], [L2.EVIDENCE, c.evidence],
-      ]) {
-        if (!body) continue;
+      const para = (label, body) => {
+        if (!body) return;
         out.push('');
         out.push({ text: `  ${label}`, cls: 'accent' });
         for (const line of wrap(body, ctx.cols - 4, '  ')) out.push({ text: line, cls: 'dim' });
+      };
+      const bullets = (label, items) => {
+        if (!items?.length) return;
+        out.push('');
+        out.push({ text: `  ${label}`, cls: 'accent' });
+        for (const item of items) {
+          for (const line of wrap(`- ${item}`, ctx.cols - 6, '    ')) out.push({ text: line, cls: 'dim' });
+        }
+      };
+
+      para(L2.SITUATION, c.situation);
+      para(L2.WORK, c.work);
+      bullets(L2.SCOPE, c.scope);
+      if (c.metrics?.length) {
+        out.push('');
+        out.push({ text: `  ${L2.RESULTS || ''}`, cls: 'accent' });
+        // Bars sized to the window, so the comparison survives a phone.
+        out.push(...renderCaseMetricsAscii(c.metrics, Math.max(8, Math.min(26, ctx.cols - 24)), L2));
       }
+      para(L2.OUTCOME, c.outcome);
+      bullets(L2.COMPLEXITY, c.complexity);
+      para(L2.EVIDENCE, c.evidence);
       return out;
     },
   },

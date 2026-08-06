@@ -106,16 +106,10 @@ export function hoursLine(lang = 'EN') {
 }
 
 export const CONTACTS = {
-  // hello@dev24.pro is the address this should be, and the DNS for it is ready:
-  // the domain runs on Namecheap's own nameservers, the MX records point at
-  // their forwarding servers and the SPF record is in place. What is missing is
-  // the forwarding rule itself, and a test message to it was never delivered.
-  //
-  // So it is not on the site. An address in a footer that silently drops
-  // enquiries is worse than a plain one that works, and this site is running
-  // paid advertising. Swap the two lines back the moment a test message
-  // arrives.
-  email: 'RF24KRSK@gmail.com',
+  // Forwarding is configured at the registrar now: hello@ lands in the owner's
+  // mailbox. Read from here by the footer, the desktop Mail window, the
+  // terminal's contact output and the privacy policy, so it is changed once.
+  email: 'hello@dev24.pro',
   telegram: '@amgam24',
   telegramUrl: 'https://t.me/amgam24',
 };

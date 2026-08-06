@@ -2,7 +2,7 @@ import PONYTAIL from '../../config/ponytail.config.js'
 import { getMode, setMode, MODES } from '../themeManager.js'
 import { computeStats, buildMetricScale } from '../../lib/stats.js'
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js'
-import { renderStatsForDesktop, renderMetricGrid, animateMetricGrid, esc } from '../../lib/statsUI.js'
+import { renderStatsForDesktop, renderMetricGrid, animateMetricGrid, renderCaseMetrics, animateCaseMetrics, esc } from '../../lib/statsUI.js'
 import { webProjects, webProjectCount } from '../../data/webProjects.js'
 import { PROCESS, CONTACTS, LEGAL, hoursLine } from '../../data/process.js'
 import { PRIVACY } from '../../data/privacy.js'
@@ -300,6 +300,9 @@ function renderCaseWindow(id) {
   // "Period" and its value ended up printed as one word.
   const field = (k, v) => (v ? `<div class="wb-text"><b>${esc(k)}:</b> ${esc(v)}</div>` : '')
   const beat = (k, v) => (v ? `<div class="wb-text"><b>${esc(k)}</b><br>${esc(v)}</div>` : '')
+  const list = (k, items) => (items?.length
+    ? `<div class="wb-text"><b>${esc(k)}</b><ul class="pd-scope">${items.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`
+    : '')
   return `
     <div class="wb-doc">
       ${field(L.PERIOD, c.period)}
@@ -308,7 +311,11 @@ function renderCaseWindow(id) {
       ${c.named ? '' : `<div class="wb-text">${esc(L.UNNAMED || '')}</div>`}
       ${beat(L.SITUATION, c.situation)}
       ${beat(L.WORK, c.work)}
+      ${list(L.SCOPE, c.scope)}
+      ${c.metrics?.length ? `<div class="wb-text"><b>${esc(L.RESULTS || '')}</b></div>
+      <div class="cm-grid">${renderCaseMetrics(c.metrics, L)}</div>` : ''}
       ${beat(L.OUTCOME, c.outcome)}
+      ${list(L.COMPLEXITY, c.complexity)}
       ${beat(L.EVIDENCE, c.evidence)}
     </div>`
 }
@@ -318,7 +325,8 @@ function openDetail(token) {
   if (kind === 'case') {
     const c = webProjects(state?.lang || 'EN').find(x => x.id === ref)
     wm.open({ id: 'win-case-' + ref, title: c ? c.name : ref, icon: SVG.projects,
-      content: renderCaseWindow(ref), width: 600, height: 460 })
+      content: renderCaseWindow(ref), width: 620, height: 500 })
+    requestAnimationFrame(() => animateCaseMetrics(document.getElementById('win-case-' + ref)))
   } else if (kind === 'project') {
     const p = (_('PROJECTS') || []).find(x => x.id === ref)
     wm.open({ id: 'win-project-' + ref, title: p ? p.name : ref, icon: SVG.projects,

@@ -28,6 +28,8 @@ const EN = {
     // No "open the site" link: the clients are named, not linked to.
     ROLE: 'Role', PERIOD: 'Period', STACK: 'Stack',
     SITUATION: 'Situation', WORK: 'What was done', OUTCOME: 'What changed', EVIDENCE: 'Evidence',
+    SCOPE: 'What was built', COMPLEXITY: 'Why it was hard', RESULTS: 'In numbers',
+    BEFORE: 'before', AFTER: 'after', RESULT: 'result',
     UNNAMED: 'Client not named at their request',
   },
   BOOT_LINES: ['DECRYPTING_IDENTITY... OK', 'SCANNING_CREDENTIALS... OK', 'LOADING_PORTFOLIO... OK', 'ESTABLISHING_SECURE_CHANNEL... OK', 'WELCOME://ALEKSANDR.GRIBAKIN'],
@@ -210,6 +212,8 @@ const RU = {
   WEB_LABELS: {
     ROLE: 'Роль', PERIOD: 'Период', STACK: 'Стек',
     SITUATION: 'Ситуация', WORK: 'Что сделано', OUTCOME: 'Что изменилось', EVIDENCE: 'Чем подтверждается',
+    SCOPE: 'Что построено', COMPLEXITY: 'В чём была сложность', RESULTS: 'В цифрах',
+    BEFORE: 'было', AFTER: 'стало', RESULT: 'итог',
     UNNAMED: 'Заказчик не называется по его просьбе',
   },
   BOOT_LINES: ['ДЕШИФРОВКА_ЛИЧНОСТИ... OK', 'ПРОВЕРКА_ПОЛНОМОЧИЙ... OK', 'ЗАГРУЗКА_ПОРТФОЛИО... OK', 'УСТАНОВКА_БЕЗОПАСНОГО_КАНАЛА... OK', 'ДОБРО_ПОЖАЛОВАТЬ://АЛЕКСАНДР.ГРИБАКИН'],

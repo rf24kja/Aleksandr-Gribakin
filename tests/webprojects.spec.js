@@ -136,6 +136,81 @@ test.describe('once a case is published', () => {
     await expect(page.locator('.tsh-log')).toContainText(first.name, { timeout: 10_000 });
   });
 
+  test('the case carries its numbers, not just prose', async ({ page }) => {
+    // The reference architectures have charts; for a while the client cases —
+    // the section that actually sells — had four paragraphs and nothing else.
+    const withMetrics = webProjects('RU').filter((p) => p.metrics?.length);
+    expect(withMetrics.length, 'every case should carry metrics').toBe(webProjects('RU').length);
+
+    await page.goto('/');
+    await page.evaluate(() => localStorage.setItem('portfolio-lang', 'RU'));
+    await page.goto('/ru/case/creditafricainvest');
+    await page.waitForTimeout(2500);
+
+    const grid = page.locator('.cm-grid');
+    await expect(grid).toHaveCount(1);
+    await expect(grid.locator('.cm-item')).toHaveCount(2);
+    await expect(page.locator('.pd-scope li').first()).toBeVisible();
+  });
+
+  test('a before/after bar is never invisible, and never claims zero', async ({ page }) => {
+    await page.goto('/ru/case/creditafricainvest');
+    await page.waitForTimeout(2500);
+    const m = await page.evaluate(() => {
+      const fills = [...document.querySelectorAll('.cm-fill')];
+      return {
+        widths: fills.map((f) => parseFloat(f.style.getPropertyValue('--w'))),
+        change: document.querySelector('.cm-change')?.textContent?.trim(),
+      };
+    });
+    // Five minutes against two days is 0.17% of the track: rounded to an
+    // integer it disappears, and the win reads as a rendering fault.
+    expect(Math.min(...m.widths), 'no bar collapses to nothing').toBeGreaterThanOrEqual(3);
+    // And "−100%" would say the figure reached zero, which it did not.
+    expect(m.change).not.toBe('−100%');
+    expect(m.change).toMatch(/−99\.\d%/);
+  });
+
+  test('the charts fit a phone', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'layout claim about small screens');
+    for (const id of ['creditafricainvest', 'locabens', 'tzuchi']) {
+      await page.goto(`/ru/case/${id}`);
+      await page.waitForTimeout(2000);
+      const bad = await page.evaluate(() => {
+        const out = [];
+        document.querySelectorAll('.cm-item, .cm-pair, .cm-badge, .pd-scope li').forEach((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.right > window.innerWidth + 1) out.push(el.className);
+        });
+        return {
+          offscreen: out,
+          sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+        };
+      });
+      expect(bad.offscreen, `${id}: nothing may run past the edge`).toEqual([]);
+      expect(bad.sideways, `${id}: the page must not scroll sideways`).toBe(false);
+    }
+  });
+
+  test('the terminal prints the same comparison', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.setItem('portfolio-mode', 'terminal');
+      localStorage.setItem('portfolio-lang', 'RU');
+    });
+    await page.goto(`/?t=${Date.now()}`);
+    await expect(page.locator('.tsh-window')).toBeVisible({ timeout: 15_000 });
+    const input = page.locator('.tsh-window input');
+    await input.fill('web creditafricainvest');
+    await input.press('Enter');
+    await page.waitForTimeout(1500);
+    const log = await page.locator('.tsh-log').innerText();
+    expect(log).toContain('было');
+    expect(log).toContain('стало');
+    expect(log, 'a bar is drawn, not just the number').toContain('█');
+    expect(log, 'what was built is listed').toContain('Калькулятор займов');
+  });
+
   test('each case is served as its own document', async ({ request }) => {
     for (const item of webProjects('EN')) {
       const res = await request.get(`/case/${item.id}/`);

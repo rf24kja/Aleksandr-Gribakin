@@ -342,6 +342,114 @@ export function renderStatsAscii(stats, width = 24) {
     .join('');
 }
 
+/**
+ * Client-case metrics: what a number was, and what it became.
+ *
+ * A separate renderer from renderMetricGrid because it answers a different
+ * question. That one ranks a figure against every comparable figure in the
+ * portfolio, which is the right frame for a reference architecture. A client
+ * case is not competing with anything — it is a before and an after, and the
+ * distance between them is the whole point.
+ *
+ * Three shapes, and which one appears is decided by the data rather than by a
+ * flag, so a case can never claim more precision than it has:
+ *
+ *   before + after  two bars scaled against the larger of the pair, with the
+ *                   change stated in words underneath.
+ *   after only      one bar at full width. Honest: something was measured
+ *                   afterwards and nothing before.
+ *   delta only      a badge. "+35% conversion" is a real result and a fake
+ *                   chart of it would be an invented baseline.
+ */
+export function renderCaseMetrics(metrics = [], t = {}) {
+  if (!metrics.length) return '';
+  return metrics.map((m) => {
+    const unit = m.unit ? ` ${m.unit}` : '';
+    const fmt = (v) => `${formatCompact(v)}${unit}`;
+
+    if (m.before !== undefined && m.after !== undefined) {
+      const max = Math.max(m.before, m.after) || 1;
+      const lower = m.better === 'lower';
+      // A bar never goes to nothing. Five minutes against two days is 0.17% of
+      // the track, which rounds to a zero-width bar — invisible, and read as a
+      // rendering fault rather than as the win it is.
+      const width = (v) => `${Math.max(3, Math.round((v / max) * 100))}%`;
+      // One decimal when the whole number would round to 100: "−100%" claims
+      // the figure reached zero, which is a different and untrue statement.
+      const pct = (x) => (Math.round(x) >= 100 && x < 100 ? x.toFixed(1) : String(Math.round(x)));
+      const change = m.before === 0 ? '' : (lower
+        ? `−${pct((1 - m.after / m.before) * 100)}%`
+        : `+${pct((m.after / m.before - 1) * 100)}%`);
+      return `<div class="cm-item" data-pd-animate>
+        <div class="cm-label">${esc(m.label)}</div>
+        <div class="cm-pair">
+          <span class="cm-side">${esc(t.BEFORE || 'before')}</span>
+          <span class="cm-track"><span class="cm-fill cm-was" style="--w:${width(m.before)}"></span></span>
+          <span class="cm-num cm-was-num">${esc(m.displayBefore || fmt(m.before))}</span>
+        </div>
+        <div class="cm-pair">
+          <span class="cm-side">${esc(t.AFTER || 'after')}</span>
+          <span class="cm-track"><span class="cm-fill cm-now" style="--w:${width(m.after)}"></span></span>
+          <span class="cm-num cm-now-num">${esc(m.displayAfter || fmt(m.after))}</span>
+        </div>
+        ${change ? `<div class="cm-change ${lower ? 'cm-good-down' : 'cm-good-up'}">${esc(change)}</div>` : ''}
+      </div>`;
+    }
+
+    if (m.after !== undefined) {
+      const of = m.of || m.after;
+      return `<div class="cm-item" data-pd-animate>
+        <div class="cm-label">${esc(m.label)}</div>
+        <div class="cm-pair">
+          <span class="cm-side">${esc(t.RESULT || 'result')}</span>
+          <span class="cm-track"><span class="cm-fill cm-now" style="--w:${Math.round((m.after / of) * 100)}%"></span></span>
+          <span class="cm-num cm-now-num">${esc(fmt(m.after))}</span>
+        </div>
+        ${m.note ? `<div class="cm-note">${esc(m.note)}</div>` : ''}
+      </div>`;
+    }
+
+    return `<div class="cm-item cm-flat" data-pd-animate>
+      <div class="cm-label">${esc(m.label)}</div>
+      <div class="cm-badge">${esc(m.delta || '')}</div>
+      ${m.note ? `<div class="cm-note">${esc(m.note)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+/** Widths start at zero so the bars grow; run once the panel is on screen. */
+export function animateCaseMetrics(root = document) {
+  root.querySelectorAll('.cm-fill').forEach((el, i) => {
+    setTimeout(() => { el.style.width = el.style.getPropertyValue('--w'); }, 60 + i * 70);
+  });
+  root.querySelectorAll('.cm-item[data-pd-animate]').forEach((el, i) => {
+    setTimeout(() => el.classList.add('pd-visible'), 40 + i * 60);
+  });
+}
+
+/** The same comparison as plain text, for the terminal. */
+export function renderCaseMetricsAscii(metrics = [], width = 26, t = {}) {
+  const out = [];
+  for (const m of metrics) {
+    const unit = m.unit ? ` ${m.unit}` : '';
+    out.push({ text: `  ${m.label}`, cls: 'accent' });
+    if (m.before !== undefined && m.after !== undefined) {
+      const max = Math.max(m.before, m.after) || 1;
+      const bar = (v) => '█'.repeat(Math.max(1, Math.round((v / max) * width)));
+      const show = (v, d) => (d || `${formatCompact(v)}${unit}`);
+      out.push({ text: `    ${(t.BEFORE || 'before').padEnd(7)}${bar(m.before)} ${show(m.before, m.displayBefore)}`, cls: 'dim' });
+      out.push({ text: `    ${(t.AFTER || 'after').padEnd(7)}${bar(m.after)} ${show(m.after, m.displayAfter)}`, cls: 'ok' });
+    } else if (m.after !== undefined) {
+      const of = m.of || m.after;
+      out.push({ text: `    ${'█'.repeat(Math.max(1, Math.round((m.after / of) * width)))} ${formatCompact(m.after)}${unit}`, cls: 'ok' });
+    } else if (m.delta) {
+      out.push({ text: `    ${m.delta}`, cls: 'ok' });
+    }
+    if (m.note) out.push({ text: `    ${m.note}`, cls: 'dim' });
+  }
+  return out;
+}
+
 /** Compact stat grid for the desktop-mode About window. */
 export function renderStatsForDesktop(stats) {
   return `<div class="wb-stats">${stats

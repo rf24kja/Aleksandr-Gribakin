@@ -3,7 +3,9 @@ import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../data/proj
 import { snippetFor } from '../data/snippets.js';
 import { webProjects } from '../data/webProjects.js';
 import { buildMetricScale } from './stats.js';
-import { renderMetricGrid, animateMetricGrid } from './statsUI.js';
+import {
+  renderMetricGrid, animateMetricGrid, renderCaseMetrics, animateCaseMetrics,
+} from './statsUI.js';
 
 const COLOR = {};
 function _r() {
@@ -357,6 +359,12 @@ export function renderWebCasePage(id) {
          <p class="pd-para">${body}</p>
        </div>`
     : '');
+  const list = (title, items) => (items?.length
+    ? `<div style="margin-bottom:22px">
+         <h3 class="pd-section-title">${title}</h3>
+         <ul class="pd-scope">${items.map((x) => `<li>${x}</li>`).join('')}</ul>
+       </div>`
+    : '');
 
   wrap.innerHTML = `
     <div class="pd-backdrop" data-pd-close></div>
@@ -377,7 +385,15 @@ export function renderWebCasePage(id) {
 
         ${beat(L.SITUATION, item.situation)}
         ${beat(L.WORK, item.work)}
+        ${list(L.SCOPE, item.scope)}
+
+        ${item.metrics?.length ? `<div class="pd-metrics">
+          <h3 class="pd-section-title">${L.RESULTS || L.OUTCOME}</h3>
+          <div class="cm-grid" data-cm-grid>${renderCaseMetrics(item.metrics, L)}</div>
+        </div>` : ''}
+
         ${beat(L.OUTCOME, item.outcome)}
+        ${list(L.COMPLEXITY, item.complexity)}
         ${beat(L.EVIDENCE, item.evidence)}
 
         ${item.stack?.length ? `<div style="margin-bottom:24px">
@@ -389,6 +405,7 @@ export function renderWebCasePage(id) {
 
   wrap.classList.add('active');
   _wireGenericDetail();
+  requestAnimationFrame(() => animateCaseMetrics(wrap));
 }
 
 export function renderAchievementPage(idx) {
