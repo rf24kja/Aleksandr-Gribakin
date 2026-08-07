@@ -4,7 +4,8 @@ import { computeStats, buildMetricScale } from '../../lib/stats.js'
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js'
 import { renderStatsForDesktop, renderMetricGrid, animateMetricGrid, renderCaseMetrics, animateCaseMetrics, esc } from '../../lib/statsUI.js'
 import { webProjects, webProjectCount } from '../../data/webProjects.js'
-import { PROCESS, CONTACTS, LEGAL, hoursLine } from '../../data/process.js'
+import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../../data/process.js'
+import { wireCopyButtons } from '../../lib/copy.js'
 import { PRIVACY } from '../../data/privacy.js'
 import WindowManager from './windowManager.js'
 
@@ -31,6 +32,7 @@ const SVG = {
   achievements: '<svg viewBox="0 0 48 48" fill="none" stroke="#fbbb2d" stroke-width="1.5" width="28" height="28"><polygon points="24 4 28.4 17.2 42 18 31.4 27.4 34.6 41 24 33.6 13.4 41 16.6 27.4 6 18 19.6 17.2 24 4" stroke-linejoin="round"/></svg>',
   mail: '<svg viewBox="0 0 48 48" fill="none" stroke="#e95420" stroke-width="1.5" width="28" height="28"><rect x="4" y="8" width="40" height="32" rx="4"/><path d="M4 12l20 16 20-16"/></svg>',
   settings: '<svg viewBox="0 0 48 48" fill="none" stroke="#888" stroke-width="1.5" width="28" height="28"><circle cx="24" cy="24" r="6"/><path d="M24 2v6m0 32v6M2 24h6m32 0h6M8.5 8.5l4.2 4.2m22.6 22.6l4.2 4.2M8.5 39.5l4.2-4.2m22.6-22.6l4.2-4.2" stroke-linecap="round"/></svg>',
+  coffee: '<svg viewBox="0 0 48 48" fill="none" stroke="#fbbb2d" stroke-width="1.5" width="28" height="28"><path d="M8 18h26v14a10 10 0 0 1-10 10h-6a10 10 0 0 1-10-10z"/><path d="M34 22h4a5 5 0 0 1 0 10h-4"/><path d="M16 6v5m8-5v5" stroke-linecap="round"/></svg>',
 }
 
 function registerApp(id, label, svg, contentFn, opts = {}) {
@@ -377,6 +379,34 @@ function renderMail() {
   `
 }
 
+/**
+ * The same offer the terminal's `coffee` command prints, in a window.
+ *
+ * The address is never typed here — it comes from DONATION, so all three modes
+ * quote one wallet. The copy button matters more than it looks: a TRC-20
+ * address is 34 characters that nobody transcribes correctly from a phone.
+ */
+function renderCoffee() {
+  const c = PONYTAIL.LOCALE[state?.lang || 'EN']?.COFFEE || {}
+  return `
+    <div class="wb-title">${esc(coffeeTitle(c))}</div>
+    <hr class="wb-divider">
+    <div class="wb-section">
+      <div class="wb-section-title">${esc(c.NETWORK || DONATION.network)}</div>
+      <code class="wb-addr">${esc(DONATION.address)}</code>
+      <button type="button" class="wb-copy" data-copy="${esc(DONATION.address)}"
+        data-copy-done="${esc(c.DONE || '✓ Copied')}">${esc(c.COPY || 'Copy Address')}</button>
+    </div>
+  `
+}
+
+// The locale prefixes the title with a cup. Beside an icon that is already a
+// cup it reads as a stutter, so the emoji is dropped wherever the icon is shown
+// — the same trim the terminal does for its heading.
+function coffeeTitle(c) {
+  return (c.TITLE || 'Buy me a coffee').replace(/^[^\p{L}]+/u, '')
+}
+
 // The heading read "Mode" and the buttons capitalised the raw mode id, so the
 // desktop settings window stayed in English however the site was set.
 function modeLabel(mode) {
@@ -431,6 +461,10 @@ export function initDesktop(appState) {
   registerApp('mail', () => _('MAIL') || 'Mail', SVG.mail, renderMail, { width: 460, height: 440 })
   registerApp('legal', () => _('FOOTER.PRIVACY') || 'Privacy', SVG.about,
     renderLegal, { width: 620, height: 480 })
+  // The terminal's `coffee` command had no equivalent here or in business, so
+  // two interfaces out of three simply did not carry the offer.
+  registerApp('coffee', () => coffeeTitle(PONYTAIL.LOCALE[state?.lang || 'EN']?.COFFEE || {}), SVG.coffee,
+    renderCoffee, { width: 420, height: 260 })
   registerApp('settings', () => _('SETTINGS') || 'Settings', SVG.settings, renderSettings, {
     panel: () => document.querySelector('.settings-gear')?.click(),
   })
@@ -462,6 +496,8 @@ export function initDesktop(appState) {
   // working while a real scroll still scrolls.
   let tap = null
   let tapHandledAt = 0
+
+  wireCopyButtons(winContainer)
 
   winContainer.addEventListener('pointerdown', (e) => {
     const row = e.target.closest('[data-open]')

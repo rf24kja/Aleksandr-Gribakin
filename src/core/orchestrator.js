@@ -12,7 +12,8 @@ import { computeStats, computeProjectAggregates, projectSortValue } from '../lib
 import { trackEvent } from '../lib/analytics.js';
 import { attribution } from '../lib/attribution.js';
 import { webProjects } from '../data/webProjects.js';
-import { PROCESS, CONTACTS, LEGAL, hoursLine } from '../data/process.js';
+import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../data/process.js';
+import { wireCopyButtons } from '../lib/copy.js';
 import {
   renderStatCards, wireStatCards, animateStatValues,
   renderDashboard, animateDashboard,
@@ -35,12 +36,14 @@ export default class PortfolioOrchestrator {
     // three — which is what _detectLocale used to do by returning a constant.
     this.s.init();
 
-    await this._bootSequence();
     this._renderContent();
     this._wireLanguageToggle();
     this._wireForm();
     this._wireProjectClicks();
     this._wireCareerAchClicks();
+    // Delegated on the document: the footer is re-rendered on every language
+    // change, so a listener bound to the button itself would not survive one.
+    wireCopyButtons(document);
     this._routeFromPath();
     this._wireHashRouter();
     this._wireSEOTags();
@@ -64,52 +67,6 @@ export default class PortfolioOrchestrator {
     startAmbient(0.4);
     initOnUserGesture();
     return this;
-  }
-
-  // --- Boot ---
-  async _bootSequence() {
-    const boot = document.getElementById('bootScreen');
-    if (!boot) return;
-    const lines = this._l().BOOT_LINES;
-    const lineEls = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      const el = document.createElement('div');
-      el.className = 'boot-line';
-      boot.appendChild(el);
-      lineEls.push(el);
-    }
-    boot.querySelector('.boot-line')?.remove();
-
-    const cursor = document.createElement('div');
-    cursor.className = 'boot-line cursor-blink';
-    cursor.style.marginTop = '6px';
-    cursor.style.opacity = '1';
-    cursor.textContent = '█';
-    boot.appendChild(cursor);
-
-    for (let i = 0; i < lines.length; i++) {
-      lineEls[i].classList.add('active', 'done');
-      await this._typeText(lineEls[i], lines[i], 20);
-      await new Promise((r) => setTimeout(r, 180));
-    }
-    cursor.remove();
-
-    await new Promise((r) => setTimeout(r, 400));
-    boot.classList.add('hidden');
-    await new Promise((r) => setTimeout(r, 800));
-    boot.remove();
-  }
-
-  _typeText(el, text, speed = 25) {
-    return new Promise((resolve) => {
-      let i = 0;
-      const iv = setInterval(() => {
-        el.textContent = text.slice(0, i + 1);
-        i++;
-        if (i >= text.length) { clearInterval(iv); resolve(); }
-      }, speed);
-    });
   }
 
   // --- Content ---
@@ -261,11 +218,34 @@ export default class PortfolioOrchestrator {
         <a href="${CONTACTS.telegramUrl}" target="_blank" rel="noopener">${CONTACTS.telegram}</a>
       </div>
       <div class="f-row">${f.HOURS || 'Working hours'}: ${hoursLine(lang)}</div>
+      ${this._coffeeMarkup()}
       <div class="f-legal">
         ${pick(LEGAL.basis)}. ${pick(LEGAL.details)}.
         · <a href="${pick(LEGAL.privacy)}" data-privacy-link>${f.PRIVACY || 'Privacy policy'}</a>
         · © ${new Date().getFullYear()}
       </div>`;
+  }
+
+  /**
+   * The coffee the terminal has always offered, now here too.
+   *
+   * Folded shut by default and behind <details> rather than a modal: the footer
+   * answers a corporate buyer's three questions, and a wallet address sitting
+   * open underneath the invoicing line answers a question nobody asked. Whoever
+   * wants it opens one line; the layout above is untouched either way.
+   */
+  _coffeeMarkup() {
+    const c = this._l().COFFEE || {};
+    return `
+      <details class="f-coffee">
+        <summary>${c.TITLE || '☕ Buy me a coffee'}</summary>
+        <div class="f-coffee-body">
+          <span class="f-coffee-net">${c.NETWORK || DONATION.network}</span>
+          <code class="f-coffee-addr">${DONATION.address}</code>
+          <button type="button" class="f-coffee-copy" data-copy="${DONATION.address}"
+            data-copy-done="${c.DONE || '✓ Copied'}">${c.COPY || 'Copy Address'}</button>
+        </div>
+      </details>`;
   }
 
   _renderCareer() {

@@ -213,8 +213,13 @@ test.describe('Vercel Web Analytics', () => {
 
   test('is requested once per page once it is on', async ({ page }) => {
     await withCounters(page, { vercel: true });
-    await page.goto('/');
-    // Counted across exactly one navigation, so the number means what it says.
+    // Counted across exactly one navigation, so the number means what it says —
+    // which is why there is only one. The test used to open the page, start
+    // counting, and then open it again: the script is injected after boot, so
+    // whether the first visit's request landed before or after the listener was
+    // a race against page load. It was a slow load that hid this, and the
+    // moment the fonts stopped being fetched from another host the page got
+    // fast enough to lose the race every time.
     const loads = [];
     page.on('request', (r) => { if (r.url().includes('/_vercel/insights/script.js')) loads.push(r.url()); });
     await page.goto(`/?t=${Date.now()}`);

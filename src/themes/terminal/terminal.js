@@ -8,7 +8,7 @@
 
 import PONYTAIL from '../../config/ponytail.config.js';
 import { setMode } from '../themeManager.js';
-import { findCommand, commandNames, completionsFor } from './commands.js';
+import { findCommand, commandNames, completionsFor, chipCommands } from './commands.js';
 import { validateForm } from '../../lib/validation.js';
 import { trackEvent } from '../../lib/analytics.js';
 import { attribution } from '../../lib/attribution.js';
@@ -393,10 +393,8 @@ function bootLines() {
   ];
 }
 
-const CHIPS = ['help', 'whoami', 'stats', 'career', 'projects', 'stack', 'achievements', 'contact', 'neofetch', 'clear'];
-
 function renderChips() {
-  shell.hints.innerHTML = CHIPS
+  shell.hints.innerHTML = chipCommands()
     .map((c) => `<button type="button" class="tsh-chip" data-cmd="${esc(c)}">${esc(c)}</button>`)
     .join('');
   syncHintFade();

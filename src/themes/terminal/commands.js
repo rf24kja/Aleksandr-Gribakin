@@ -11,7 +11,7 @@
 import PONYTAIL from '../../config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js';
 import { webProjects, webProjectCount } from '../../data/webProjects.js';
-import { PROCESS, TERMS, CONTACTS, LEGAL, hoursLine } from '../../data/process.js';
+import { PROCESS, TERMS, CONTACTS, LEGAL, DONATION, hoursLine } from '../../data/process.js';
 import { renderCaseMetricsAscii } from '../../lib/statsUI.js';
 import { PRIVACY } from '../../data/privacy.js';
 import { computeStats, techFrequency, parseMetric } from '../../lib/stats.js';
@@ -63,6 +63,18 @@ function wrap(text, width = 72, indent = '') {
 // Commands
 // ---------------------------------------------------------------------------
 
+/**
+ * True when the command cannot do anything without an argument.
+ *
+ * `usage` distinguishes the two cases already: `<project-id>` is required,
+ * `[<id>]` and `[--breakdown]` are not. Everything that reads this — help rows,
+ * the chip strip — asks here rather than testing for `usage` at all, so a
+ * command with an optional argument stays reachable by tapping.
+ */
+function needsArgument(cmd) {
+  return /^</.test((cmd.usage || '').trim());
+}
+
 const COMMANDS = [
   {
     name: 'help', aliases: ['?', 'commands'], key: 'HELP',
@@ -72,7 +84,12 @@ const COMMANDS = [
       for (const c of COMMANDS) {
         if (c.hidden) continue;
         const usage = c.usage ? `${c.name} ${c.usage}` : c.name;
-        const run = c.usage ? null : c.name;
+        // A usage string used to make the row unrunnable, which was right for
+        // `open <project-id>` and wrong for `web [<id>]`: the argument is
+        // optional, the bare command lists everything, and on a phone that row
+        // was the only way in without a keyboard. Only a required argument —
+        // `<…>` rather than `[…]` — still refuses to run on its own.
+        const run = needsArgument(c) ? null : c.name;
         const describe = (t.CMD || {})[c.key] || '';
         // Below about sixty columns a name and its description cannot share a
         // line without the browser breaking it, and a CSS break lands at column
@@ -521,8 +538,8 @@ const COMMANDS = [
       const c = L(ctx.lang).COFFEE || {};
       return [
         ...head((c.TITLE || 'COFFEE').replace(/^[^\p{L}]+/u, '').toUpperCase(), ctx.cols),
-        { text: `  ${c.NETWORK || 'USDT TRC-20'}`, cls: 'dim' },
-        { text: '  TWTCH2ZhyKvzZU1ph6h1d4vTHpHyJDkN5i', cls: 'accent' },
+        { text: `  ${c.NETWORK || DONATION.network}`, cls: 'dim' },
+        { text: `  ${DONATION.address}`, cls: 'accent' },
       ];
     },
   },
@@ -569,6 +586,19 @@ export function findCommand(name) {
 /** Every name and alias, for tab completion. */
 export function commandNames() {
   return [...INDEX.keys()].sort();
+}
+
+/**
+ * The commands the chip strip offers, derived rather than listed.
+ *
+ * The strip used to be its own hand-kept array, and it drifted: `web` — the ten
+ * client cases — was published, appeared in `help`, and never reached a chip, so
+ * on a phone the whole section existed only for whoever guessed the word. Every
+ * command that `help` shows and that runs on its own now gets a chip, and the
+ * two lists cannot disagree again.
+ */
+export function chipCommands() {
+  return COMMANDS.filter((c) => !c.hidden && !needsArgument(c)).map((c) => c.name);
 }
 
 /** Argument suggestions for a given command, for tab completion. */

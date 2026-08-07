@@ -55,6 +55,10 @@ first making a mode that actually shows the canvas.
   `og-cover.jpg` (1200×630) for social previews.
 - Secrets live in env vars only (`.env.example` lists them). Nothing with a
   token goes in the repo.
+- Fonts are served from this origin. `public/fonts/` and the `@font-face` block
+  between the `fonts:start` / `fonts:end` markers in `index.html` are written by
+  `npm run fonts` — edit the family list in `scripts/fonts.mjs`, never the block.
+  Nothing on the render path may point at another host: a test asserts it.
 
 ## Analytics
 Three counters, all through `src/lib/analytics.js` — nothing else may call
