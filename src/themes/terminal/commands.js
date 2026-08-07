@@ -13,6 +13,7 @@ import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/p
 import { webProjects, webProjectCount } from '../../data/webProjects.js';
 import { PROCESS, TERMS, CONTACTS, LEGAL, DONATION, hoursLine } from '../../data/process.js';
 import { renderCaseMetricsAscii } from '../../lib/statsUI.js';
+import { stackGroups, stackToolCount } from '../../data/stack.js';
 import { PRIVACY } from '../../data/privacy.js';
 import { computeStats, techFrequency, parseMetric } from '../../lib/stats.js';
 
@@ -374,6 +375,54 @@ const COMMANDS = [
       for (const f of freq.slice(0, 18)) {
         const filled = Math.max(1, Math.round((f.value / max) * bars.barW));
         out.push({ text: `  ${pad(f.label, bars.labelW)} ${'█'.repeat(filled)}${'░'.repeat(bars.barW - filled)} ${f.value}`, cls: 'bar' });
+      }
+      return out;
+    },
+  },
+  {
+    // Separate from `stack` deliberately. `stack` counts what the described
+    // work actually used and draws bars from it; this lists what the owner can
+    // pick up. Merging them would let a tool no case mentions inflate a
+    // measured figure.
+    name: 'tools', aliases: ['toolbox'], usage: '[<group>]', key: 'TOOLS',
+    complete: () => stackGroups('EN').map((g) => g.id),
+    run(ctx, args) {
+      const t = T(ctx.lang);
+      const groups = stackGroups(ctx.lang);
+      const id = (args[0] || '').toLowerCase();
+
+      if (!id) {
+        const out = [...head(`${t.HEAD_TOOLS || 'TOOLBOX'} (${stackToolCount()})`, ctx.cols)];
+        for (const g of groups) {
+          const count = new Set(g.lines.flatMap((l) => l.items)).size;
+          const runOne = `tools ${g.id}`;
+          if (ctx.cols < 62) {
+            out.push({ text: `  ${g.id}`, cls: 'accent', run: runOne });
+            for (const line of wrap(`${g.title} · ${count}`, ctx.cols - 6, '    ')) {
+              out.push({ text: line, cls: 'dim', run: runOne });
+            }
+          } else {
+            out.push({ text: `  ${pad(g.id, 16)}${pad(String(count), 6)}${g.title}`, cls: 'row', run: runOne });
+          }
+        }
+        out.push('');
+        out.push({ text: `  ${t.HINT_TOOLS || 'tools <group> for one area'}`, cls: 'dim' });
+        return out;
+      }
+
+      const g = groups.find((x) => x.id === id);
+      if (!g) return [{ text: `  ${(t.NO_TARGET || 'No target "{id}".').replace('{id}', id)}`, cls: 'err' }];
+
+      const out = [...head(g.title.toUpperCase(), ctx.cols)];
+      if (g.note) {
+        for (const line of wrap(g.note, ctx.cols - 4, '  ')) out.push({ text: line, cls: 'dim' });
+        out.push('');
+      }
+      for (const l of g.lines) {
+        out.push({ text: `  ${l.label}`, cls: 'accent' });
+        for (const line of wrap(l.items.join(', '), ctx.cols - 6, '    ')) {
+          out.push({ text: line, cls: 'kv' });
+        }
       }
       return out;
     },
