@@ -220,3 +220,52 @@ test.describe('the toolbox is the same list in every mode', () => {
     expect(claimed).toBe(counted);
   });
 });
+
+test.describe('one section about technology, two layers inside', () => {
+  test('the toolbox marks what has work behind it, and counts it', async ({ page }) => {
+    await boot(page, 'business');
+    const counts = await page.evaluate(async () => {
+      for (const d of document.querySelectorAll('#stackOverlay .stack-group')) d.open = true;
+      const all = [...document.querySelectorAll('#stackOverlay .sg-item')];
+      return {
+        total: new Set(all.map((e) => e.textContent.trim())).size,
+        backed: new Set(all.filter((e) => e.classList.contains('sg-backed'))
+          .map((e) => e.textContent.trim())).size,
+        claimed: Number(document.querySelector('#stackOverlay .sb-title')
+          ?.textContent.match(/\d+/)?.[0]),
+      };
+    });
+    // The lower layer is a subset of the upper one, and the sentence says so
+    // with the same number the markup carries.
+    expect(counts.backed).toBe(counts.claimed);
+    expect(counts.backed).toBeLessThan(counts.total);
+    expect(counts.backed).toBeGreaterThan(0);
+  });
+
+  test('the dashboard tile reads as a part of the whole', async ({ page }) => {
+    await boot(page, 'business');
+    const tile = await page.locator('.pdash-tile', { hasText: /инструментар|toolbox/i }).first().innerText()
+      .catch(() => page.locator('#projectsOverlay').innerText());
+    const pair = tile.match(/(\d+)\s*\/\s*(\d+)/);
+    expect(pair, `no "N/M" in the technologies tile: ${tile.slice(0, 120)}`).toBeTruthy();
+    const [, part, whole] = pair.map(Number);
+    expect(part).toBeLessThanOrEqual(whole);
+  });
+
+  test('every technology named in the work exists in the toolbox', async () => {
+    // The invariant behind "N of M": if a case names something the toolbox
+    // does not carry, the fraction stops being arithmetic and starts being a
+    // claim. Checked in both languages, since the lists are translated apart.
+    const [{ default: PONYTAIL }, stats, stack] = await Promise.all([
+      import('../src/config/ponytail.config.js'),
+      import('../src/lib/stats.js'),
+      import('../src/data/stack.js'),
+    ]);
+    for (const lang of ['EN', 'RU']) {
+      const labels = stats.techFrequency(PONYTAIL.LOCALE[lang].PROJECTS).map((f) => f.label);
+      const missing = stack.unmatchedWorkTech(labels);
+      expect(missing, `${lang}: named in the work, absent from the toolbox: ${missing.join(', ')}`)
+        .toEqual([]);
+    }
+  });
+});

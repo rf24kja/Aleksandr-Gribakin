@@ -8,13 +8,13 @@ import {
   setProjectLocale, closeProjectDetail,
 } from '../lib/projectDetail.js';
 import { CAREER_DETAIL } from '../data/projects.js';
-import { computeStats, computeProjectAggregates, projectSortValue } from '../lib/stats.js';
+import { computeStats, computeProjectAggregates, projectSortValue, techFrequency } from '../lib/stats.js';
 import { trackEvent } from '../lib/analytics.js';
 import { attribution } from '../lib/attribution.js';
 import { webProjects } from '../data/webProjects.js';
 import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../data/process.js';
 import { wireCopyButtons } from '../lib/copy.js';
-import { stackGroups, stackToolCount } from '../data/stack.js';
+import { stackGroups, stackToolCount, backedTools } from '../data/stack.js';
 import {
   renderStatCards, wireStatCards, animateStatValues,
   renderDashboard, animateDashboard, esc,
@@ -177,18 +177,27 @@ export default class PortfolioOrchestrator {
   /**
    * The toolbox, folded shut, after the work and before "how I work".
    *
-   * Two hundred and seventy-five names laid out flat would bury the ten client
-   * cases that are the strongest thing on this page, and a wall of logos is
-   * what a portfolio does when it has nothing else to show. So each area opens
-   * on demand and the page stays the length it was. It is also kept clear of
-   * the statistics: the "Technologies in Production" tile counts what the
-   * described work used, and this list answers a different question.
+   * Nearly three hundred names laid out flat would bury the ten client cases
+   * that are the strongest thing on this page, and a wall of logos is what a
+   * portfolio does when it has nothing else to show. So each area opens on
+   * demand and the page stays the length it was.
+   *
+   * Two layers, because the owner read the old arrangement the way a visitor
+   * would: a tile saying "47 technologies" beside a toolbox of 294 made the
+   * measured number look like the smaller stack. It is the opposite — it is the
+   * part with work behind it. So the toolbox marks those entries, and the
+   * frequency bars sit underneath as the second layer of one section.
    */
   _renderStack() {
     const anchor = document.getElementById('processOverlay') || document.getElementById('ctaSection');
     if (!anchor) return;
     const t = this._l().SECTION_TITLES || {};
     const groups = stackGroups(this.s.lang);
+    // The two layers the section promises: everything, and the part with work
+    // on this page. The second is a subset of the first — a test keeps it so,
+    // because the copy says "N of M" and that has to stay arithmetic.
+    const freq = techFrequency(this._l().PROJECTS);
+    const backed = backedTools(freq.map((f) => f.label));
     const section = document.getElementById('stackOverlay') || document.createElement('div');
     section.className = 'section-overlay';
     section.id = 'stackOverlay';
@@ -204,9 +213,22 @@ export default class PortfolioOrchestrator {
             ${g.lines.map((l) => `
               <div class="sg-line">
                 <span class="sg-label">${esc(l.label)}</span>
-                <span class="sg-items">${l.items.map((i) => `<span class="sg-item">${esc(i)}</span>`).join('')}</span>
+                <span class="sg-items">${l.items.map((i) => `<span class="sg-item${
+  backed.has(i) ? ' sg-backed' : ''}"${backed.has(i) ? ` title="${esc(t.STACK_BACKED || '')}"` : ''}>${esc(i)}</span>`).join('')}</span>
               </div>`).join('')}
           </details>`).join('')}
+      </div>
+      <div class="stack-backed">
+        <div class="sb-title">${esc((t.STACK_BACKED_TITLE || '').replace('{n}', backed.size))}</div>
+        <div class="sb-bars">
+          ${freq.slice(0, 8).map((f) => `
+            <div class="sb-row">
+              <span class="sb-label">${esc(f.label)}</span>
+              <span class="sb-track"><span class="sb-fill" style="width:${
+  Math.round((f.value / (freq[0]?.value || 1)) * 100)}%"></span></span>
+              <span class="sb-value">${f.value}</span>
+            </div>`).join('')}
+        </div>
       </div>`;
     if (!section.parentNode) anchor.parentNode.insertBefore(section, anchor);
   }
@@ -369,7 +391,7 @@ export default class PortfolioOrchestrator {
     const panel = document.getElementById('projectsDash');
     if (!panel) return;
     const agg = computeProjectAggregates(this.s.lang, visible);
-    panel.innerHTML = renderDashboard(agg, this._l().DASHBOARD || {}, this._sortMode);
+    panel.innerHTML = renderDashboard(agg, this._l().DASHBOARD || {}, this._sortMode, stackToolCount());
     animateDashboard(panel);
 
     if (!panel.dataset.wired) {

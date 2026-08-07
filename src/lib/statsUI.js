@@ -254,10 +254,16 @@ export function animateMetricGrid(root = document) {
  * Summary strip above the project grid. Recomputed on every filter change so
  * it always describes the projects actually on screen.
  */
-export function renderDashboard(agg, t = {}, sortMode = 'default') {
+export function renderDashboard(agg, t = {}, sortMode = 'default', toolTotal = 0) {
+  // "47" beside a toolbox of 294 read as a smaller stack. It is not: it is the
+  // part with work behind it on this page, which is the stronger claim of the
+  // two. The denominator says so, and both numbers are computed.
+  const tech = toolTotal
+    ? { value: `${agg.uniqueTech}/${toolTotal}`, label: t.TECH_OF || t.TECH || 'technologies' }
+    : { value: agg.uniqueTech, label: t.TECH || 'technologies' };
   const tiles = [
     { value: agg.count, label: t.PROJECTS || 'projects' },
-    { value: agg.uniqueTech, label: t.TECH || 'technologies' },
+    tech,
     { value: agg.withRepo, label: t.REPOS || 'public repos' },
     { value: agg.features, label: t.FEATURES || 'shipped features' },
   ];

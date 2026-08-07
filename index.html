@@ -1349,6 +1349,24 @@
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 12px;
     }
+    /* The lower layer: the part of the toolbox with work behind it. */
+    [data-mode="business"] .stack-backed { margin-top: 18px; max-width: 900px; }
+    [data-mode="business"] .sb-title { font-size: 13px; color: var(--b-text-mute); margin-bottom: 12px; }
+    [data-mode="business"] .sb-bars { display: grid; gap: 7px; }
+    [data-mode="business"] .sb-row {
+      display: grid; grid-template-columns: minmax(90px, 160px) 1fr auto;
+      align-items: center; gap: 10px; font-size: 12px;
+    }
+    [data-mode="business"] .sb-label { color: var(--b-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    [data-mode="business"] .sb-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
+    [data-mode="business"] .sb-fill { display: block; height: 100%; background: var(--b-accent, #e95420); border-radius: 3px; }
+    [data-mode="business"] .sb-value { font-variant-numeric: tabular-nums; opacity: .55; }
+    /* A dot, not a colour: the mark has to survive a colour-blind reader. */
+    [data-mode="business"] .sg-item.sg-backed::before {
+      content: '\2022 '; color: var(--b-accent-text); font-weight: 600;
+    }
+    [data-mode="business"][data-theme="light"] .sb-track { background: rgba(0,0,0,.08); }
+
     /* Toolbox. Folded shut so 275 names cannot bury the ten client cases. */
     [data-mode="business"] .stack-groups { display: grid; gap: 8px; max-width: 900px; }
     [data-mode="business"] .stack-group {
