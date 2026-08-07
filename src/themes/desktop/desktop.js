@@ -5,6 +5,7 @@ import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/p
 import { renderStatsForDesktop, renderMetricGrid, animateMetricGrid, renderCaseMetrics, animateCaseMetrics, esc } from '../../lib/statsUI.js'
 import { webProjects, webProjectCount } from '../../data/webProjects.js'
 import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../../data/process.js'
+import { stackGroups, stackToolCount } from '../../data/stack.js'
 import { wireCopyButtons } from '../../lib/copy.js'
 import { PRIVACY } from '../../data/privacy.js'
 import WindowManager from './windowManager.js'
@@ -32,6 +33,7 @@ const SVG = {
   achievements: '<svg viewBox="0 0 48 48" fill="none" stroke="#fbbb2d" stroke-width="1.5" width="28" height="28"><polygon points="24 4 28.4 17.2 42 18 31.4 27.4 34.6 41 24 33.6 13.4 41 16.6 27.4 6 18 19.6 17.2 24 4" stroke-linejoin="round"/></svg>',
   mail: '<svg viewBox="0 0 48 48" fill="none" stroke="#e95420" stroke-width="1.5" width="28" height="28"><rect x="4" y="8" width="40" height="32" rx="4"/><path d="M4 12l20 16 20-16"/></svg>',
   settings: '<svg viewBox="0 0 48 48" fill="none" stroke="#888" stroke-width="1.5" width="28" height="28"><circle cx="24" cy="24" r="6"/><path d="M24 2v6m0 32v6M2 24h6m32 0h6M8.5 8.5l4.2 4.2m22.6 22.6l4.2 4.2M8.5 39.5l4.2-4.2m22.6-22.6l4.2-4.2" stroke-linecap="round"/></svg>',
+  tools: '<svg viewBox="0 0 48 48" fill="none" stroke="#888" stroke-width="1.5" width="28" height="28"><path d="M30 6a9 9 0 0 0-9 9c0 1.4.3 2.7.9 3.9L6 34.8V42h7.2l15.9-15.9c1.2.6 2.5.9 3.9.9a9 9 0 0 0 0-18z" stroke-linejoin="round"/></svg>',
   coffee: '<svg viewBox="0 0 48 48" fill="none" stroke="#fbbb2d" stroke-width="1.5" width="28" height="28"><path d="M8 18h26v14a10 10 0 0 1-10 10h-6a10 10 0 0 1-10-10z"/><path d="M34 22h4a5 5 0 0 1 0 10h-4"/><path d="M16 6v5m8-5v5" stroke-linecap="round"/></svg>',
 }
 
@@ -380,6 +382,31 @@ function renderMail() {
 }
 
 /**
+ * The toolbox as a window, one area per row.
+ *
+ * Kept out of the About window's statistics on purpose: those count what the
+ * described work used, and this is what the owner can pick up. Two claims of
+ * different kinds, in two places, each labelled as what it is.
+ */
+function renderTools() {
+  const lang = state?.lang || 'EN'
+  const groups = stackGroups(lang)
+  const t = PONYTAIL.LOCALE[lang]?.SECTION_TITLES || {}
+  return `
+    <div class="wb-title">${esc(t.STACK || 'Toolbox')}</div>
+    <div class="wb-sub">${esc((t.STACK_SUB || '').replace('{n}', stackToolCount()))}</div>
+    <hr class="wb-divider">
+    ${groups.map(g => `
+      <div class="wb-section">
+        <div class="wb-section-title">${esc(g.title)}</div>
+        ${g.note ? `<div class="wb-note">${esc(g.note)}</div>` : ''}
+        ${g.lines.map(l => `
+          <div class="wb-bullet"><b>${esc(l.label)}:</b> ${esc(l.items.join(', '))}</div>`).join('')}
+      </div>`).join('')}
+  `
+}
+
+/**
  * The same offer the terminal's `coffee` command prints, in a window.
  *
  * The address is never typed here — it comes from DONATION, so all three modes
@@ -463,6 +490,8 @@ export function initDesktop(appState) {
     renderLegal, { width: 620, height: 480 })
   // The terminal's `coffee` command had no equivalent here or in business, so
   // two interfaces out of three simply did not carry the offer.
+  registerApp('tools', () => PONYTAIL.LOCALE[state?.lang || 'EN']?.SECTION_TITLES?.STACK || 'Toolbox',
+    SVG.tools, renderTools, { width: 620, height: 460 })
   registerApp('coffee', () => coffeeTitle(PONYTAIL.LOCALE[state?.lang || 'EN']?.COFFEE || {}), SVG.coffee,
     renderCoffee, { width: 420, height: 260 })
   registerApp('settings', () => _('SETTINGS') || 'Settings', SVG.settings, renderSettings, {

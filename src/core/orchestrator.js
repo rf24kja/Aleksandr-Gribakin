@@ -14,9 +14,10 @@ import { attribution } from '../lib/attribution.js';
 import { webProjects } from '../data/webProjects.js';
 import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../data/process.js';
 import { wireCopyButtons } from '../lib/copy.js';
+import { stackGroups, stackToolCount } from '../data/stack.js';
 import {
   renderStatCards, wireStatCards, animateStatValues,
-  renderDashboard, animateDashboard,
+  renderDashboard, animateDashboard, esc,
 } from '../lib/statsUI.js';
 
 export default class PortfolioOrchestrator {
@@ -80,6 +81,7 @@ export default class PortfolioOrchestrator {
     this._renderCategoryTabs();
     this._renderProjects();
     this._renderAchievements();
+    this._renderStack();
     this._renderProcess();
     this._renderFooter();
     this._applyI18n();
@@ -94,6 +96,7 @@ export default class PortfolioOrchestrator {
     this._renderCategoryTabs();
     this._renderProjects();
     this._renderAchievements();
+    this._renderStack();
     this._renderProcess();
     this._renderFooter();
     this._applyI18n();
@@ -169,6 +172,43 @@ export default class PortfolioOrchestrator {
           </button>`).join('')}
       </div>`;
     if (!existing) anchor.parentNode.insertBefore(section, anchor);
+  }
+
+  /**
+   * The toolbox, folded shut, after the work and before "how I work".
+   *
+   * Two hundred and seventy-five names laid out flat would bury the ten client
+   * cases that are the strongest thing on this page, and a wall of logos is
+   * what a portfolio does when it has nothing else to show. So each area opens
+   * on demand and the page stays the length it was. It is also kept clear of
+   * the statistics: the "Technologies in Production" tile counts what the
+   * described work used, and this list answers a different question.
+   */
+  _renderStack() {
+    const anchor = document.getElementById('processOverlay') || document.getElementById('ctaSection');
+    if (!anchor) return;
+    const t = this._l().SECTION_TITLES || {};
+    const groups = stackGroups(this.s.lang);
+    const section = document.getElementById('stackOverlay') || document.createElement('div');
+    section.className = 'section-overlay';
+    section.id = 'stackOverlay';
+    section.innerHTML = `
+      <h2 class="section-title">${esc(t.STACK || 'Toolbox')}</h2>
+      <p class="section-sub">${esc((t.STACK_SUB || '').replace('{n}', stackToolCount()))}</p>
+      <div class="stack-groups">
+        ${groups.map((g) => `
+          <details class="stack-group">
+            <summary><span class="sg-title">${esc(g.title)}</span><span class="sg-count">${
+  new Set(g.lines.flatMap((l) => l.items)).size}</span></summary>
+            ${g.note ? `<p class="sg-note">${esc(g.note)}</p>` : ''}
+            ${g.lines.map((l) => `
+              <div class="sg-line">
+                <span class="sg-label">${esc(l.label)}</span>
+                <span class="sg-items">${l.items.map((i) => `<span class="sg-item">${esc(i)}</span>`).join('')}</span>
+              </div>`).join('')}
+          </details>`).join('')}
+      </div>`;
+    if (!section.parentNode) anchor.parentNode.insertBefore(section, anchor);
   }
 
   /**

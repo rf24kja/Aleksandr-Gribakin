@@ -96,6 +96,33 @@ function facesMissing(page) {
   });
 }
 
+test.describe('a font is fetched once and then remembered', () => {
+  test('every font address carries a fingerprint of its contents', async ({ page }) => {
+    await boot(page, 'business');
+    const { urls, unhashed } = await page.evaluate(() => {
+      const found = [...document.querySelectorAll('style')]
+        .flatMap((s) => [...s.textContent.matchAll(/url\('(\/fonts\/[^']+)'\)/g)].map((m) => m[1]));
+      return { urls: found, unhashed: found.filter((u) => !/\.[0-9a-f]{8}\.woff2$/.test(u)) };
+    });
+    expect(urls.length, 'no font URLs in the document at all').toBeGreaterThan(10);
+    expect(unhashed, `font URLs with no content hash: ${unhashed.join(', ')}`).toEqual([]);
+  });
+
+  test('the cache promise and the fingerprint are declared together', async () => {
+    // Read rather than requested: the header is Vercel's to apply and cannot be
+    // seen from `vite preview`. What a test can hold is the pair — a year of
+    // `immutable` is only honest while the names change with the bytes, and the
+    // test above is what keeps that true.
+    const { readFile } = await import('node:fs/promises');
+    const cfg = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
+    const rule = cfg.headers.find((h) => h.source.startsWith('/fonts/'));
+    expect(rule, 'vercel.json declares no cache rule for /fonts/').toBeTruthy();
+    const cache = rule.headers.find((h) => h.key.toLowerCase() === 'cache-control');
+    expect(cache.value).toMatch(/immutable/);
+    expect(cache.value).toMatch(/max-age=\d{7,}/);
+  });
+});
+
 test.describe('the form can be filled by someone who cannot see it', () => {
   test('every field carries a name of its own', async ({ page }) => {
     await boot(page, 'business');
@@ -141,5 +168,55 @@ test.describe('the page names its own parts', () => {
     const box = await link.boundingBox();
     expect(box.height, `consent policy link is ${Math.round(box.height)}px tall`)
       .toBeGreaterThanOrEqual(MIN_INLINE_TAP);
+  });
+});
+
+test.describe('the toolbox is the same list in every mode', () => {
+  // 275 names, and the number in the copy is computed from the data rather than
+  // typed into it — the project's first rule, applied one level down.
+  const SAMPLE = ['Temporal', 'Qdrant', 'Traefik', 'ccxt', 'Keycloak'];
+
+  test('business folds it shut and opens on demand', async ({ page }) => {
+    await boot(page, 'business');
+    const groups = page.locator('#stackOverlay .stack-group');
+    await expect(groups).toHaveCount(15);
+    expect(await groups.first().evaluate((d) => d.open)).toBe(false);
+    await groups.first().locator('summary').click();
+    await expect(groups.first().locator('.sg-item').first()).toBeVisible();
+  });
+
+  test('desktop has an app for it', async ({ page }) => {
+    await boot(page, 'desktop');
+    const icon = page.locator('.desk-icon[data-app="tools"]');
+    await expect(icon).toHaveCount(1);
+    await icon.dblclick();
+    const win = page.locator('.desk-window').first();
+    await expect(win).toBeVisible();
+    for (const name of SAMPLE) await expect(win).toContainText(name);
+  });
+
+  test('the terminal lists the areas and opens one', async ({ page }) => {
+    await boot(page, 'terminal');
+    await expect(page.locator('.tsh-window')).toBeVisible({ timeout: 15_000 });
+    const input = page.locator('.tsh-window input');
+    await input.fill('tools');
+    await input.press('Enter');
+    await expect.poll(async () => page.locator('.tsh-log').innerText(), { timeout: 10_000 })
+      .toContain('security');
+    await input.fill('tools security');
+    await input.press('Enter');
+    // The framing sentence travels with the group, in both languages.
+    await expect.poll(async () => page.locator('.tsh-log').innerText(), { timeout: 10_000 })
+      .toMatch(/under contract|по договору/i);
+  });
+
+  test('the count in the copy is the count in the data', async ({ page }) => {
+    await boot(page, 'business');
+    const sub = await page.locator('#stackOverlay .section-sub').innerText();
+    const claimed = Number(sub.match(/\d+/)?.[0]);
+    const counted = await page.evaluate(() => new Set(
+      [...document.querySelectorAll('#stackOverlay .sg-item')].map((e) => e.textContent.trim()),
+    ).size);
+    expect(claimed).toBe(counted);
   });
 });

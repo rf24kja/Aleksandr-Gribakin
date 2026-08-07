@@ -59,6 +59,11 @@ first making a mode that actually shows the canvas.
   between the `fonts:start` / `fonts:end` markers in `index.html` are written by
   `npm run fonts` — edit the family list in `scripts/fonts.mjs`, never the block.
   Nothing on the render path may point at another host: a test asserts it.
+  Each filename carries a hash of its contents, which is what lets `vercel.json`
+  promise a year of `immutable` caching: different bytes take a different
+  address, so a cached copy is never stale. Drop the hash and that promise
+  becomes a year-long lie to every returning visitor — a test asserts this too.
+  JSON takes no comments, so this is the only place that says why.
 
 ## Analytics
 Three counters, all through `src/lib/analytics.js` — nothing else may call

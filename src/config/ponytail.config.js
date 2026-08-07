@@ -7,6 +7,8 @@ const EN = {
   // "Projects & Impact" promised delivered jobs and delivered a method, which
   // is what made the section read as empty. The two are now named apart.
   SECTION_TITLES: {
+      STACK: 'Toolbox',
+      STACK_SUB: '{n} tools across fifteen areas. This is what I can pick up — the counts above are what the work on this page actually used.',
     STATS: 'Impact By The Numbers',
     CAREER: 'Career Timeline',
     PROJECTS: 'Reference Architectures',
@@ -73,7 +75,7 @@ const EN = {
     HINT_LEGAL: 'legal — terms and privacy policy',
     LABEL_EMAIL: 'Email', LABEL_TG: 'Telegram', LABEL_HOURS: 'Hours', LABEL_REPLY: 'Reply',
     WEB_EMPTY: 'No client cases published yet.',
-    HEAD_STACK: 'TECHNOLOGY', HEAD_MILESTONES: 'MILESTONES', HEAD_TRANSMIT: 'TRANSMIT',
+    HEAD_STACK: 'TECHNOLOGY', HEAD_TOOLS: 'TOOLBOX', HINT_TOOLS: 'tools <group> for one area', HEAD_MILESTONES: 'MILESTONES', HEAD_TRANSMIT: 'TRANSMIT',
     HEAD_METRICS: 'KEY METRICS', HEAD_FEATURES: 'FEATURES',
     CMD: {
       HELP: 'this list', WHOAMI: 'who you are talking to', ABOUT: 'the short version',
@@ -82,7 +84,7 @@ const EN = {
       WEB: 'client sites, and one case in full',
       PROCESS_CMD: 'how I work: hours, estimates, handover',
       LEGAL_CMD: 'terms, invoicing and the privacy policy',
-      STACK: 'technology, by how often it appears', ACH: 'milestones, or one in full',
+      STACK: 'technology, by how often it appears', TOOLS: 'the whole toolbox, by area', ACH: 'milestones, or one in full',
       CONTACT: 'send a message from here', LANG: 'switch language', MODE: 'leave for another interface',
       NEOFETCH: 'the obligatory one', COFFEE: 'buy me one', HISTORY: 'what you have typed',
       CLEAR: 'wipe the screen', EXIT: 'back to the standard view',
@@ -191,6 +193,8 @@ const RU = {
   ROLE: 'Lead Full Stack & DevOps Engineer',
   INTRO_SUB: 'Строю системы, которые масштабируются. Автоматизирую то, что никогда не должно было делаться руками.',
   SECTION_TITLES: {
+      STACK: 'Инструментарий',
+      STACK_SUB: '{n} инструментов в пятнадцати областях. Это то, за что я могу взяться, — а цифры выше считаются по работам с этой страницы.',
     STATS: 'Влияние в цифрах',
     CAREER: 'Карьерный путь',
     PROJECTS: 'Отработанные архитектуры',
@@ -251,7 +255,7 @@ const RU = {
     HINT_LEGAL: 'legal — условия и политика конфиденциальности',
     LABEL_EMAIL: 'Почта', LABEL_TG: 'Telegram', LABEL_HOURS: 'График', LABEL_REPLY: 'Ответ',
     WEB_EMPTY: 'Клиентские кейсы пока не опубликованы.',
-    HEAD_STACK: 'ТЕХНОЛОГИИ', HEAD_MILESTONES: 'ВЕХИ', HEAD_TRANSMIT: 'ПЕРЕДАЧА',
+    HEAD_STACK: 'ТЕХНОЛОГИИ', HEAD_TOOLS: 'ИНСТРУМЕНТЫ', HINT_TOOLS: 'tools <группа> — одна область', HEAD_MILESTONES: 'ВЕХИ', HEAD_TRANSMIT: 'ПЕРЕДАЧА',
     HEAD_METRICS: 'КЛЮЧЕВЫЕ МЕТРИКИ', HEAD_FEATURES: 'ВОЗМОЖНОСТИ',
     CMD: {
       HELP: 'этот список', WHOAMI: 'с кем вы говорите', ABOUT: 'коротко о главном',
@@ -260,7 +264,7 @@ const RU = {
       WEB: 'клиентские сайты и один кейс целиком',
       PROCESS_CMD: 'как я работаю: часы, оценка, сдача',
       LEGAL_CMD: 'условия, инвойсы и политика конфиденциальности',
-      STACK: 'технологии по частоте появления', ACH: 'вехи или одна целиком',
+      STACK: 'технологии по частоте появления', TOOLS: 'весь инструментарий по областям', ACH: 'вехи или одна целиком',
       CONTACT: 'отправить сообщение прямо отсюда', LANG: 'сменить язык', MODE: 'уйти в другой интерфейс',
       NEOFETCH: 'та самая команда', COFFEE: 'угостить кофе', HISTORY: 'что вы вводили',
       CLEAR: 'очистить экран', EXIT: 'вернуться к обычному виду',

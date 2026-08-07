@@ -31,6 +31,7 @@
  * Run `npm run fonts` after changing the families below.
  */
 import { mkdir, writeFile, readFile, readdir, unlink } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -99,10 +100,16 @@ async function main() {
     const src = body.match(/url\((https:\/\/fonts\.gstatic\.com[^)]+)\)/)?.[1];
     if (!src) continue;
 
-    const name = `${slug(family)}-${style}-${weight.replace(/\s+/g, '_')}-${subset}.woff2`;
     const file = await fetch(src, { headers: { 'User-Agent': UA } });
-    if (!file.ok) throw new Error(`${name}: ${file.status}`);
+    if (!file.ok) throw new Error(`${src}: ${file.status}`);
     const buf = Buffer.from(await file.arrayBuffer());
+    // The fingerprint is what makes the year-long cache in vercel.json safe to
+    // promise. With a fixed name, a later `npm run fonts` would ship different
+    // bytes under an address every returning visitor had been told to trust for
+    // a year, and there would be no way to reach them. Different bytes,
+    // different name, and the old answer simply stops being asked for.
+    const hash = createHash('sha256').update(buf).digest('hex').slice(0, 8);
+    const name = `${slug(family)}-${style}-${weight.replace(/\s+/g, '_')}-${subset}.${hash}.woff2`;
     await writeFile(join(OUT_DIR, name), buf);
     bytes += buf.length;
 
