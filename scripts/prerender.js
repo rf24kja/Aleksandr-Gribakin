@@ -253,13 +253,36 @@ function casePage(shell, lang, item, canonical, prefix) {
   const l = PONYTAIL.LOCALE[lang];
   const L = l.WEB_LABELS || {};
   const beat = (label, body) => (body ? `<h3>${esc(label)}</h3>\n        <p>${esc(body)}</p>` : '');
+  const list = (label, items) => (items?.length
+    ? `<h3>${esc(label)}</h3>\n        <ul>${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`
+    : '');
+  // The numbers reach the document as text. The bars are drawn by the app, and
+  // a crawler — or a reader with scripts off — would otherwise get a case
+  // stripped of exactly the part that makes it a case.
+  const metricLine = (m) => {
+    const unit = m.unit ? ` ${m.unit}` : '';
+    const val = (v, d) => (d || `${v}${unit}`);
+    if (m.before !== undefined && m.after !== undefined) {
+      return `${m.label}: ${val(m.before, m.displayBefore)} → ${val(m.after, m.displayAfter)}`;
+    }
+    if (m.after !== undefined) return `${m.label}: ${val(m.after, m.displayAfter)}`;
+    return `${m.label}: ${m.delta || ''}`;
+  };
+  const metrics = (item.metrics || []).length
+    ? `<h3>${esc(L.RESULTS || 'In numbers')}</h3>
+        <ul>${item.metrics.map((m) => `<li>${esc(metricLine(m))}${m.note ? ` — ${esc(m.note)}` : ''}</li>`).join('')}</ul>`
+    : '';
+
   const body = `
       <article class="prerender-detail" data-prerendered="case">
         <h2>${esc(item.name)}</h2>
         <p class="prerender-meta">${esc([item.sector, item.period, item.capacity].filter(Boolean).join(' · '))}</p>
         ${beat(L.SITUATION, item.situation)}
         ${beat(L.WORK, item.work)}
+        ${list(L.SCOPE, item.scope)}
+        ${metrics}
         ${beat(L.OUTCOME, item.outcome)}
+        ${list(L.COMPLEXITY, item.complexity)}
         ${beat(L.EVIDENCE, item.evidence)}
         ${item.stack?.length ? `<h3>${esc(L.STACK || 'Stack')}</h3>
         <p>${esc(item.stack.join(' · '))}</p>` : ''}
