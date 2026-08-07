@@ -12,6 +12,7 @@
     "lint": "eslint src/",
     "format": "prettier --write src/",
     "prerender": "node scripts/prerender.js",
+    "fonts": "node scripts/fonts.mjs",
     "test": "playwright test",
     "test:ui": "playwright test --ui"
   },

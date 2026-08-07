@@ -32,7 +32,6 @@ const EN = {
     BEFORE: 'before', AFTER: 'after', RESULT: 'result',
     UNNAMED: 'Client not named at their request',
   },
-  BOOT_LINES: ['DECRYPTING_IDENTITY... OK', 'SCANNING_CREDENTIALS... OK', 'LOADING_PORTFOLIO... OK', 'ESTABLISHING_SECURE_CHANNEL... OK', 'WELCOME://ALEKSANDR.GRIBAKIN'],
   // Headline numbers are computed in src/lib/stats.js from the content below —
   // only their wording lives here, so a figure can never contradict the data.
   STATS_LABELS: {
@@ -216,7 +215,6 @@ const RU = {
     BEFORE: 'было', AFTER: 'стало', RESULT: 'итог',
     UNNAMED: 'Заказчик не называется по его просьбе',
   },
-  BOOT_LINES: ['ДЕШИФРОВКА_ЛИЧНОСТИ... OK', 'ПРОВЕРКА_ПОЛНОМОЧИЙ... OK', 'ЗАГРУЗКА_ПОРТФОЛИО... OK', 'УСТАНОВКА_БЕЗОПАСНОГО_КАНАЛА... OK', 'ДОБРО_ПОЖАЛОВАТЬ://АЛЕКСАНДР.ГРИБАКИН'],
   STATS_LABELS: {
     EXPERIENCE: 'Лет в продакшене',
     EXPERIENCE_HINT: 'В продакшене с {year} года — мигрировал то, что нельзя было останавливать',

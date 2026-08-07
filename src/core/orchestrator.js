@@ -36,7 +36,6 @@ export default class PortfolioOrchestrator {
     // three — which is what _detectLocale used to do by returning a constant.
     this.s.init();
 
-    await this._bootSequence();
     this._renderContent();
     this._wireLanguageToggle();
     this._wireForm();
@@ -68,52 +67,6 @@ export default class PortfolioOrchestrator {
     startAmbient(0.4);
     initOnUserGesture();
     return this;
-  }
-
-  // --- Boot ---
-  async _bootSequence() {
-    const boot = document.getElementById('bootScreen');
-    if (!boot) return;
-    const lines = this._l().BOOT_LINES;
-    const lineEls = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      const el = document.createElement('div');
-      el.className = 'boot-line';
-      boot.appendChild(el);
-      lineEls.push(el);
-    }
-    boot.querySelector('.boot-line')?.remove();
-
-    const cursor = document.createElement('div');
-    cursor.className = 'boot-line cursor-blink';
-    cursor.style.marginTop = '6px';
-    cursor.style.opacity = '1';
-    cursor.textContent = '█';
-    boot.appendChild(cursor);
-
-    for (let i = 0; i < lines.length; i++) {
-      lineEls[i].classList.add('active', 'done');
-      await this._typeText(lineEls[i], lines[i], 20);
-      await new Promise((r) => setTimeout(r, 180));
-    }
-    cursor.remove();
-
-    await new Promise((r) => setTimeout(r, 400));
-    boot.classList.add('hidden');
-    await new Promise((r) => setTimeout(r, 800));
-    boot.remove();
-  }
-
-  _typeText(el, text, speed = 25) {
-    return new Promise((resolve) => {
-      let i = 0;
-      const iv = setInterval(() => {
-        el.textContent = text.slice(0, i + 1);
-        i++;
-        if (i >= text.length) { clearInterval(iv); resolve(); }
-      }, speed);
-    });
   }
 
   // --- Content ---
