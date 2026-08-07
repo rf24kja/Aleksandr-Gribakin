@@ -1,13 +1,16 @@
 /**
  * The full working stack, as the owner listed it.
  *
- * Kept apart from PROJECTS on purpose, and never fed into techFrequency(). The
- * "Technologies in Production" tile counts what appears in described work: a
- * number that means "these were used on the jobs on this page". This file
- * answers a different question — what the owner can pick up — and mixing the
- * two would quietly turn a measured figure into a claim about tools that no
- * case on the site mentions. Rule two of the project, one level down: two kinds
- * of claim, two places, each labelled as what it is.
+ * Never fed into techFrequency(), which counts what the described work used.
+ * The two are related but not the same claim, and the page now says how: this
+ * file is the whole, and the technologies named in the cases are the part of it
+ * with evidence behind them — "N of M", both numbers computed.
+ *
+ * That fraction only stays arithmetic while every technology a case names also
+ * lives here. Twenty-one did not when this list arrived: the languages were
+ * group headings rather than entries, and Linux, Git, Make, AWS and GCP were
+ * the kind of thing nobody writes down. They are entries now, and a test fails
+ * the moment a case names something this file has never heard of.
  *
  * Order is the owner's. Groups are rendered in it, and nothing here is sorted
  * by "importance" — that judgement is not the site's to make.
@@ -18,6 +21,7 @@ export const STACK_GROUPS = [
     id: 'go',
     title: { EN: 'Go', RU: 'Go' },
     lines: [
+      { label: { EN: 'Language', RU: 'Язык' }, items: ['Go'] },
       { label: { EN: 'Frameworks and routing', RU: 'Фреймворки и роутинг' }, items: ['Gin', 'Echo', 'Chi', 'Fiber'] },
       { label: { EN: 'Databases', RU: 'Работа с БД' }, items: ['GORM', 'sqlx', 'pgx'] },
       { label: { EN: 'RPC and concurrency', RU: 'RPC и конкурентность' }, items: ['gRPC', 'Protocol Buffers', 'context', 'sync/atomic'] },
@@ -31,6 +35,7 @@ export const STACK_GROUPS = [
     id: 'python',
     title: { EN: 'Python', RU: 'Python' },
     lines: [
+      { label: { EN: 'Language', RU: 'Язык' }, items: ['Python'] },
       { label: { EN: 'Backend', RU: 'Бэкенд' }, items: ['FastAPI', 'Flask', 'Django', 'asyncio'] },
       { label: { EN: 'Analytics and data', RU: 'Аналитика и данные' }, items: ['Pandas', 'NumPy', 'SciPy', 'Polars', 'DuckDB'] },
       { label: { EN: 'Scraping and HTTP', RU: 'Парсинг и HTTP' }, items: ['httpx', 'aiohttp', 'BeautifulSoup', 'Scrapy', 'Playwright'] },
@@ -44,10 +49,11 @@ export const STACK_GROUPS = [
     id: 'js',
     title: { EN: 'JavaScript and TypeScript', RU: 'JavaScript и TypeScript' },
     lines: [
+      { label: { EN: 'Languages', RU: 'Языки' }, items: ['JavaScript', 'TypeScript'] },
       { label: { EN: 'Frameworks', RU: 'Фреймворки' }, items: ['React', 'Next.js', 'Vue.js', 'Node.js', 'Express', 'NestJS', 'Astro'] },
       { label: { EN: 'State and data', RU: 'Состояние и данные' }, items: ['Redux', 'Zustand', 'Pinia', 'TanStack Query', 'SWR'] },
       { label: { EN: 'Build', RU: 'Сборка' }, items: ['Vite', 'esbuild', 'SWC', 'Webpack', 'Babel'] },
-      { label: { EN: 'Styling', RU: 'Стилизация' }, items: ['Tailwind CSS', 'PostCSS', 'Sass/SCSS', 'CSS Modules'] },
+      { label: { EN: 'Styling', RU: 'Стилизация' }, items: ['CSS', 'Tailwind CSS', 'PostCSS', 'Sass/SCSS', 'CSS Modules'] },
       { label: { EN: 'UI and animation', RU: 'UI и анимация' }, items: ['shadcn/ui', 'Radix UI', 'Headless UI', 'Framer Motion'] },
       { label: { EN: 'Forms and validation', RU: 'Формы и валидация' }, items: ['Zod', 'React Hook Form', 'Valibot'] },
       { label: { EN: 'API layer', RU: 'API-слой' }, items: ['OpenAPI/Swagger', 'tRPC', 'GraphQL', 'WebSocket', 'SSE'] },
@@ -58,6 +64,7 @@ export const STACK_GROUPS = [
     id: 'php',
     title: { EN: 'PHP', RU: 'PHP' },
     lines: [
+      { label: { EN: 'Language', RU: 'Язык' }, items: ['PHP'] },
       { label: { EN: 'Frameworks', RU: 'Фреймворки' }, items: ['Laravel', 'Symfony'] },
       { label: { EN: 'CMS and e-commerce', RU: 'CMS и e-commerce' }, items: ['1С-Битрикс', 'WordPress', 'WooCommerce'] },
       { label: { EN: 'Tooling', RU: 'Инструментарий' }, items: ['Composer', 'PHPUnit', 'PHPStan', 'Psalm'] },
@@ -104,7 +111,7 @@ export const STACK_GROUPS = [
     id: 'data',
     title: { EN: 'Storage, cache, search', RU: 'Хранение, кеш, поиск' },
     lines: [
-      { label: { EN: 'Relational', RU: 'Реляционные' }, items: ['PostgreSQL', 'MySQL', 'MariaDB'] },
+      { label: { EN: 'Relational', RU: 'Реляционные' }, items: ['PostgreSQL', 'Patroni', 'PgBouncer', 'MySQL', 'MariaDB'] },
       { label: { EN: 'NoSQL and in-memory', RU: 'NoSQL и in-memory' }, items: ['Redis', 'MongoDB', 'Memcached'] },
       { label: { EN: 'BaaS and embedded', RU: 'BaaS и встраиваемые' }, items: ['Supabase', 'SQLite'] },
       { label: { EN: 'Time series and analytics', RU: 'Временные ряды и аналитика' }, items: ['ClickHouse', 'TimescaleDB', 'DuckDB'] },
@@ -127,22 +134,23 @@ export const STACK_GROUPS = [
     id: 'infra',
     title: { EN: 'Infrastructure, networks, DevOps, IaC', RU: 'Инфраструктура, сети, DevOps, IaC' },
     lines: [
+      { label: { EN: 'Base', RU: 'База' }, items: ['Linux', 'Git', 'Make'] },
       { label: { EN: 'Containers', RU: 'Контейнеризация' }, items: ['Docker', 'Docker Compose'] },
-      { label: { EN: 'Orchestration', RU: 'Оркестрация' }, items: ['k3s', 'Kubernetes'] },
+      { label: { EN: 'Orchestration', RU: 'Оркестрация' }, items: ['k3s', 'Kubernetes', 'Helm', 'Kustomize', 'ArgoCD'] },
       { label: { EN: 'Web servers and proxies', RU: 'Веб-серверы и прокси' }, items: ['Nginx', 'Caddy', 'HAProxy', 'Traefik'] },
-      { label: { EN: 'CI/CD', RU: 'CI/CD' }, items: ['GitHub Actions', 'GitLab CI', 'semantic-release', 'Conventional Commits'] },
+      { label: { EN: 'CI/CD', RU: 'CI/CD' }, items: ['GitHub Actions', 'GitLab CI', 'Jenkins', 'semantic-release', 'Conventional Commits'] },
       { label: { EN: 'Infrastructure as Code', RU: 'Infrastructure as Code' }, items: ['Terraform', 'Pulumi', 'Ansible'] },
       { label: { EN: 'Secrets', RU: 'Секреты' }, items: ['HashiCorp Vault', 'SOPS', 'age'] },
       { label: { EN: 'Registries and updates', RU: 'Реестры и автообновление' }, items: ['Watchtower', 'GitHub Container Registry'] },
       { label: { EN: 'Process automation', RU: 'Автоматизация процессов' }, items: ['n8n'] },
-      { label: { EN: 'Edge, CDN, hosting', RU: 'Edge, CDN, хостинг' }, items: ['Cloudflare (Workers, R2, Turnstile, Zero Trust)', 'Vercel', 'Fastly'] },
+      { label: { EN: 'Edge, CDN, hosting', RU: 'Edge, CDN, хостинг' }, items: ['AWS', 'GCP', 'Cloudflare (Workers, R2, Turnstile, Zero Trust)', 'Vercel', 'Fastly', 'CDN'] },
     ],
   },
   {
     id: 'observability',
     title: { EN: 'Observability and reliability', RU: 'Наблюдаемость и надёжность' },
     lines: [
-      { label: { EN: 'Metrics', RU: 'Метрики' }, items: ['Prometheus', 'Grafana'] },
+      { label: { EN: 'Metrics', RU: 'Метрики' }, items: ['Prometheus', 'Alertmanager', 'Grafana'] },
       { label: { EN: 'Tracing and logs', RU: 'Трассировка и логи' }, items: ['OpenTelemetry', 'Loki', 'Tempo'] },
       { label: { EN: 'Application errors', RU: 'Ошибки приложения' }, items: ['Sentry'] },
       { label: { EN: 'Availability', RU: 'Доступность' }, items: ['Uptime Kuma', 'healthcheck-эндпоинты', 'SLO и алертинг'] },
@@ -222,4 +230,52 @@ export function stackToolCount() {
   const seen = new Set();
   for (const g of STACK_GROUPS) for (const l of g.lines) for (const i of l.items) seen.add(i);
   return seen.size;
+}
+
+/**
+ * Matches a technology named in the described work to a tool in this file.
+ *
+ * The two lists were written years apart by different hands, so they disagree
+ * on spelling rather than on substance: the cases say NGINX where this file
+ * says Nginx, Vault where it says HashiCorp Vault, OpenAPI where it says
+ * OpenAPI/Swagger. Comparing the strings as-is would have reported those three
+ * as "not in the toolbox" and made the "N of M" line on the page false, which
+ * is the one thing the numbers here are not allowed to be.
+ */
+function variants(tool) {
+  const base = tool.toLowerCase().replace(/\s*\(.*\)\s*/g, '').trim();
+  const out = new Set([base]);
+  for (const part of base.split('/')) out.add(part.trim());
+  // "HashiCorp Vault" answers to "Vault"; "Tailwind CSS" must not answer to
+  // "CSS", so only the last word of a two-word vendor-prefixed name counts.
+  const words = base.split(/\s+/);
+  if (words.length === 2 && /^(hashicorp|apache|microsoft|google|amazon)$/.test(words[0])) {
+    out.add(words[1]);
+  }
+  return out;
+}
+
+/** The tools with work behind them on this site, matched against `labels`. */
+export function backedTools(labels = []) {
+  const wanted = new Set(labels.map((l) => l.toLowerCase().trim()));
+  const backed = new Set();
+  for (const g of STACK_GROUPS) {
+    for (const l of g.lines) {
+      for (const item of l.items) {
+        for (const v of variants(item)) {
+          if (wanted.has(v)) { backed.add(item); break; }
+        }
+      }
+    }
+  }
+  return backed;
+}
+
+/** Work technologies this file does not carry — empty is the invariant. */
+export function unmatchedWorkTech(labels = []) {
+  const covered = new Set();
+  for (const g of STACK_GROUPS) {
+    for (const l of g.lines) for (const item of l.items) for (const v of variants(item)) covered.add(v);
+  }
+  return labels.filter((l) => !covered.has(l.toLowerCase().trim()));
 }

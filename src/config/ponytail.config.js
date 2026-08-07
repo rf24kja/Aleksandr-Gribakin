@@ -8,6 +8,8 @@ const EN = {
   // is what made the section read as empty. The two are now named apart.
   SECTION_TITLES: {
       STACK: 'Toolbox',
+      STACK_BACKED: 'Used in the work described on this page',
+      STACK_BACKED_TITLE: '{n} of them appear in the work described above — most often these:',
       STACK_SUB: '{n} tools across fifteen areas. This is what I can pick up — the counts above are what the work on this page actually used.',
     STATS: 'Impact By The Numbers',
     CAREER: 'Career Timeline',
@@ -60,7 +62,7 @@ const EN = {
   },
   DASHBOARD: {
     TITLE: 'Selection at a glance',
-    PROJECTS: 'projects', TECH: 'technologies', REPOS: 'under NDA', FEATURES: 'shipped features',
+    PROJECTS: 'projects', TECH: 'technologies', TECH_OF: 'of the toolbox, with work on this page', REPOS: 'under NDA', FEATURES: 'shipped features',
     TOP_TECH: 'Most used in this selection',
     SORT: 'Sort', SORT_DEFAULT: 'Default', SORT_SCALE: 'By scale', SORT_STACK: 'By stack depth',
   },
@@ -194,6 +196,8 @@ const RU = {
   INTRO_SUB: 'Строю системы, которые масштабируются. Автоматизирую то, что никогда не должно было делаться руками.',
   SECTION_TITLES: {
       STACK: 'Инструментарий',
+      STACK_BACKED: 'Встречается в описанных на этой странице работах',
+      STACK_BACKED_TITLE: 'Из них {n} встречаются в описанных выше работах — чаще всего эти:',
       STACK_SUB: '{n} инструментов в пятнадцати областях. Это то, за что я могу взяться, — а цифры выше считаются по работам с этой страницы.',
     STATS: 'Влияние в цифрах',
     CAREER: 'Карьерный путь',
@@ -240,7 +244,7 @@ const RU = {
   },
   DASHBOARD: {
     TITLE: 'Выборка в цифрах',
-    PROJECTS: 'проектов', TECH: 'технологий', REPOS: 'под NDA', FEATURES: 'реализованных возможностей',
+    PROJECTS: 'проектов', TECH: 'технологий', TECH_OF: 'из инструментария — с работой на этой странице', REPOS: 'под NDA', FEATURES: 'реализованных возможностей',
     TOP_TECH: 'Чаще всего в этой выборке',
     SORT: 'Сортировка', SORT_DEFAULT: 'По умолчанию', SORT_SCALE: 'По масштабу', SORT_STACK: 'По глубине стека',
   },
