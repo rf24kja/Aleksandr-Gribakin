@@ -114,6 +114,15 @@ export const CONTACTS = {
   telegramUrl: 'https://t.me/amgam24',
 };
 
+// The address the terminal's `coffee` command has always printed. It lives here
+// now because business and desktop offer the same thing, and a wallet address
+// typed out three times is a wallet address that will eventually differ in one
+// of them. Wording is in PONYTAIL.LOCALE.COFFEE; only the facts are here.
+export const DONATION = {
+  network: 'USDT TRC-20',
+  address: 'TWTCH2ZhyKvzZU1ph6h1d4vTHpHyJDkN5i',
+};
+
 export const LEGAL = {
   name: { EN: 'Aleksandr Gribakin', RU: 'Александр Грибакин' },
   role: {
