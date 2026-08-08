@@ -3830,26 +3830,20 @@
       .ts-key { width: 11ch; }
       .ts-block { font-size: 10px; }
 
-      /* Seven filters wrapped into three centred lines on a phone, which read
-         as a paragraph of buttons rather than as one control. One scrolling
-         line keeps the section head a single row tall, and a chip clipped at
-         the right edge is the cue that there is more.
+      /* Filters wrap onto as many lines as they need, and every option is
+         readable without scrolling — this row was briefly a sideways-scrolling
+         strip, which fitted one line at the cost of hiding how many choices
+         there were behind the right edge. Left-aligned so the block reads as a
+         control rather than as centred prose.
          html[data-mode] rather than .cat-tabs: business and terminal each set
-         flex-wrap on [data-mode] .cat-tabs, which outranks a bare class however
-         late it comes. Only business actually shows the row, but the rule is
-         written for whichever mode does. */
+         their own alignment on [data-mode] .cat-tabs, which outranks a bare
+         class however late it comes. */
       html[data-mode] .cat-tabs {
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         justify-content: flex-start;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        scroll-snap-type: x proximity;
-        /* Room for the focus ring, which the overflow would otherwise clip. */
+        /* Room for the focus ring on the top row. */
         padding-block: 3px;
       }
-      html[data-mode] .cat-tabs::-webkit-scrollbar { display: none; }
-      html[data-mode] .cat-tab { flex: 0 0 auto; scroll-snap-align: start; }
     }
 
     /* --- Touch targets: 44px minimum ---------------------------------- */

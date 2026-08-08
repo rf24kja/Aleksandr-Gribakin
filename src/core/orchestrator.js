@@ -14,7 +14,7 @@ import { attribution } from '../lib/attribution.js';
 import { webProjects } from '../data/webProjects.js';
 import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../data/process.js';
 import { wireCopyButtons } from '../lib/copy.js';
-import { stackGroups, stackToolCount, backedTools } from '../data/stack.js';
+import { stackGroups, stackLayers, stackToolCount, backedTools } from '../data/stack.js';
 import {
   renderStatCards, wireStatCards, animateStatValues, esc,
 } from '../lib/statsUI.js';
@@ -26,6 +26,8 @@ export default class PortfolioOrchestrator {
     this.currentScene = -1;
     this._rendered = false;
     this._activeCat = null;
+    // null is "All": the toolbox opens whole, and a layer narrows it.
+    this._activeLayer = null;
     this._entranceObserver = null;
   }
 
@@ -190,7 +192,6 @@ export default class PortfolioOrchestrator {
     const anchor = document.getElementById('processOverlay') || document.getElementById('ctaSection');
     if (!anchor) return;
     const t = this._l().SECTION_TITLES || {};
-    const groups = stackGroups(this.s.lang);
     // The two layers the section promises: everything, and the part with work
     // on this page. The second is a subset of the first — a test keeps it so,
     // because the copy says "N of M" and that has to stay arithmetic.
@@ -199,23 +200,15 @@ export default class PortfolioOrchestrator {
     const section = document.getElementById('stackOverlay') || document.createElement('div');
     section.className = 'section-overlay';
     section.id = 'stackOverlay';
+    // The sub-line and the backed layer describe the whole toolbox, so the
+    // filter does not touch them: narrowing to "Frontend" narrows the list of
+    // areas, not the claim about how much of the stack has work behind it.
+    const layers = stackLayers(this.s.lang);
     section.innerHTML = `
       <h2 class="section-title">${esc(t.STACK || 'Toolbox')}</h2>
       <p class="section-sub">${esc((t.STACK_SUB || '').replace('{n}', stackToolCount()))}</p>
-      <div class="stack-groups">
-        ${groups.map((g) => `
-          <details class="stack-group">
-            <summary><span class="sg-title">${esc(g.title)}</span><span class="sg-count">${
-  new Set(g.lines.flatMap((l) => l.items)).size}</span></summary>
-            ${g.note ? `<p class="sg-note">${esc(g.note)}</p>` : ''}
-            ${g.lines.map((l) => `
-              <div class="sg-line">
-                <span class="sg-label">${esc(l.label)}</span>
-                <span class="sg-items">${l.items.map((i) => `<span class="sg-item${
-  backed.has(i) ? ' sg-backed' : ''}"${backed.has(i) ? ` title="${esc(t.STACK_BACKED || '')}"` : ''}>${esc(i)}</span>`).join('')}</span>
-              </div>`).join('')}
-          </details>`).join('')}
-      </div>
+      <div class="cat-tabs" id="stackLayers"></div>
+      <div class="stack-groups" id="stackGroups"></div>
       <div class="stack-backed">
         <div class="sb-title">${esc((t.STACK_BACKED_TITLE || '').replace('{n}', backed.size))}</div>
         <div class="sb-bars">
@@ -229,6 +222,45 @@ export default class PortfolioOrchestrator {
         </div>
       </div>`;
     if (!section.parentNode) anchor.parentNode.insertBefore(section, anchor);
+
+    const tabs = section.querySelector('#stackLayers');
+    const chip = (id, label) => `<button type="button" class="cat-tab${
+      id === this._activeLayer ? ' active' : ''}" data-layer="${esc(id || '')}" aria-pressed="${
+      id === this._activeLayer}">${esc(label)}</button>`;
+    tabs.innerHTML = [chip(null, t.STACK_ALL || 'All')]
+      .concat(layers.map((l) => chip(l.id, l.title))).join('');
+    tabs.addEventListener('click', (e) => {
+      const b = e.target.closest('.cat-tab');
+      if (!b) return;
+      this._activeLayer = b.dataset.layer || null;
+      tabs.querySelectorAll('.cat-tab').forEach((x) => {
+        const on = (x.dataset.layer || null) === this._activeLayer;
+        x.classList.toggle('active', on);
+        x.setAttribute('aria-pressed', String(on));
+      });
+      this._renderStackGroups(backed);
+    });
+    this._renderStackGroups(backed);
+  }
+
+  /** The area list alone, so choosing a layer does not rebuild the section. */
+  _renderStackGroups(backed) {
+    const host = document.getElementById('stackGroups');
+    if (!host) return;
+    const t = this._l().SECTION_TITLES || {};
+    const groups = stackGroups(this.s.lang, this._activeLayer);
+    host.innerHTML = groups.map((g) => `
+      <details class="stack-group">
+        <summary><span class="sg-title">${esc(g.title)}</span><span class="sg-count">${
+  new Set(g.lines.flatMap((l) => l.items)).size}</span></summary>
+        ${g.note ? `<p class="sg-note">${esc(g.note)}</p>` : ''}
+        ${g.lines.map((l) => `
+          <div class="sg-line">
+            <span class="sg-label">${esc(l.label)}</span>
+            <span class="sg-items">${l.items.map((i) => `<span class="sg-item${
+  backed.has(i) ? ' sg-backed' : ''}"${backed.has(i) ? ` title="${esc(t.STACK_BACKED || '')}"` : ''}>${esc(i)}</span>`).join('')}</span>
+          </div>`).join('')}
+      </details>`).join('');
   }
 
   /**
