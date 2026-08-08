@@ -172,15 +172,14 @@ test.describe('the page names its own parts', () => {
 });
 
 test.describe('every filter is visible without scrolling', () => {
-  // A filter row is a promise about how many choices there are. This one was
-  // briefly a sideways-scrolling strip: it fitted one line and hid that fact,
-  // so a phone showed four of seven categories and no sign of the rest. Wrapped
-  // rows are taller and honest. Both filter rows on the page are checked, since
-  // they share .cat-tabs and a rule aimed at one lands on the other.
-  for (const [what, sel] of [['projects', '#catTabs'], ['toolbox', '#stackLayers']]) {
-    test(`${what}: no chip is clipped or off-screen`, async ({ page }) => {
+  // A filter row is a promise about how many choices there are. The toolbox's
+  // row was briefly a sideways-scrolling strip: it fitted one line and hid that
+  // fact, so a phone showed four of eight layers and no sign of the rest.
+  // Wrapped rows are taller and honest.
+  {
+    test('no chip is clipped or off-screen', async ({ page }) => {
       await boot(page, 'business');
-      const row = page.locator(sel);
+      const row = page.locator('#stackLayers');
       await row.scrollIntoViewIfNeeded();
       const bad = await row.evaluate((el) => {
         const box = el.getBoundingClientRect();
@@ -299,40 +298,29 @@ test.describe('the toolbox is the same list in every mode', () => {
   });
 });
 
-test.describe('one section about technology, two layers inside', () => {
-  test('the toolbox marks what has work behind it, and counts it', async ({ page }) => {
+test.describe('one section about technology, one layer inside', () => {
+  // The section used to carry a second layer: a "47 of them appear in the work
+  // above" line with frequency bars, and the entries it counted highlighted in
+  // the list. The owner removed both — the bars repeated the statistics further
+  // up the page. These guard the removal rather than the feature: a highlight
+  // with no legend, or a second chart of the same subject, should not come back
+  // by accident.
+  test('nothing above or inside the toolbox restates a fraction of it', async ({ page }) => {
     await boot(page, 'business');
-    const counts = await page.evaluate(async () => {
-      for (const d of document.querySelectorAll('#stackOverlay .stack-group')) d.open = true;
-      const all = [...document.querySelectorAll('#stackOverlay .sg-item')];
-      return {
-        total: new Set(all.map((e) => e.textContent.trim())).size,
-        backed: new Set(all.filter((e) => e.classList.contains('sg-backed'))
-          .map((e) => e.textContent.trim())).size,
-        claimed: Number(document.querySelector('#stackOverlay .sb-title')
-          ?.textContent.match(/\d+/)?.[0]),
-      };
-    });
-    // The lower layer is a subset of the upper one, and the sentence says so
-    // with the same number the markup carries.
-    expect(counts.backed).toBe(counts.claimed);
-    expect(counts.backed).toBeLessThan(counts.total);
-    expect(counts.backed).toBeGreaterThan(0);
-  });
-
-  // The "N of M" claim used to be duplicated in a summary panel above the
-  // project grid. That panel is gone — on a phone its four tiles wrapped into a
-  // broken row and one of them ("17 under NDA") repeated the project count — so
-  // the toolbox below is now the only place the fraction is stated, and this
-  // guards that it is still stated there rather than lost with the panel.
-  test('the toolbox is the one place the fraction is claimed', async ({ page }) => {
-    await boot(page, 'business');
-    const title = await page.locator('#stackOverlay .sb-title').innerText();
-    expect(Number(title.match(/\d+/)?.[0]), `no number in the backed-tools title: ${title}`)
-      .toBeGreaterThan(0);
-    // And nothing above the project grid repeats it.
+    await expect(page.locator('#stackOverlay .sb-title')).toHaveCount(0);
+    await expect(page.locator('#stackOverlay .sb-bars')).toHaveCount(0);
+    await expect(page.locator('#stackOverlay .sg-backed')).toHaveCount(0);
+    // The panel above the project grid went earlier, for the same reason.
     await expect(page.locator('.pdash-tile')).toHaveCount(0);
     await expect(page.locator('#projectsDash')).toHaveCount(0);
+  });
+
+  test('the toolbox still states its own size, computed', async ({ page }) => {
+    await boot(page, 'business');
+    const sub = await page.locator('#stackOverlay .section-sub').innerText();
+    const { stackToolCount } = await import('../src/data/stack.js');
+    expect(sub, `sub-line does not carry the tool count: ${sub}`)
+      .toContain(String(stackToolCount()));
   });
 
   test('every technology named in the work exists in the toolbox', async () => {
