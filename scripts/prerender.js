@@ -28,6 +28,9 @@ import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../src/data/
 import { computeStats } from '../src/lib/stats.js';
 import { webProjects } from '../src/data/webProjects.js';
 import { PRIVACY } from '../src/data/privacy.js';
+import { CONTACTS } from '../src/data/process.js';
+import { techFrequency } from '../src/lib/stats.js';
+import { backedTools } from '../src/data/stack.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -135,7 +138,113 @@ function applyLocaleText(html, locale) {
   );
 }
 
-function setHead(html, { lang, canonical, title, description }) {
+
+// ---------------------------------------------------------------------------
+// Structured data
+//
+// The shell carries one Person block, on every page, saying the same thing
+// about the homepage eighty-one times. A crawler landing on a case page was
+// told who the author is and nothing whatsoever about the page it was reading:
+// no title, no subject, no place in the site. This replaces that block per page
+// with a graph — the person, the site, where the page sits, and what it is.
+//
+// Everything below is read from the same data the page renders from. Nothing
+// here is asserted that the page does not already say in words, because
+// structured data that outruns the visible page is the definition of the kind
+// of markup Google penalises — and this site's own first rule is that nothing
+// on it should be unverifiable.
+// ---------------------------------------------------------------------------
+
+const PERSON_ID = `${ORIGIN}/#person`;
+const SITE_ID = `${ORIGIN}/#website`;
+
+/**
+ * The person, once, with a stable @id every other node points at.
+ *
+ * knowsAbout is computed rather than typed: the technologies named in the work
+ * described on this site, matched against the toolbox. The hand-written list it
+ * replaces claimed fifteen topics chosen by hand, which is a claim; this is a
+ * count. sameAs stays empty until there are real profiles to point at — an
+ * identity assertion at a URL that is not yours is worse than none.
+ */
+function personNode() {
+  const sd = PONYTAIL.SEO?.structuredData || {};
+  const evidenced = [...backedTools(techFrequency(PONYTAIL.LOCALE.EN.PROJECTS)
+    .map((f) => f.label))].sort();
+  return {
+    '@type': 'Person',
+    '@id': PERSON_ID,
+    name: sd.name || 'Aleksandr Gribakin',
+    givenName: sd.givenName,
+    familyName: sd.familyName,
+    url: ORIGIN,
+    image: `${ORIGIN}/og-cover.jpg`,
+    jobTitle: PONYTAIL.LOCALE.EN.ROLE,
+    // The site's own address, not a personal mailbox. These disagreed: the
+    // markup published a gmail while every visible surface said hello@.
+    email: `mailto:${CONTACTS.email}`,
+    knowsAbout: evidenced,
+    sameAs: Array.isArray(sd.sameAs) ? sd.sameAs : [],
+  };
+}
+
+function siteNode(lang) {
+  return {
+    '@type': 'WebSite',
+    '@id': SITE_ID,
+    url: ORIGIN,
+    name: 'dev24.pro',
+    inLanguage: lang.toLowerCase(),
+    publisher: { '@id': PERSON_ID },
+  };
+}
+
+/** Where the page sits. Two levels: the site, then the page itself. */
+function breadcrumbNode(canonical, name, prefix) {
+  return {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'dev24.pro', item: `${ORIGIN}/${prefix}` },
+      { '@type': 'ListItem', position: 2, name, item: canonical },
+    ],
+  };
+}
+
+/**
+ * A subpage as an article: it is prose about one subject, with an author.
+ *
+ * `about` carries the subject as a named thing rather than leaving it buried in
+ * prose, which is the whole reason to emit any of this — it is the difference
+ * between "a page mentioning PostgreSQL" and "a page about this piece of work".
+ */
+function articleNode({ canonical, lang, headline, description, about, datePublished }) {
+  const node = {
+    '@type': 'Article',
+    '@id': `${canonical}#article`,
+    mainEntityOfPage: canonical,
+    headline,
+    description,
+    inLanguage: lang.toLowerCase(),
+    author: { '@id': PERSON_ID },
+    publisher: { '@id': PERSON_ID },
+    isPartOf: { '@id': SITE_ID },
+  };
+  if (about) node.about = about;
+  if (datePublished) node.datePublished = datePublished;
+  return node;
+}
+
+/** The graph as a script tag, replacing whatever the shell shipped. */
+function ldScript(nodes) {
+  const graph = { '@context': 'https://schema.org', '@graph': nodes.filter(Boolean) };
+  // No escaping games: JSON with </script> in it would break the document, and
+  // the only way that string reaches here is a data file containing markup.
+  const json = JSON.stringify(graph, null, 2);
+  if (json.includes('</script')) throw new Error('prerender: markup inside structured data');
+  return `<script type="application/ld+json">${json}</script>`;
+}
+
+function setHead(html, { lang, canonical, title, description, ld = [] }) {
   let out = html
     .replace(/<html([^>]*)\slang="[^"]*"/, `<html$1 lang="${lang}"`)
     .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
@@ -159,7 +268,12 @@ function setHead(html, { lang, canonical, title, description }) {
     + `<link rel="alternate" hreflang="x-default" href="${ORIGIN}/" />\n  `
     + '<link rel="canonical"',
   );
-  return out;
+
+  // One block per page, not the shell's copy of the homepage's.
+  return out.replace(
+    /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
+    ldScript([personNode(), siteNode(lang), ...ld]),
+  );
 }
 
 function localePage(shell, lang, canonical, prefix = '') {
@@ -175,6 +289,8 @@ function localePage(shell, lang, canonical, prefix = '') {
     canonical,
     title: seo.title || `${l.NAME || 'Aleksandr Gribakin'} — ${l.ROLE}`,
     description: seo.description || l.BIO,
+    // The homepage is the person's own page; it needs no breadcrumb to itself.
+    ld: [{ '@type': 'ProfilePage', '@id': `${canonical}#page`, mainEntity: { '@id': PERSON_ID } }],
   });
 }
 
@@ -206,6 +322,14 @@ function projectPage(shell, lang, project, detail, canonical, prefix) {
     canonical,
     title: `${project.name} — ${l.ROLE}`,
     description: project.desc,
+    ld: [
+      breadcrumbNode(canonical, project.name, prefix),
+      articleNode({
+        canonical, lang, headline: project.name, description: project.desc,
+        // The stack is the subject, and it is already printed on the card.
+        about: project.stack.split(',').map((t) => ({ '@type': 'Thing', name: t.trim() })),
+      }),
+    ],
   });
 }
 
@@ -239,6 +363,13 @@ function careerPage(shell, lang, entry, detail, canonical, prefix) {
     canonical,
     title: `${entry.role} @ ${entry.company} (${entry.period}) — ${l.ROLE}`,
     description: entry.desc,
+    ld: [
+      breadcrumbNode(canonical, `${entry.role} @ ${entry.company}`, prefix),
+      articleNode({
+        canonical, lang, headline: `${entry.role} @ ${entry.company}`, description: entry.desc,
+        about: [{ '@type': 'Organization', name: entry.company }],
+      }),
+    ],
   });
 }
 
@@ -295,6 +426,15 @@ function casePage(shell, lang, item, canonical, prefix) {
     canonical,
     title: `${item.name} — ${l.ROLE}`,
     description: item.outcome || item.situation || item.sector,
+    ld: [
+      breadcrumbNode(canonical, item.name, prefix),
+      articleNode({
+        canonical, lang, headline: item.name,
+        description: item.outcome || item.situation || item.sector,
+        // Named clients only. An entry under NDA is not identified here either.
+        about: item.named ? [{ '@type': 'Organization', name: item.name }] : null,
+      }),
+    ],
   });
 }
 
@@ -325,6 +465,11 @@ function privacyPage(shell, lang, canonical, prefix) {
     canonical,
     title: `${doc.title} — dev24.pro`,
     description: doc.intro,
+    ld: [
+      breadcrumbNode(canonical, doc.title, prefix),
+      { '@type': 'WebPage', '@id': `${canonical}#page`, name: doc.title,
+        description: doc.intro, inLanguage: lang.toLowerCase(), isPartOf: { '@id': SITE_ID } },
+    ],
   });
 }
 
@@ -346,6 +491,14 @@ function achievementPage(shell, lang, entry, detail, canonical, prefix) {
     canonical,
     title: `${entry.title} (${entry.year}) — ${l.ROLE}`,
     description: entry.desc,
+    ld: [
+      breadcrumbNode(canonical, entry.title, prefix),
+      articleNode({
+        canonical, lang, headline: entry.title, description: entry.desc,
+        // The year is the only date this site actually knows for a milestone.
+        datePublished: String(entry.year),
+      }),
+    ],
   });
 }
 
