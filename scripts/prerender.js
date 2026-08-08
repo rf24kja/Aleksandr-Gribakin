@@ -29,8 +29,7 @@ import { computeStats } from '../src/lib/stats.js';
 import { webProjects } from '../src/data/webProjects.js';
 import { PRIVACY } from '../src/data/privacy.js';
 import { CONTACTS } from '../src/data/process.js';
-import { techFrequency } from '../src/lib/stats.js';
-import { backedTools } from '../src/data/stack.js';
+import { stackGroups } from '../src/data/stack.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -161,16 +160,20 @@ const SITE_ID = `${ORIGIN}/#website`;
 /**
  * The person, once, with a stable @id every other node points at.
  *
- * knowsAbout is computed rather than typed: the technologies named in the work
- * described on this site, matched against the toolbox. The hand-written list it
- * replaces claimed fifteen topics chosen by hand, which is a claim; this is a
- * count. sameAs stays empty until there are real profiles to point at — an
- * identity assertion at a URL that is not yours is worse than none.
+ * knowsAbout is the whole toolbox — all 294, read from the same file the page
+ * renders. The visible page says "294 tools across fifteen areas, this is what
+ * I can pick up", so anything narrower here would have the markup understating
+ * the site, which is the same fault as overstating it in the other direction.
+ * It replaces fifteen topics that were typed by hand.
+ *
+ * sameAs stays empty until there are real profiles to point at — an identity
+ * assertion at a URL that is not yours is worse than none.
  */
 function personNode() {
   const sd = PONYTAIL.SEO?.structuredData || {};
-  const evidenced = [...backedTools(techFrequency(PONYTAIL.LOCALE.EN.PROJECTS)
-    .map((f) => f.label))].sort();
+  const everything = [...new Set(
+    stackGroups('EN').flatMap((g) => g.lines.flatMap((line) => line.items)),
+  )];
   return {
     '@type': 'Person',
     '@id': PERSON_ID,
@@ -183,7 +186,7 @@ function personNode() {
     // The site's own address, not a personal mailbox. These disagreed: the
     // markup published a gmail while every visible surface said hello@.
     email: `mailto:${CONTACTS.email}`,
-    knowsAbout: evidenced,
+    knowsAbout: everything,
     sameAs: Array.isArray(sd.sameAs) ? sd.sameAs : [],
   };
 }

@@ -99,19 +99,17 @@ test.describe('every page says what it is, in a form a machine can read', () => 
     expect(typeOf(graph, 'Person').email).toBe(`mailto:${CONTACTS.email}`);
   });
 
-  test('what he is said to know is counted, not chosen', async ({ request }) => {
-    const [{ default: PONYTAIL }, stats, stack] = await Promise.all([
-      import('../src/config/ponytail.config.js'),
-      import('../src/lib/stats.js'),
-      import('../src/data/stack.js'),
-    ]);
-    const evidenced = stack.backedTools(
-      stats.techFrequency(PONYTAIL.LOCALE.EN.PROJECTS).map((f) => f.label),
-    );
+  test('the markup claims the whole toolbox, not a subset of it', async ({ request }) => {
+    // The page says "294 tools, this is what I can pick up". The markup once
+    // said 47 — the subset with work behind it on this site — which had the
+    // structured data understating the visible page. Read from the same file
+    // so the two cannot drift apart again in either direction.
+    const { stackGroups, stackToolCount } = await import('../src/data/stack.js');
+    const all = new Set(stackGroups('EN').flatMap((g) => g.lines.flatMap((line) => line.items)));
     const { graph } = await ld(request, '/');
     const known = typeOf(graph, 'Person').knowsAbout;
-    expect(known.length, 'knowsAbout is not the evidenced set').toBe(evidenced.size);
-    expect([...known].sort()).toEqual([...evidenced].sort());
+    expect(known.length, 'knowsAbout is not the whole toolbox').toBe(stackToolCount());
+    expect(new Set(known)).toEqual(all);
   });
 
   test('no identity is asserted at a profile that is not his', async ({ request }) => {
