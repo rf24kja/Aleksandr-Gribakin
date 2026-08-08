@@ -171,6 +171,41 @@ test.describe('the page names its own parts', () => {
   });
 });
 
+test.describe('the project filters stay one control on a phone', () => {
+  // Seven chips used to wrap into three centred lines, so the filter read as a
+  // paragraph of buttons and pushed the first project card below the fold. They
+  // scroll sideways now. Business only: the other two shells carry #catTabs in
+  // the markup but never show it, so there is no row there to measure.
+  test('the filters occupy one row', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'the wrap only happens at phone widths');
+    await boot(page, 'business');
+    const tabs = page.locator('#catTabs .cat-tab');
+    await expect(tabs.first()).toBeVisible();
+    const tops = await tabs.evaluateAll(
+      (els) => [...new Set(els.map((e) => Math.round(e.getBoundingClientRect().top)))],
+    );
+    expect(tops.length, `filters sit on ${tops.length} lines: tops ${tops.join(', ')}`).toBe(1);
+  });
+
+  test('a filter clipped off the right edge can still be reached', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'the row only overflows at phone widths');
+    await boot(page, 'business');
+    const row = page.locator('#catTabs');
+    // Overflowing is the point — but only if the overflow is scrollable, which
+    // is the half of this that a stray `overflow: hidden` would silently break.
+    const { scrollable, overflows } = await row.evaluate((el) => ({
+      scrollable: getComputedStyle(el).overflowX === 'auto',
+      overflows: el.scrollWidth > el.clientWidth,
+    }));
+    expect(scrollable, 'the filter row does not scroll sideways').toBe(true);
+    expect(overflows, 'the filter row does not actually overflow — nothing to reach').toBe(true);
+    const last = page.locator('#catTabs .cat-tab').last();
+    await last.scrollIntoViewIfNeeded();
+    await last.click();
+    await expect(last).toHaveAttribute('aria-pressed', 'true');
+  });
+});
+
 test.describe('the toolbox is the same list in every mode', () => {
   // 275 names, and the number in the copy is computed from the data rather than
   // typed into it — the project's first rule, applied one level down.
@@ -242,14 +277,19 @@ test.describe('one section about technology, two layers inside', () => {
     expect(counts.backed).toBeGreaterThan(0);
   });
 
-  test('the dashboard tile reads as a part of the whole', async ({ page }) => {
+  // The "N of M" claim used to be duplicated in a summary panel above the
+  // project grid. That panel is gone — on a phone its four tiles wrapped into a
+  // broken row and one of them ("17 under NDA") repeated the project count — so
+  // the toolbox below is now the only place the fraction is stated, and this
+  // guards that it is still stated there rather than lost with the panel.
+  test('the toolbox is the one place the fraction is claimed', async ({ page }) => {
     await boot(page, 'business');
-    const tile = await page.locator('.pdash-tile', { hasText: /инструментар|toolbox/i }).first().innerText()
-      .catch(() => page.locator('#projectsOverlay').innerText());
-    const pair = tile.match(/(\d+)\s*\/\s*(\d+)/);
-    expect(pair, `no "N/M" in the technologies tile: ${tile.slice(0, 120)}`).toBeTruthy();
-    const [, part, whole] = pair.map(Number);
-    expect(part).toBeLessThanOrEqual(whole);
+    const title = await page.locator('#stackOverlay .sb-title').innerText();
+    expect(Number(title.match(/\d+/)?.[0]), `no number in the backed-tools title: ${title}`)
+      .toBeGreaterThan(0);
+    // And nothing above the project grid repeats it.
+    await expect(page.locator('.pdash-tile')).toHaveCount(0);
+    await expect(page.locator('#projectsDash')).toHaveCount(0);
   });
 
   test('every technology named in the work exists in the toolbox', async () => {

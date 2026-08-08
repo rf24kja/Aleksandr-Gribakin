@@ -8,7 +8,7 @@ import {
   setProjectLocale, closeProjectDetail,
 } from '../lib/projectDetail.js';
 import { CAREER_DETAIL } from '../data/projects.js';
-import { computeStats, computeProjectAggregates, projectSortValue, techFrequency } from '../lib/stats.js';
+import { computeStats, techFrequency } from '../lib/stats.js';
 import { trackEvent } from '../lib/analytics.js';
 import { attribution } from '../lib/attribution.js';
 import { webProjects } from '../data/webProjects.js';
@@ -16,8 +16,7 @@ import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../data/process.j
 import { wireCopyButtons } from '../lib/copy.js';
 import { stackGroups, stackToolCount, backedTools } from '../data/stack.js';
 import {
-  renderStatCards, wireStatCards, animateStatValues,
-  renderDashboard, animateDashboard, esc,
+  renderStatCards, wireStatCards, animateStatValues, esc,
 } from '../lib/statsUI.js';
 
 export default class PortfolioOrchestrator {
@@ -27,7 +26,6 @@ export default class PortfolioOrchestrator {
     this.currentScene = -1;
     this._rendered = false;
     this._activeCat = null;
-    this._sortMode = 'default';
     this._entranceObserver = null;
   }
 
@@ -352,17 +350,12 @@ export default class PortfolioOrchestrator {
     }
   }
 
-  /** Projects matching the active category, in the active sort order. */
+  /** Projects matching the active category, in the order the data lists them. */
   _visibleProjects() {
     const all = this._l().PROJECTS;
-    const filtered = this._activeCat === this._l().CATEGORIES[0]
+    return this._activeCat === this._l().CATEGORIES[0]
       ? [...all]
       : all.filter((p) => p.cat === this._activeCat);
-    if (this._sortMode === 'default') return filtered;
-    const lang = this.s.lang;
-    return filtered.sort(
-      (a, b) => projectSortValue(lang, b, this._sortMode) - projectSortValue(lang, a, this._sortMode),
-    );
   }
 
   _renderProjects() {
@@ -383,26 +376,7 @@ export default class PortfolioOrchestrator {
       </button>`
     ).join('');
 
-    this._renderDashboard(filtered);
     this._wireCardTilt();
-  }
-
-  _renderDashboard(visible) {
-    const panel = document.getElementById('projectsDash');
-    if (!panel) return;
-    const agg = computeProjectAggregates(this.s.lang, visible);
-    panel.innerHTML = renderDashboard(agg, this._l().DASHBOARD || {}, this._sortMode, stackToolCount());
-    animateDashboard(panel);
-
-    if (!panel.dataset.wired) {
-      panel.dataset.wired = '1';
-      panel.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-sort]');
-        if (!btn) return;
-        this._sortMode = btn.dataset.sort;
-        this._renderProjects();
-      });
-    }
   }
 
   _wireCardTilt() {
