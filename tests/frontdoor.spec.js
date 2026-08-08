@@ -171,38 +171,81 @@ test.describe('the page names its own parts', () => {
   });
 });
 
-test.describe('the project filters stay one control on a phone', () => {
-  // Seven chips used to wrap into three centred lines, so the filter read as a
-  // paragraph of buttons and pushed the first project card below the fold. They
-  // scroll sideways now. Business only: the other two shells carry #catTabs in
-  // the markup but never show it, so there is no row there to measure.
-  test('the filters occupy one row', async ({ page, isMobile }) => {
-    test.skip(!isMobile, 'the wrap only happens at phone widths');
-    await boot(page, 'business');
-    const tabs = page.locator('#catTabs .cat-tab');
-    await expect(tabs.first()).toBeVisible();
-    const tops = await tabs.evaluateAll(
-      (els) => [...new Set(els.map((e) => Math.round(e.getBoundingClientRect().top)))],
-    );
-    expect(tops.length, `filters sit on ${tops.length} lines: tops ${tops.join(', ')}`).toBe(1);
+test.describe('every filter is visible without scrolling', () => {
+  // A filter row is a promise about how many choices there are. This one was
+  // briefly a sideways-scrolling strip: it fitted one line and hid that fact,
+  // so a phone showed four of seven categories and no sign of the rest. Wrapped
+  // rows are taller and honest. Both filter rows on the page are checked, since
+  // they share .cat-tabs and a rule aimed at one lands on the other.
+  for (const [what, sel] of [['projects', '#catTabs'], ['toolbox', '#stackLayers']]) {
+    test(`${what}: no chip is clipped or off-screen`, async ({ page }) => {
+      await boot(page, 'business');
+      const row = page.locator(sel);
+      await row.scrollIntoViewIfNeeded();
+      const bad = await row.evaluate((el) => {
+        const box = el.getBoundingClientRect();
+        const out = [];
+        for (const c of el.querySelectorAll('.cat-tab')) {
+          const r = c.getBoundingClientRect();
+          // Half a pixel of slack: sub-pixel layout rounds either way.
+          if (r.right > box.right + 0.5 || r.left < box.left - 0.5) out.push(c.textContent.trim());
+        }
+        return { clipped: out, scrolls: el.scrollWidth > el.clientWidth + 1 };
+      });
+      expect(bad.clipped, `chips escaping the row: ${bad.clipped.join(', ')}`).toEqual([]);
+      expect(bad.scrolls, 'the row scrolls sideways, so some chips are hidden').toBe(false);
+    });
+  }
+});
+
+test.describe('the toolbox filters by layer', () => {
+  // The owner's fifteen areas are four languages and eleven domains, which is
+  // not the axis a visitor asks along — they ask "do you do frontend". The tag
+  // therefore sits on the line, and these check the narrowing is real, that it
+  // is reversible, and that nothing was left unclassified.
+  test('every line is classified, or the filter would drop it silently', async () => {
+    const { unclassifiedLines } = await import('../src/data/stack.js');
+    expect(unclassifiedLines()).toEqual([]);
   });
 
-  test('a filter clipped off the right edge can still be reached', async ({ page, isMobile }) => {
-    test.skip(!isMobile, 'the row only overflows at phone widths');
+  test('choosing a layer narrows the areas, and All brings them back', async ({ page }) => {
     await boot(page, 'business');
-    const row = page.locator('#catTabs');
-    // Overflowing is the point — but only if the overflow is scrollable, which
-    // is the half of this that a stray `overflow: hidden` would silently break.
-    const { scrollable, overflows } = await row.evaluate((el) => ({
-      scrollable: getComputedStyle(el).overflowX === 'auto',
-      overflows: el.scrollWidth > el.clientWidth,
-    }));
-    expect(scrollable, 'the filter row does not scroll sideways').toBe(true);
-    expect(overflows, 'the filter row does not actually overflow — nothing to reach').toBe(true);
-    const last = page.locator('#catTabs .cat-tab').last();
-    await last.scrollIntoViewIfNeeded();
-    await last.click();
-    await expect(last).toHaveAttribute('aria-pressed', 'true');
+    const groups = page.locator('#stackOverlay .stack-group');
+    const whole = await groups.count();
+    expect(whole).toBeGreaterThan(1);
+
+    const chips = page.locator('#stackLayers .cat-tab');
+    await expect(chips).toHaveCount(8); // All, plus the seven layers
+    const frontend = page.locator('#stackLayers .cat-tab[data-layer="frontend"]');
+    await frontend.scrollIntoViewIfNeeded();
+    await frontend.click();
+
+    const narrowed = await groups.count();
+    expect(narrowed, 'the layer showed every area, so it filtered nothing').toBeLessThan(whole);
+    expect(narrowed, 'the layer showed no areas at all').toBeGreaterThan(0);
+    await expect(frontend).toHaveAttribute('aria-pressed', 'true');
+
+    await chips.first().click();
+    await expect(groups).toHaveCount(whole);
+  });
+
+  // JavaScript against Backend is the case the whole design exists for: the
+  // area survives the filter, but only the lines that earn it do — the styling
+  // and the components drop out, the server frameworks and the API layer stay.
+  test('a narrowed area lists only the lines of that layer', async ({ page }) => {
+    await boot(page, 'business');
+    const jsGroup = () => page.locator('#stackOverlay .stack-group', { hasText: 'JavaScript' }).first();
+    await jsGroup().click();
+    const whole = await jsGroup().locator('.sg-line').count();
+
+    const backend = page.locator('#stackLayers .cat-tab[data-layer="backend"]');
+    await backend.scrollIntoViewIfNeeded();
+    await backend.click();
+
+    await jsGroup().click();
+    const partial = await jsGroup().locator('.sg-line').count();
+    expect(partial, 'filtering kept every line, so it only hid whole areas').toBeLessThan(whole);
+    expect(partial, 'the area survived with no lines in it').toBeGreaterThan(0);
   });
 });
 

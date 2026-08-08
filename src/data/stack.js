@@ -214,15 +214,198 @@ export const STACK_GROUPS = [
   },
 ];
 
-/** Localised view of one group. */
-export function stackGroups(lang = 'EN') {
+/**
+ * The layers a visitor actually asks about — "do you do frontend, do you do
+ * backend" — laid over a list that is not organised that way.
+ *
+ * The fifteen areas above are the owner's own arrangement: four of them are
+ * languages (Go, Python, PHP, JavaScript) and the rest are domains. A
+ * front-end/back-end question cuts across that grid rather than along it, so
+ * the tag sits on the line, not on the area: inside "JavaScript and
+ * TypeScript" the styling line is front-end and the API layer is both.
+ *
+ * A line may carry several layers, because some genuinely belong to several —
+ * Node.js and React are one line in the owner's list, and splitting his list
+ * to make a filter tidy would be the wrong way round. The consequence is that
+ * the layers overlap and their sizes do not add up to 294, which is why the
+ * chips are named and not counted: a number that cannot be added to its
+ * neighbours has no business being displayed beside them.
+ */
+export const STACK_LAYERS = [
+  { id: 'frontend', title: { EN: 'Frontend', RU: 'Фронтенд' } },
+  { id: 'backend', title: { EN: 'Backend', RU: 'Бэкенд' } },
+  { id: 'data', title: { EN: 'Data', RU: 'Данные' } },
+  { id: 'infra', title: { EN: 'Infrastructure', RU: 'Инфраструктура' } },
+  { id: 'ai', title: { EN: 'AI and LLM', RU: 'AI и LLM' } },
+  { id: 'security', title: { EN: 'Security', RU: 'Безопасность' } },
+  { id: 'testing', title: { EN: 'Testing', RU: 'Тестирование' } },
+];
+
+/**
+ * Which layers each line belongs to, keyed `groupId/English label`.
+ *
+ * Kept beside the list rather than inside it so the owner's own arrangement
+ * stays untouched, and keyed by label rather than by position so reordering a
+ * group cannot silently re-tag it. A test asserts every line is present here:
+ * add a line to the toolbox without saying where it belongs and the suite
+ * fails rather than the filter quietly dropping it.
+ */
+const LINE_LAYERS = {
+  'go/Language': ['backend'],
+  'go/Frameworks and routing': ['backend'],
+  'go/Databases': ['backend', 'data'],
+  'go/RPC and concurrency': ['backend'],
+  'go/Task queues': ['backend'],
+  'go/Configuration': ['backend'],
+  'go/Testing': ['testing'],
+  'go/Tooling': ['backend'],
+
+  'python/Language': ['backend'],
+  'python/Backend': ['backend'],
+  'python/Analytics and data': ['data'],
+  'python/Scraping and HTTP': ['backend'],
+  'python/Validation and typing': ['backend'],
+  'python/Task queues': ['backend'],
+  'python/Testing': ['testing'],
+  'python/Tooling': ['backend'],
+
+  // React and Node.js share a line in the owner's list, so this one is both.
+  'js/Languages': ['frontend', 'backend'],
+  'js/Frameworks': ['frontend', 'backend'],
+  'js/State and data': ['frontend'],
+  'js/Build': ['frontend'],
+  'js/Styling': ['frontend'],
+  'js/UI and animation': ['frontend'],
+  'js/Forms and validation': ['frontend'],
+  'js/API layer': ['frontend', 'backend'],
+  'js/Component docs': ['frontend'],
+
+  'php/Language': ['backend'],
+  'php/Frameworks': ['backend'],
+  'php/CMS and e-commerce': ['backend'],
+  'php/Tooling': ['backend'],
+
+  'mobile/Cross-platform': ['frontend'],
+  'mobile/Native layers': ['frontend'],
+  'mobile/Sync without a server': ['frontend', 'backend'],
+  'mobile/Client cryptography': ['frontend', 'security'],
+
+  'ai/Local inference': ['ai'],
+  'ai/Provider APIs': ['ai'],
+  'ai/Formats and quantisation': ['ai'],
+  'ai/RAG and orchestration': ['ai'],
+  'ai/Structured output and agents': ['ai'],
+  'ai/Embeddings': ['ai'],
+  'ai/Vector stores': ['ai', 'data'],
+  'ai/Agent tooling protocol': ['ai'],
+  'ai/Evaluation and tracing': ['ai', 'testing'],
+
+  'seo/Structured data': ['frontend'],
+  'seo/Social previews': ['frontend'],
+  'seo/Indexing': ['frontend'],
+  'seo/AI visibility': ['frontend', 'ai'],
+  'seo/Core Web Vitals': ['frontend'],
+  'seo/Internationalisation': ['frontend'],
+
+  'data/Relational': ['data'],
+  'data/NoSQL and in-memory': ['data'],
+  'data/BaaS and embedded': ['data'],
+  'data/Time series and analytics': ['data'],
+  'data/Vector and graph': ['data', 'ai'],
+  'data/Full-text search': ['data'],
+  'data/Migrations': ['data', 'backend'],
+
+  'queues/Brokers': ['backend'],
+  'queues/Lightweight queues': ['backend'],
+  'queues/Durable orchestration': ['backend'],
+  'queues/Patterns': ['backend'],
+
+  'infra/Base': ['infra'],
+  'infra/Containers': ['infra'],
+  'infra/Orchestration': ['infra'],
+  'infra/Web servers and proxies': ['infra'],
+  'infra/CI/CD': ['infra'],
+  'infra/Infrastructure as Code': ['infra'],
+  'infra/Secrets': ['infra', 'security'],
+  'infra/Registries and updates': ['infra'],
+  'infra/Process automation': ['infra'],
+  'infra/Edge, CDN, hosting': ['infra'],
+
+  'observability/Metrics': ['infra'],
+  'observability/Tracing and logs': ['infra'],
+  'observability/Application errors': ['infra'],
+  'observability/Availability': ['infra'],
+
+  'security/Audit platform': ['security'],
+  'security/Discovery and scanning': ['security'],
+  'security/Web testing': ['security'],
+  'security/Post-exploitation and AD': ['security'],
+  'security/Network analysis': ['security'],
+  'security/Storage access': ['security'],
+  'security/Shift-left on own code': ['security', 'testing'],
+
+  'trading/Market processing': ['data'],
+  'trading/Indicators': ['data'],
+  'trading/Exchange connectors': ['data', 'backend'],
+  'trading/Strategy frameworks': ['data'],
+  'trading/Quote storage': ['data'],
+  'trading/Visualisation': ['data', 'frontend'],
+  'trading/Pipeline orchestration': ['data', 'infra'],
+
+  'testing/Unit and integration': ['testing'],
+  'testing/End to end': ['testing'],
+  'testing/Dependency isolation': ['testing'],
+  'testing/Load': ['testing', 'infra'],
+  'testing/Contract testing': ['testing'],
+
+  'auth/Tokens and protocols': ['backend', 'security'],
+  'auth/Identity providers': ['backend', 'security'],
+  'auth/Client authorisation': ['frontend', 'backend'],
+  'auth/Payments': ['backend'],
+  'auth/Anti-bot': ['backend', 'security'],
+};
+
+/** Layers of one line, by the key the map above is written in. */
+export function layersOf(groupId, labelEN) {
+  return LINE_LAYERS[`${groupId}/${labelEN}`] || [];
+}
+
+/** Lines this file carries that nobody has classified — empty is the invariant. */
+export function unclassifiedLines() {
+  const out = [];
+  for (const g of STACK_GROUPS) {
+    for (const l of g.lines) {
+      if (!LINE_LAYERS[`${g.id}/${l.label.EN}`]) out.push(`${g.id}/${l.label.EN}`);
+    }
+  }
+  return out;
+}
+
+/** Localised layers, dropping any that no line claims. */
+export function stackLayers(lang = 'EN') {
+  const key = lang === 'RU' ? 'RU' : 'EN';
+  const used = new Set(Object.values(LINE_LAYERS).flat());
+  return STACK_LAYERS.filter((l) => used.has(l.id))
+    .map((l) => ({ id: l.id, title: l.title[key] || l.title.EN }));
+}
+
+/**
+ * Localised view of one group, optionally narrowed to a layer.
+ *
+ * Narrowing drops lines rather than whole areas, and then drops the areas left
+ * with nothing — so "Frontend" inside "JavaScript and TypeScript" shows the
+ * styling and the components without the server frameworks beside them.
+ */
+export function stackGroups(lang = 'EN', layer = null) {
   const key = lang === 'RU' ? 'RU' : 'EN';
   return STACK_GROUPS.map((g) => ({
     id: g.id,
     title: g.title[key] || g.title.EN,
     note: g.note ? (g.note[key] || g.note.EN) : null,
-    lines: g.lines.map((l) => ({ label: l.label[key] || l.label.EN, items: l.items })),
-  }));
+    lines: g.lines
+      .filter((l) => !layer || layersOf(g.id, l.label.EN).includes(layer))
+      .map((l) => ({ label: l.label[key] || l.label.EN, items: l.items })),
+  })).filter((g) => g.lines.length > 0);
 }
 
 /** Distinct tool count, computed rather than typed — as every figure here is. */

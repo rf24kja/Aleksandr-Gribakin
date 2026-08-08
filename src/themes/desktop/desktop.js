@@ -5,7 +5,7 @@ import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/p
 import { renderStatsForDesktop, renderMetricGrid, animateMetricGrid, renderCaseMetrics, animateCaseMetrics, esc } from '../../lib/statsUI.js'
 import { webProjects, webProjectCount } from '../../data/webProjects.js'
 import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../../data/process.js'
-import { stackGroups, stackToolCount } from '../../data/stack.js'
+import { stackGroups, stackLayers, stackToolCount } from '../../data/stack.js'
 import { wireCopyButtons } from '../../lib/copy.js'
 import { PRIVACY } from '../../data/privacy.js'
 import WindowManager from './windowManager.js'
@@ -384,17 +384,29 @@ function renderMail() {
 /**
  * The toolbox as a window, one area per row.
  *
+ * Narrowed by the same layers the business mode offers, so the two shells
+ * answer "do you do frontend" the same way. The terminal keeps its own
+ * `tools <area>` argument instead: layer ids and area ids collide (ai, data,
+ * infra, security, testing are both), and one namespace cannot mean two things.
+ *
  * Kept out of the About window's statistics on purpose: those count what the
  * described work used, and this is what the owner can pick up. Two claims of
  * different kinds, in two places, each labelled as what it is.
  */
+let toolsLayer = null
+
 function renderTools() {
   const lang = state?.lang || 'EN'
-  const groups = stackGroups(lang)
+  const groups = stackGroups(lang, toolsLayer)
   const t = PONYTAIL.LOCALE[lang]?.SECTION_TITLES || {}
+  const chip = (id, label) => `<button type="button" class="cat-tab${
+    id === toolsLayer ? ' active' : ''}" data-layer="${esc(id || '')}" aria-pressed="${
+    id === toolsLayer}">${esc(label)}</button>`
   return `
     <div class="wb-title">${esc(t.STACK || 'Toolbox')}</div>
     <div class="wb-sub">${esc((t.STACK_SUB || '').replace('{n}', stackToolCount()))}</div>
+    <div class="cat-tabs wb-layers">${
+  [chip(null, t.STACK_ALL || 'All')].concat(stackLayers(lang).map(l => chip(l.id, l.title))).join('')}</div>
     <hr class="wb-divider">
     ${groups.map(g => `
       <div class="wb-section">
@@ -549,6 +561,17 @@ export function initDesktop(appState) {
   // The policy link inside the Mail window opens the Legal window rather than
   // navigating away: leaving the desktop to read a policy and having to find
   // your way back is not what this mode promises.
+  // Redraws the toolbox window in place. Before the [data-open] handler below,
+  // which would otherwise read the click as a row opening a detail.
+  winContainer.addEventListener('click', (e) => {
+    const chip = e.target.closest('.cat-tab[data-layer]')
+    if (!chip) return
+    e.stopPropagation()
+    toolsLayer = chip.dataset.layer || null
+    const body = chip.closest('.window-body')
+    if (body) body.innerHTML = renderTools()
+  })
+
   winContainer.addEventListener('click', (e) => {
     const legal = e.target.closest('[data-open-legal]')
     if (!legal) return
