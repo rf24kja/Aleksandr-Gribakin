@@ -60,12 +60,6 @@ const EN = {
     RANK: 'rank {r} of {n} in this portfolio', OF_TARGET: 'of 100%',
     SCALE_NOTE: 'Bar length shows how this value sits against every comparable metric across all projects.',
   },
-  DASHBOARD: {
-    TITLE: 'Selection at a glance',
-    PROJECTS: 'projects', TECH: 'technologies', TECH_OF: 'of the toolbox, with work on this page', REPOS: 'under NDA', FEATURES: 'shipped features',
-    TOP_TECH: 'Most used in this selection',
-    SORT: 'Sort', SORT_DEFAULT: 'Default', SORT_SCALE: 'By scale', SORT_STACK: 'By stack depth',
-  },
   TERMINAL: {
     ACCESS: 'ACCESS GRANTED',
     BOOT_CLIENT: 'Client', BOOT_SESSION: 'Session', BOOT_TARGET: 'Target', BOOT_SHELL: 'Shell',
@@ -121,7 +115,11 @@ const EN = {
     { period: '2011–2013', role: 'Web Developer', company: 'Digital agency', desc: 'LAMP on physical servers: PHP and MySQL, Apache and nginx tuned by hand, logs and crashes read the same way. An agency with no dedicated sysadmins — whoever wrote the site kept it running after handover. That is where the habit of looking at an application together with the machine it lives on comes from.' },
   ],
   CATEGORIES: ['All', ...CATEGORIES],
-  CATEGORY_LABELS: ['All', 'Infrastructure & Cloud', 'CI/CD & Automation', 'Backend', 'Data & Storage', 'Frontend', 'Observability'],
+  // Display names only — the keys above are what `cat` matches on. "Storage &
+  // search" rather than "Data & storage" so the filter and the toolbox area it
+  // corresponds to ("Storage, cache, search") are recognisably the same subject
+  // to someone who scrolls from one to the other.
+  CATEGORY_LABELS: ['All', 'Infrastructure & Cloud', 'CI/CD & Automation', 'Backend', 'Storage & Search', 'Frontend', 'Observability'],
   PROJECTS: [
     // --- Infrastructure (4) ---
     { id: 'bare-to-cloud', name: 'Bare-Metal to Hybrid Cloud', cat: 'Infrastructure', tag: 'Migration', stack: 'Terraform, Ansible, AWS, GCP, Linux', desc: 'Staged migration off physical servers into hybrid cloud. Inventory first, then parity, then traffic — never all three at once.', metric: '30-40% cost cut / staged cutover' },
@@ -242,12 +240,6 @@ const RU = {
     RANK: 'место {r} из {n} в портфолио', OF_TARGET: 'из 100%',
     SCALE_NOTE: 'Длина полосы показывает, как значение выглядит на фоне всех сопоставимых метрик по всем проектам.',
   },
-  DASHBOARD: {
-    TITLE: 'Выборка в цифрах',
-    PROJECTS: 'проектов', TECH: 'технологий', TECH_OF: 'из инструментария — с работой на этой странице', REPOS: 'под NDA', FEATURES: 'реализованных возможностей',
-    TOP_TECH: 'Чаще всего в этой выборке',
-    SORT: 'Сортировка', SORT_DEFAULT: 'По умолчанию', SORT_SCALE: 'По масштабу', SORT_STACK: 'По глубине стека',
-  },
   TERMINAL: {
     ACCESS: 'ДОСТУП РАЗРЕШЁН',
     BOOT_CLIENT: 'Клиент', BOOT_SESSION: 'Сессия', BOOT_TARGET: 'Цель', BOOT_SHELL: 'Оболочка',
@@ -303,7 +295,7 @@ const RU = {
     { period: '2011–2013', role: 'Web Developer', company: 'Веб-студия', desc: 'LAMP на физических серверах: PHP и MySQL, настройка Apache и nginx руками, разбор логов и падений так же. Студия без выделенных админов — за работу сайта после сдачи отвечал тот, кто его написал. Оттуда привычка смотреть на приложение вместе с машиной, на которой оно живёт.' },
   ],
   CATEGORIES: ['All', ...CATEGORIES],
-  CATEGORY_LABELS: ['Все', 'Инфраструктура и облако', 'CI/CD и автоматизация', 'Бэкенд', 'Данные и хранилища', 'Фронтенд', 'Наблюдаемость'],
+  CATEGORY_LABELS: ['Все', 'Инфраструктура и облако', 'CI/CD и автоматизация', 'Бэкенд', 'Хранение и поиск', 'Фронтенд', 'Наблюдаемость'],
   PROJECTS: [
     // --- Infrastructure (4) ---
     { id: 'bare-to-cloud', name: 'Bare-metal → гибридное облако', cat: 'Infrastructure', tag: 'Migration', stack: 'Terraform, Ansible, AWS, GCP, Linux', desc: 'Поэтапный уход с физических серверов в гибридное облако. Сначала инвентаризация, потом паритет, потом трафик — но не всё сразу.', metric: '-30-40% расходов / поэтапно' },

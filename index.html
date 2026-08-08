@@ -2256,7 +2256,6 @@
        small text needs. Fills and borders keep the brand colour; only the
        glyphs move to the darker twin. */
     [data-mode="business"][data-theme="light"] .intro-cta,
-    [data-mode="business"][data-theme="light"] .pdash-sort-btn.active,
     [data-mode="business"][data-theme="light"] .lang-toggle {
       color: var(--b-accent-text);
       background: #fff;
@@ -2363,8 +2362,6 @@
       [data-mode="business"] .project-card .stack,
       [data-mode="business"] .project-card .metric { font-size: 11px; }
       [data-mode="business"] .project-card .desc { font-size: 12px; }
-      [data-mode="business"] .pdash-tech-title,
-      [data-mode="business"] .pdash-title { font-size: 10px; }
       [data-mode="business"] .achievement-item .ach-year { font-size: 11px; }
       [data-mode="business"] .project-card .card-inner {
         padding: 14px 16px;
@@ -3241,8 +3238,7 @@
 
     /* --- Buttons that used to be divs: strip the UA chrome ------------ */
     .stat-trigger,
-    .cat-tab,
-    .pdash-sort-btn {
+    .cat-tab {
       font: inherit;
       color: inherit;
       background: none;
@@ -3363,77 +3359,6 @@
       text-align: right;
     }
     .sb-value em { font-style: normal; color: var(--sb-dim); font-size: .85em; }
-
-    /* --- Projects dashboard ------------------------------------------ */
-    .projects-dash {
-      margin: 0 0 20px;
-      padding: 16px 18px;
-      background: var(--sb-surface);
-      border: 1px solid var(--sb-border);
-      border-radius: var(--sb-radius);
-    }
-    .pdash-head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .pdash-title {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: var(--sb-dim);
-    }
-    .pdash-sort { display: flex; gap: 4px; }
-    .pdash-sort-btn {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 4px 10px;
-      border-radius: 5px;
-      color: var(--sb-dim);
-      border: 1px solid transparent;
-      transition: color .18s, border-color .18s, background .18s;
-    }
-    .pdash-sort-btn:hover { color: var(--sb-text); }
-    .pdash-sort-btn.active {
-      color: var(--sb-accent);
-      border-color: var(--sb-accent);
-      background: color-mix(in srgb, var(--sb-accent) 10%, transparent);
-    }
-    .pdash-sort-btn:focus-visible { outline: 2px solid var(--sb-accent); outline-offset: 2px; }
-    .pdash-tiles {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .pdash-tile { display: flex; flex-direction: column; gap: 2px; }
-    .pdash-num {
-      font-family: var(--font-mono);
-      font-size: 22px;
-      font-weight: 300;
-      color: var(--sb-accent);
-      font-variant-numeric: tabular-nums;
-      line-height: 1.1;
-    }
-    .pdash-cap {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--sb-dim);
-    }
-    .pdash-tech-title {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--sb-dim);
-      margin-bottom: 8px;
-    }
 
     /* --- Project detail: key metrics ---------------------------------- */
     .pd-charts {
@@ -3894,7 +3819,6 @@
       .sb-track { grid-area: track; }
 
       .pd-charts { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
-      .pdash-num { font-size: 18px; }
 
       /* ASCII bars are fixed-width monospace; let them scroll rather than
          run off the edge where the clipped part is unreachable. */
@@ -3905,6 +3829,27 @@
       }
       .ts-key { width: 11ch; }
       .ts-block { font-size: 10px; }
+
+      /* Seven filters wrapped into three centred lines on a phone, which read
+         as a paragraph of buttons rather than as one control. One scrolling
+         line keeps the section head a single row tall, and a chip clipped at
+         the right edge is the cue that there is more.
+         html[data-mode] rather than .cat-tabs: business and terminal each set
+         flex-wrap on [data-mode] .cat-tabs, which outranks a bare class however
+         late it comes. Only business actually shows the row, but the rule is
+         written for whichever mode does. */
+      html[data-mode] .cat-tabs {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        scroll-snap-type: x proximity;
+        /* Room for the focus ring, which the overflow would otherwise clip. */
+        padding-block: 3px;
+      }
+      html[data-mode] .cat-tabs::-webkit-scrollbar { display: none; }
+      html[data-mode] .cat-tab { flex: 0 0 auto; scroll-snap-align: start; }
     }
 
     /* --- Touch targets: 44px minimum ---------------------------------- */
@@ -3918,7 +3863,6 @@
         font-size: 20px;
       }
       .cat-tab { min-height: 44px; min-width: 44px; padding-block: 10px; font-size: 12px; }
-      .pdash-sort-btn { min-height: 44px; padding: 12px 14px; font-size: 11px; }
       .lang-toggle { min-height: 44px; min-width: 44px; }
       /* Padding plus line-height landed these at 43px — a pixel under, and the
          contact form is the one flow that has to work on a phone. */
@@ -3938,7 +3882,7 @@
       .tagline { font-size: 11px; }
       .sb-value em { font-size: 10px; }
       .stat-hint, .stat-label, .sb-label, .sb-value,
-      .pdash-cap, .pm-label, .pd-metrics-note, .pd-disclaimer,
+      .pm-label, .pd-metrics-note, .pd-disclaimer,
       /* Mode-scoped so these beat the per-mode rules that set 9px. */
       .settings-label, .settings-hint { font-size: 11px; }
       [data-mode="business"] .pd-tag,
@@ -3974,7 +3918,6 @@
       /* Terminal sections sit inside a permanent scale(0.96), so a 44px box
          renders at 42.2px. 46px lands on 44 after the transform. */
       [data-mode="terminal"] .cat-tab { min-height: 46px; min-width: 46px; }
-      [data-mode="terminal"] .pdash-sort-btn { min-height: 46px; }
 
       /* --- Desktop-mode chrome on touch -----------------------------
          The window controls were 14x14, so a window could not be closed
@@ -4095,7 +4038,6 @@
     <h2 class="section-title" data-i18n="SECTION_TITLES.PROJECTS">Reference Architectures</h2>
     <p class="section-sub" data-i18n="SECTION_TITLES.PROJECTS_SUB">How I solve these classes of problem — the method, not a client list</p>
     <div class="cat-tabs" id="catTabs"></div>
-    <div class="projects-dash" id="projectsDash"></div>
     <div class="projects-grid" id="projectsGrid"></div>
   </div>
 
