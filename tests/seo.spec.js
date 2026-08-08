@@ -44,6 +44,59 @@ test('each of those pages has a canonical of its own', async ({ request }) => {
   expect(html).not.toContain('<link rel="canonical" href="https://dev24.pro/"');
 });
 
+/**
+ * /llms.txt is the site written for something that reads rather than crawls: an
+ * assistant fetches one document and answers from it instead of running the app
+ * and following eighty links. It is generated from the array that builds
+ * sitemap.xml, and these hold it to that — a file that quietly stops listing
+ * half the work is worse than no file, because it still looks authoritative.
+ */
+test.describe('the site has a document written for machines that read', () => {
+  test('it is served as plain text, not as a download or a 404', async ({ request }) => {
+    const res = await request.get('/llms.txt');
+    expect(res.status()).toBe(200);
+    expect(res.headers()['content-type'] || '').toContain('text/plain');
+  });
+
+  test('it lists every English page the sitemap does', async ({ request }) => {
+    const [txt, xml] = await Promise.all([
+      request.get('/llms.txt').then((r) => r.text()),
+      request.get('/sitemap.xml').then((r) => r.text()),
+    ]);
+    const linked = new Set([...txt.matchAll(/\]\((https:\/\/[^)]+)\)/g)].map((m) => m[1]));
+    const missing = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)]
+      .map((m) => m[1])
+      // Russian pages are represented by the one link to the mirror; the
+      // homepage is the document's own subject and needs no entry.
+      .filter((u) => !u.startsWith('https://dev24.pro/ru') && u !== 'https://dev24.pro/'
+        && u !== 'https://dev24.pro/en')
+      .filter((u) => !linked.has(u));
+    expect(missing, `pages the sitemap has and llms.txt does not: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  test('every case and architecture carries a line saying what it is', async ({ request }) => {
+    const txt = await request.get('/llms.txt').then((r) => r.text());
+    const entries = txt.split('\n').filter((line) => line.startsWith('- [')
+      // The two closing links are a policy and a mirror, not work.
+      && !/privacy|Russian version/i.test(line));
+    // Guards the guard: a generator that stopped emitting entries would make
+    // "none of them are bare" true and this test useless. Counted from the
+    // data rather than pinned to a number, so adding a case cannot fail it.
+    const en = PONYTAIL.LOCALE.EN;
+    const expected = webProjects('EN').length + en.PROJECTS.length
+      + en.CAREER.length + en.ACHIEVEMENTS.length;
+    expect(entries.length, 'llms.txt does not list every piece of work').toBe(expected);
+    const bare = entries.filter((line) => !/\):\s\S/.test(line));
+    expect(bare, `entries with no description: ${bare.join(' | ')}`).toEqual([]);
+  });
+
+  test('the name is not shouted at whatever quotes it', async ({ request }) => {
+    const txt = await request.get('/llms.txt').then((r) => r.text());
+    const heading = txt.split('\n')[0];
+    expect(heading).toBe('# Aleksandr Gribakin');
+  });
+});
+
 test('the sitemap lists every page and nothing that redirects', async ({ request }) => {
   const res = await request.get('/sitemap.xml');
   expect(res.status()).toBe(200);

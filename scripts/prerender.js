@@ -365,6 +365,55 @@ ${body}
 `;
 }
 
+/**
+ * /llms.txt — the same site, written for something that reads rather than
+ * crawls.
+ *
+ * An assistant asked "who builds infrastructure in Krasnoyarsk" does not run
+ * JavaScript and rarely follows eighty links. It fetches one or two documents
+ * and answers from them. This is that document: every page with one line
+ * saying what is on it, so the answer is drawn from the site's own words
+ * instead of assembled from whatever else mentions the name.
+ *
+ * Built from the array that produces sitemap.xml, so the two cannot disagree
+ * about what exists. English, because the convention is a single file and
+ * retrieval normalises to it; the Russian mirror is linked at the end rather
+ * than duplicated here.
+ */
+function llmsTxt(urls) {
+  const en = urls.filter((u) => u.lang === 'EN');
+  const l = PONYTAIL.LOCALE.EN;
+  const of = (kind) => en.filter((u) => u.kind === kind);
+  const list = (rows) => rows.map((u) => {
+    const desc = (u.desc || '').replace(/\s+/g, ' ').trim();
+    return `- [${u.title}](${u.loc})${desc ? `: ${desc}` : ''}`;
+  }).join('\n');
+
+  const section = (heading, rows) => (rows.length ? `\n## ${heading}\n\n${list(rows)}\n` : '');
+
+  // LOCALE.NAME is set in capitals because that is how the site's header draws
+  // it. Shouting a person's name at something that is going to quote it is a
+  // different thing from styling a heading, so it is cased back here.
+  const name = (l.NAME || 'Aleksandr Gribakin').toLocaleLowerCase('en')
+    .replace(/(^|[\s-])(\p{L})/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase('en'));
+
+  return `# ${name}
+
+> ${l.ROLE}. ${(l.BIO || '').replace(/\s+/g, ' ').trim()}
+
+This file lists what is on dev24.pro and what each page contains. Two kinds of
+work are described here and they are not the same claim: the client cases are
+paid engagements, and the reference architectures describe how such problems
+are approached rather than a specific deployment. Figures in the cases are the
+client's own; figures elsewhere on the site are computed from its content.
+${section('Client work', of('case'))}${section('Reference architectures', of('project'))}${section('Career', of('career'))}${section('Milestones', of('milestone'))}
+## Other
+
+- [Privacy policy](${ORIGIN}/privacy): what the site collects, named exactly.
+- [Russian version](${ORIGIN}/ru): the whole site, same content.
+`;
+}
+
 async function emit(relPath, html) {
   const full = join(DIST, relPath);
   await mkdir(dirname(full), { recursive: true });
@@ -384,7 +433,7 @@ async function main() {
 
   for (const { lang, path, loc, priority } of roots) {
     await emit(path, localePage(shell, lang, loc, lang === 'RU' ? 'ru/' : ''));
-    urls.push({ loc, priority });
+    urls.push({ loc, priority, lang, kind: 'root' });
   }
 
   let projectPages = 0;
@@ -397,7 +446,9 @@ async function main() {
       const loc = `${ORIGIN}/${prefix}project/${project.id}`;
       await emit(`${prefix}project/${project.id}/index.html`,
         projectPage(shell, lang, project, detail, loc, prefix));
-      urls.push({ loc, priority: '0.7' });
+      urls.push({
+        loc, priority: '0.7', lang, kind: 'project', title: project.name, desc: project.desc,
+      });
       projectPages += 1;
     }
   }
@@ -410,7 +461,10 @@ async function main() {
         casePage(shell, lang, item, loc, prefix)]);
       // Above the reference architectures: work someone paid for outranks a
       // description of how such work is done.
-      urls.push({ loc, priority: '0.8' });
+      urls.push({
+        loc, priority: '0.8', lang, kind: 'case', title: item.name,
+        desc: item.outcome || item.situation || item.sector,
+      });
       casePages += 1;
     }
   }
@@ -419,7 +473,7 @@ async function main() {
   for (const [lang, prefix] of [['EN', ''], ['RU', 'ru/']]) {
     const loc = `${ORIGIN}/${prefix}privacy`;
     pending.push([`${prefix}privacy/index.html`, privacyPage(shell, lang, loc, prefix)]);
-    urls.push({ loc, priority: '0.3' });
+    urls.push({ loc, priority: '0.3', lang, kind: 'privacy' });
     privacyPages += 1;
   }
 
@@ -433,7 +487,10 @@ async function main() {
       const loc = `${ORIGIN}/${prefix}career/${slug}`;
       pending.push([`${prefix}career/${slug}/index.html`,
         careerPage(shell, lang, entry, careerDetails[i], loc, prefix)]);
-      urls.push({ loc, priority: '0.6' });
+      urls.push({
+        loc, priority: '0.6', lang, kind: 'career',
+        title: `${entry.role} @ ${entry.company} (${entry.period})`, desc: entry.desc,
+      });
       careerPages += 1;
     });
 
@@ -443,7 +500,10 @@ async function main() {
       const loc = `${ORIGIN}/${prefix}achievement/${slug}`;
       pending.push([`${prefix}achievement/${slug}/index.html`,
         achievementPage(shell, lang, entry, achDetails[i], loc, prefix)]);
-      urls.push({ loc, priority: '0.5' });
+      urls.push({
+        loc, priority: '0.5', lang, kind: 'milestone',
+        title: `${entry.title} (${entry.year})`, desc: entry.desc,
+      });
       achievementPages += 1;
     });
   }
@@ -451,6 +511,7 @@ async function main() {
   for (const [path, html] of pending) await emit(path, html);
 
   await writeFile(join(DIST, 'sitemap.xml'), sitemap(urls), 'utf8');
+  await writeFile(join(DIST, 'llms.txt'), llmsTxt(urls), 'utf8');
 
   console.log(`prerender: ${roots.length} locale pages, ${projectPages} project, `
     + `${casePages} case, ${careerPages} career, ${achievementPages} milestone, `
