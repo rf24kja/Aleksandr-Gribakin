@@ -335,6 +335,20 @@ test.describe('one section about technology, two layers inside', () => {
     await expect(page.locator('#projectsDash')).toHaveCount(0);
   });
 
+  test('neither language shows the other one its words', async () => {
+    // Tool entries were one shared array, so twelve of them — descriptions
+    // rather than product names — printed in Russian on the English site.
+    // Checked in both directions: an English phrase left in the Russian list
+    // is the same defect facing the other way.
+    const { stackGroups } = await import('../src/data/stack.js');
+    const items = (lang) => stackGroups(lang).flatMap((g) => g.lines.flatMap((l) => l.items));
+    const cyrillicInEN = items('EN').filter((i) => /[\u0430-\u044f\u0451]/i.test(i));
+    expect(cyrillicInEN, `Russian in the English toolbox: ${cyrillicInEN.join(', ')}`).toEqual([]);
+    // The Russian list keeps product names as they are spelt, so only entries
+    // that are wholly Latin *words* are suspect — "PostgreSQL" is not.
+    expect(items('RU').length).toBe(items('EN').length);
+  });
+
   test('every technology named in the work exists in the toolbox', async () => {
     // The invariant behind "N of M": if a case names something the toolbox
     // does not carry, the fraction stops being arithmetic and starts being a
