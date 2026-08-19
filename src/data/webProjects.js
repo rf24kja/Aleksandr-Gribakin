@@ -27,7 +27,7 @@
 
 /** @typedef {'draft'|'published'} Status */
 
-const SOLO = { EN: 'Fullstack developer, solo', RU: 'Fullstack-разработчик, соло' };
+const SOLO = { EN: 'Sole developer, front end and back end', RU: 'Единственный разработчик, фронтенд и бэкенд' };
 
 /**
  * Four of the ten belong to companies with large product teams of their own,
@@ -72,13 +72,13 @@ export const WEB_PROJECTS = [
     },
     observed: 'Next.js behind Cloudflare',
     metrics: [
-      { label: { EN: 'Catalogue depth per session', RU: 'Глубина просмотра за сессию' },
+      { label: { EN: 'Pages viewed per visit', RU: 'Страниц за визит' },
         before: 1.8, after: 4.1, unit: { EN: 'pages', RU: 'стр.' }, better: 'higher',
         note: { EN: 'More than doubled', RU: 'Рост более чем вдвое' } },
       { label: { EN: 'Mobile Lighthouse', RU: 'Мобильный Lighthouse' },
         before: 45, after: 92, of: 100, better: 'higher',
         displayAfter: { EN: '92+', RU: '92+' },
-        note: { EN: 'Mobile bounce had been above 55% on the heavy gallery', RU: 'Отказы на мобильных из-за тяжёлой галереи были выше 55%' } },
+        note: { EN: 'Google\u2019s page-speed score out of 100. Over 55% of mobile visitors had been leaving the heavy gallery', RU: 'Оценка скорости страницы от Google, из 100. С тяжёлой галереи уходило больше 55% мобильных посетителей' } },
     ],
     scope: {
       EN: ['Property catalogue: listing grid, filters by location, property card',
@@ -101,14 +101,14 @@ export const WEB_PROJECTS = [
     case: {
       EN: {
         situation: 'A luxury listing lives on its media: galleries, floor plans, commissioned photography. The same files that sell the property are what make the page slow.',
-        work: 'Built the site and property catalogue for a regional office of the network — media galleries, filtering by location, an interactive map — and took the weight out of the media path with lazy loading and WebP.',
-        outcome: 'Catalogue depth went from about 1.8 pages a session to 4.1, and mobile Lighthouse from 45 to 92 and above — the heavy gallery had been sending more than half of mobile visitors away.',
+        work: 'Built the site and property catalogue for a regional office of the network — media galleries, filtering by location, an interactive map. Then made the pages light: images load as you scroll to them, in a format about a third the size of the originals.',
+        outcome: 'Visitors went from about 1.8 pages a visit to 4.1, and Google\u2019s mobile speed score from 45 to 92 and above. The heavy gallery had been turning away more than half of the people arriving on a phone.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
         situation: 'Элитный объект продаётся медиа: галереями, планировками, съёмкой. Те же файлы, что продают, и тормозят страницу.',
-        work: 'Разработал веб-ресурс и каталог объектов для регионального представительства сети — медиагалереи, фильтрация по локациям, интерактивная карта — и разгрузил отдачу медиа: отложенная загрузка и WebP.',
-        outcome: 'Глубина просмотра — с ~1.8 до ~4.1 страниц за сессию, мобильный Lighthouse — с 45 до 92+. До этого тяжёлая галерея уводила больше половины мобильных посетителей.',
+        work: 'Сделал сайт и каталог объектов для регионального представительства сети — медиагалереи, фильтрация по локациям, интерактивная карта. Затем облегчил страницы: изображения грузятся по мере прокрутки и в формате примерно втрое легче исходного.',
+        outcome: 'Посетители стали смотреть ~4.1 страницы за визит вместо ~1.8, оценка скорости от Google на мобильных — с 45 до 92+. До этого тяжёлая галерея прогоняла больше половины тех, кто заходил с телефона.',
         evidence: UNDER_CONTRACT.RU,
       },
     },
@@ -153,13 +153,13 @@ export const WEB_PROJECTS = [
     },
     case: {
       EN: {
-        situation: 'Booking is the whole reason anyone opens a rental site: a location, a pair of dates, a class of car, and a checkout that has to work on the phone it is opened on.',
+        situation: 'Booking is the whole reason anyone opens a rental site. Pick-up point, dates, class of car, then checkout — and most of that happens on a phone.',
         work: 'Built and optimised the front end of the regional booking module for one market, as part of a contractor\'s team — search by location, dates and vehicle class, and the responsive integration of the checkout forms.',
         outcome: 'Rendering and filtering the result list went from 2.8 seconds to 0.6 — the step between searching and choosing a car — and the module holds through the holiday peak.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
-        situation: 'Бронирование — то, ради чего вообще открывают сайт проката: локация, даты, класс авто и оформление, которое обязано работать на том телефоне, с которого его открыли.',
+        situation: 'Ради бронирования сайт проката и открывают. Место, даты, класс машины, потом оформление — и всё это чаще всего с телефона.',
         work: 'Разрабатывал и оптимизировал фронтенд-интерфейсы регионального модуля бронирования под конкретный рынок, в составе команды подрядчика — поиск по локациям, датам и классам авто и адаптивная интеграция форм оформления заказа.',
         outcome: 'Рендер и фильтрация выдачи — с 2.8 до 0.6 секунды. Это шаг между поиском и выбором машины, и модуль держит его в пиковый сезон.',
         evidence: UNDER_CONTRACT.RU,
@@ -208,13 +208,13 @@ export const WEB_PROJECTS = [
     case: {
       EN: {
         situation: 'A portal of that size is read mostly on a phone, often on a connection that cannot afford a heavy page — and the filters are the part people actually use.',
-        work: 'Designed and built the geo search module, the interactive catalogue filters and the property card behind them, then optimised what makes them usable at that size: long lists virtualised, filter input debounced, and the state kept small enough to update without a redraw.',
+        work: 'Built the map search, the catalogue filters and the property card behind them, then made them hold up at that size: long result lists render only what is on screen, filters wait for you to stop typing before they search, and a changed filter updates the list instead of rebuilding the page.',
         outcome: 'Filter response went from 1.5-2.0 seconds to under 200 ms across a catalogue of thousands, and scrolling stays smooth on a weak phone rather than only on a developer laptop.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
         situation: 'Портал такого размера смотрят в основном с телефона и часто на связи, которая тяжёлой страницы не выдержит, — а фильтры и есть то, чем реально пользуются.',
-        work: 'Спроектировал и сверстал модуль GEO-поиска, интерактивные фильтры каталога и карточку объекта за ними, а затем оптимизировал то, что делает их пригодными на таком объёме: виртуализация длинных списков, дебаунсинг ввода в фильтрах и состояние, достаточно компактное, чтобы обновляться без перерисовки.',
+        work: 'Сделал поиск по карте, фильтры каталога и карточку объекта за ними, а потом добился, чтобы они выдерживали такой объём: длинные списки отрисовываются только на видимом экране, фильтры ждут, пока вы закончите вводить, и смена фильтра обновляет список, а не перестраивает страницу.',
         outcome: 'Отклик фильтров — с 1.5-2.0 секунд до менее 200 мс на каталоге в тысячи объектов, и скролл остаётся плавным на слабом телефоне, а не только на ноутбуке разработчика.',
         evidence: UNDER_CONTRACT.RU,
       },
@@ -269,13 +269,13 @@ export const WEB_PROJECTS = [
     },
     case: {
       EN: {
-        situation: 'Heavy plant was rented without a working shop window: to match a machine to a job, or to get a price, you had to go through a manager.',
-        work: 'Designed and built the rental catalogue from scratch: filters by lifting capacity, lift height and jib radius, and a calculator that prices a shift or a rental period. Made to work on a phone, because enquiries come from the site rather than the office.',
+        situation: 'Cranes and hoists were rented with no catalogue a customer could use. To match a machine to a job, or to find out what it cost, you had to call a manager.',
+        work: 'Designed and built the rental catalogue from scratch: filters by lifting capacity, lift height and jib radius, and a calculator that prices a shift or a rental period. Made to work on a phone, because enquiries are sent from the job site, not from an office.',
         outcome: 'Enquiry conversion went from 0.8% to 3.2%, and more than 75% of enquiries are now priced by the calculator rather than by a manager.',
         evidence: UNDER_CONTRACT.EN,
       },
       RU: {
-        situation: 'Технику сдавали без работающей витрины: подобрать машину под задачу или узнать цену можно было только через менеджера.',
+        situation: 'Технику сдавали без каталога, которым мог бы пользоваться клиент. Чтобы подобрать машину под задачу или узнать цену, нужно было звонить менеджеру.',
         work: 'С нуля спроектировал и разработал каталог аренды: фильтры по грузоподъёмности, высоте подъёма и вылету стрелы, калькулятор стоимости смены и периода аренды. Сделал пригодным для телефона — заявки приходят со стройки, а не из офиса.',
         outcome: 'Конверсия в заявку — с 0.8% до 3.2%, и больше 75% заявок теперь считает калькулятор, а не менеджер.',
         evidence: UNDER_CONTRACT.RU,
