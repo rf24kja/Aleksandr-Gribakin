@@ -8,13 +8,13 @@ import {
   setProjectLocale, closeProjectDetail,
 } from '../lib/projectDetail.js';
 import { CAREER_DETAIL } from '../data/projects.js';
-import { computeStats, techFrequency } from '../lib/stats.js';
+import { computeStats } from '../lib/stats.js';
 import { trackEvent } from '../lib/analytics.js';
 import { attribution } from '../lib/attribution.js';
 import { webProjects } from '../data/webProjects.js';
 import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../data/process.js';
 import { wireCopyButtons } from '../lib/copy.js';
-import { stackGroups, stackLayers, stackToolCount, backedTools } from '../data/stack.js';
+import { stackGroups, stackLayers, stackToolCount } from '../data/stack.js';
 import {
   renderStatCards, wireStatCards, animateStatValues, esc,
 } from '../lib/statsUI.js';
@@ -25,7 +25,6 @@ export default class PortfolioOrchestrator {
     this.scenes = PONYTAIL.SCENES;
     this.currentScene = -1;
     this._rendered = false;
-    this._activeCat = null;
     // null is "All": the toolbox opens whole, and a layer narrows it.
     this._activeLayer = null;
     this._entranceObserver = null;
@@ -74,11 +73,9 @@ export default class PortfolioOrchestrator {
   _renderContent() {
     if (this._rendered) return;
     this._rendered = true;
-    this._activeCat = this._l().CATEGORIES[0];
     this._renderStats();
     this._renderCareer();
     this._renderWebProjects();
-    this._renderCategoryTabs();
     this._renderProjects();
     this._renderAchievements();
     this._renderStack();
@@ -89,11 +86,9 @@ export default class PortfolioOrchestrator {
   }
 
   _reRenderContent() {
-    this._activeCat = this._l().CATEGORIES[0];
     this._renderStats();
     this._renderCareer();
     this._renderWebProjects();
-    this._renderCategoryTabs();
     this._renderProjects();
     this._renderAchievements();
     this._renderStack();
@@ -182,45 +177,28 @@ export default class PortfolioOrchestrator {
    * portfolio does when it has nothing else to show. So each area opens on
    * demand and the page stays the length it was.
    *
-   * Two layers, because the owner read the old arrangement the way a visitor
-   * would: a tile saying "47 technologies" beside a toolbox of 294 made the
-   * measured number look like the smaller stack. It is the opposite — it is the
-   * part with work behind it. So the toolbox marks those entries, and the
-   * frequency bars sit underneath as the second layer of one section.
+   * One layer, not two. A "47 of them appear in the work above" line with
+   * frequency bars used to sit underneath, and the entries it counted were
+   * highlighted in the list. Both are gone at the owner's call: the bars were
+   * a second chart about the same subject as the statistics further up, and a
+   * highlight whose only legend was the line above it is worse than no
+   * highlight at all — so the marking went with the sentence that explained it.
    */
   _renderStack() {
     const anchor = document.getElementById('processOverlay') || document.getElementById('ctaSection');
     if (!anchor) return;
     const t = this._l().SECTION_TITLES || {};
-    // The two layers the section promises: everything, and the part with work
-    // on this page. The second is a subset of the first — a test keeps it so,
-    // because the copy says "N of M" and that has to stay arithmetic.
-    const freq = techFrequency(this._l().PROJECTS);
-    const backed = backedTools(freq.map((f) => f.label));
     const section = document.getElementById('stackOverlay') || document.createElement('div');
     section.className = 'section-overlay';
     section.id = 'stackOverlay';
-    // The sub-line and the backed layer describe the whole toolbox, so the
-    // filter does not touch them: narrowing to "Frontend" narrows the list of
-    // areas, not the claim about how much of the stack has work behind it.
+    // The sub-line describes the whole toolbox, so the filter does not touch
+    // it: narrowing to "Frontend" narrows the list of areas, not the count.
     const layers = stackLayers(this.s.lang);
     section.innerHTML = `
       <h2 class="section-title">${esc(t.STACK || 'Toolbox')}</h2>
       <p class="section-sub">${esc((t.STACK_SUB || '').replace('{n}', stackToolCount()))}</p>
       <div class="cat-tabs" id="stackLayers"></div>
-      <div class="stack-groups" id="stackGroups"></div>
-      <div class="stack-backed">
-        <div class="sb-title">${esc((t.STACK_BACKED_TITLE || '').replace('{n}', backed.size))}</div>
-        <div class="sb-bars">
-          ${freq.slice(0, 8).map((f) => `
-            <div class="sb-row">
-              <span class="sb-label">${esc(f.label)}</span>
-              <span class="sb-track"><span class="sb-fill" style="width:${
-  Math.round((f.value / (freq[0]?.value || 1)) * 100)}%"></span></span>
-              <span class="sb-value">${f.value}</span>
-            </div>`).join('')}
-        </div>
-      </div>`;
+      <div class="stack-groups" id="stackGroups"></div>`;
     if (!section.parentNode) anchor.parentNode.insertBefore(section, anchor);
 
     const tabs = section.querySelector('#stackLayers');
@@ -238,16 +216,15 @@ export default class PortfolioOrchestrator {
         x.classList.toggle('active', on);
         x.setAttribute('aria-pressed', String(on));
       });
-      this._renderStackGroups(backed);
+      this._renderStackGroups();
     });
-    this._renderStackGroups(backed);
+    this._renderStackGroups();
   }
 
   /** The area list alone, so choosing a layer does not rebuild the section. */
-  _renderStackGroups(backed) {
+  _renderStackGroups() {
     const host = document.getElementById('stackGroups');
     if (!host) return;
-    const t = this._l().SECTION_TITLES || {};
     const groups = stackGroups(this.s.lang, this._activeLayer);
     host.innerHTML = groups.map((g) => `
       <details class="stack-group">
@@ -257,8 +234,7 @@ export default class PortfolioOrchestrator {
         ${g.lines.map((l) => `
           <div class="sg-line">
             <span class="sg-label">${esc(l.label)}</span>
-            <span class="sg-items">${l.items.map((i) => `<span class="sg-item${
-  backed.has(i) ? ' sg-backed' : ''}"${backed.has(i) ? ` title="${esc(t.STACK_BACKED || '')}"` : ''}>${esc(i)}</span>`).join('')}</span>
+            <span class="sg-items">${l.items.map((i) => `<span class="sg-item">${esc(i)}</span>`).join('')}</span>
           </div>`).join('')}
       </details>`).join('');
   }
@@ -358,42 +334,19 @@ export default class PortfolioOrchestrator {
     }).join('');
   }
 
-  _renderCategoryTabs() {
-    const container = document.getElementById('catTabs');
-    if (!container) return;
-    const cats = this._l().CATEGORIES;
-    const labels = this._l().CATEGORY_LABELS || cats;
-    container.innerHTML = cats.map((cat, i) =>
-      `<button type="button" class="cat-tab${cat === this._activeCat ? ' active' : ''}" data-cat="${cat}" aria-pressed="${cat === this._activeCat}">${labels[i]}</button>`
-    ).join('');
-    if (!container.dataset.wired) {
-      container.dataset.wired = '1';
-      container.addEventListener('click', (e) => {
-        const tab = e.target.closest('.cat-tab');
-        if (!tab) return;
-        this._activeCat = tab.dataset.cat;
-        container.querySelectorAll('.cat-tab').forEach((t) => {
-          const on = t.dataset.cat === this._activeCat;
-          t.classList.toggle('active', on);
-          t.setAttribute('aria-pressed', String(on));
-        });
-        this._renderProjects();
-      });
-    }
-  }
-
-  /** Projects matching the active category, in the order the data lists them. */
-  _visibleProjects() {
-    const all = this._l().PROJECTS;
-    return this._activeCat === this._l().CATEGORIES[0]
-      ? [...all]
-      : all.filter((p) => p.cat === this._activeCat);
-  }
-
+  /**
+   * Every reference architecture, in the order the data lists them.
+   *
+   * There was a category filter here. Seventeen entries across six categories
+   * is not enough of a list to need narrowing, and the row of chips cost more
+   * attention above the fold than the filtering was worth. The categories
+   * themselves stay — the terminal's `projects --cat=` still uses them, and
+   * the statistics panel still breaks work down by them.
+   */
   _renderProjects() {
     const grid = document.getElementById('projectsGrid');
     if (!grid) return;
-    const filtered = this._visibleProjects();
+    const filtered = this._l().PROJECTS;
 
     // Cards are buttons: the whole grid was previously unreachable by keyboard.
     grid.innerHTML = filtered.map((p) =>
@@ -485,11 +438,6 @@ export default class PortfolioOrchestrator {
     if (el.id === 'statsOverlay') {
       el.querySelectorAll('.stat-item').forEach((item, i) => {
         gsap.fromTo(item, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: .45, delay: i * 0.08, ease: 'power2.out', clearProps: 'transform' });
-      });
-    }
-    if (el.id === 'projectsOverlay') {
-      el.querySelectorAll('.cat-tab').forEach((tab, i) => {
-        gsap.fromTo(tab, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: .3, delay: i * 0.04, ease: 'power2.out', clearProps: 'transform' });
       });
     }
   }
