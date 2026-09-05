@@ -1363,7 +1363,7 @@
       border-radius: 12px;
       background: var(--section-bg);
     }
-    .pc-body { padding: 20px; display: flex; flex-direction: column; gap: 6px; }
+    .pc-body { padding: 20px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
     /* Weight stated, not inherited: an <h3> defaults to 700 and the site ships
        Inter 200-600, so the browser would have synthesised a bold. Matches
        .web-client, which is the same kind of heading one section down. */
@@ -1409,8 +1409,7 @@
     .pc-meta dt { color: var(--text-dim); font-family: var(--font-mono); font-size: 11px; }
     .pc-meta dd { margin: 0; }
     .pc-open {
-      margin-top: 10px;
-      align-self: flex-start;
+      margin-top: auto;
       /* 44px of target, the bar every other control on this page is held to. */
       min-height: 44px;
       display: inline-flex;
