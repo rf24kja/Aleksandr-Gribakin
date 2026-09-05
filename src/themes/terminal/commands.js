@@ -11,6 +11,7 @@
 import PONYTAIL from '../../config/ponytail.config.js';
 import { PROJECTS_DETAIL, CAREER_DETAIL, ACHIEVEMENT_DETAIL } from '../../data/projects.js';
 import { webProjects, webProjectCount } from '../../data/webProjects.js';
+import { products } from '../../data/products.js';
 import { PROCESS, TERMS, CONTACTS, LEGAL, DONATION, hoursLine } from '../../data/process.js';
 import { renderCaseMetricsAscii } from '../../lib/statsUI.js';
 import { stackGroups, stackToolCount } from '../../data/stack.js';
@@ -256,6 +257,32 @@ const COMMANDS = [
   // are already taken by the reference architectures, and the two lists answer
   // different questions — conflating them here would undo the separation the
   // rest of the site now makes.
+  {
+    // Separate from `web` on purpose. That lists work somebody paid for; this
+    // lists what is his. Hidden while nothing is publishable, so the strip
+    // derived from this table never offers a command that prints an apology.
+    name: 'live', aliases: ['products'], usage: '', key: 'LIVE',
+    hidden: products('EN').length === 0,
+    run(ctx) {
+      const t = T(ctx.lang);
+      const L2 = L(ctx.lang).PRODUCT_LABELS || {};
+      const items = products(ctx.lang);
+      if (!items.length) return [{ text: `  ${t.LIVE_EMPTY || 'Nothing published yet.'}`, cls: 'dim' }];
+
+      const out = [...head(`${t.HEAD_LIVE || 'RUNNING NOW'} (${items.length})`, ctx.cols)];
+      for (const p of items) {
+        out.push({ text: `  ${p.name}`, cls: 'accent' });
+        for (const line of wrap(p.tagline, ctx.cols - 6, '    ')) out.push({ text: line, cls: 'dim' });
+        for (const line of wrap(p.summary, ctx.cols - 6, '    ')) out.push({ text: line, cls: 'row' });
+        out.push({ text: `    ${L2.ROLE || 'Role'}: ${p.role}`, cls: 'kv' });
+        if (p.since) out.push({ text: `    ${L2.SINCE || 'Live since'}: ${p.since}`, cls: 'kv' });
+        if (p.stack.length) out.push({ text: `    ${L2.STACK || 'Built with'}: ${p.stack.join(', ')}`, cls: 'kv' });
+        out.push({ text: `    ${p.url}`, cls: 'accent' });
+        out.push('');
+      }
+      return out;
+    },
+  },
   {
     name: 'web', aliases: ['sites', 'clients'], usage: '[<id>]', key: 'WEB',
     hidden: webProjectCount() === 0,

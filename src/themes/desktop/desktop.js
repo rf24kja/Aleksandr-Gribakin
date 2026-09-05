@@ -6,6 +6,7 @@ import { renderStatsForDesktop, renderMetricGrid, animateMetricGrid, renderCaseM
 import { webProjects, webProjectCount } from '../../data/webProjects.js'
 import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../../data/process.js'
 import { stackGroups, stackLayers, stackToolCount } from '../../data/stack.js'
+import { products } from '../../data/products.js'
 import { wireCopyButtons } from '../../lib/copy.js'
 import { PRIVACY } from '../../data/privacy.js'
 import WindowManager from './windowManager.js'
@@ -33,6 +34,7 @@ const SVG = {
   achievements: '<svg viewBox="0 0 48 48" fill="none" stroke="#fbbb2d" stroke-width="1.5" width="28" height="28"><polygon points="24 4 28.4 17.2 42 18 31.4 27.4 34.6 41 24 33.6 13.4 41 16.6 27.4 6 18 19.6 17.2 24 4" stroke-linejoin="round"/></svg>',
   mail: '<svg viewBox="0 0 48 48" fill="none" stroke="#e95420" stroke-width="1.5" width="28" height="28"><rect x="4" y="8" width="40" height="32" rx="4"/><path d="M4 12l20 16 20-16"/></svg>',
   settings: '<svg viewBox="0 0 48 48" fill="none" stroke="#888" stroke-width="1.5" width="28" height="28"><circle cx="24" cy="24" r="6"/><path d="M24 2v6m0 32v6M2 24h6m32 0h6M8.5 8.5l4.2 4.2m22.6 22.6l4.2 4.2M8.5 39.5l4.2-4.2m22.6-22.6l4.2-4.2" stroke-linecap="round"/></svg>',
+  products: '<svg viewBox="0 0 48 48" fill="none" stroke="#888" stroke-width="1.5" width="28" height="28"><rect x="5" y="9" width="38" height="30" rx="3"/><path d="M5 17h38M11 13h.01M15 13h.01M19 13h.01"/></svg>',
   tools: '<svg viewBox="0 0 48 48" fill="none" stroke="#888" stroke-width="1.5" width="28" height="28"><path d="M30 6a9 9 0 0 0-9 9c0 1.4.3 2.7.9 3.9L6 34.8V42h7.2l15.9-15.9c1.2.6 2.5.9 3.9.9a9 9 0 0 0 0-18z" stroke-linejoin="round"/></svg>',
   coffee: '<svg viewBox="0 0 48 48" fill="none" stroke="#fbbb2d" stroke-width="1.5" width="28" height="28"><path d="M8 18h26v14a10 10 0 0 1-10 10h-6a10 10 0 0 1-10-10z"/><path d="M34 22h4a5 5 0 0 1 0 10h-4"/><path d="M16 6v5m8-5v5" stroke-linecap="round"/></svg>',
 }
@@ -395,6 +397,43 @@ function renderMail() {
  */
 let toolsLayer = null
 
+/**
+ * The owner's own products, as a window.
+ *
+ * Kept out of the client folder deliberately: those are jobs somebody paid
+ * for, these are his. The distinction is one of this project's standing rules,
+ * and a shared window would erase it.
+ *
+ * Empty while the copy is unwritten — and then the window says so plainly
+ * rather than opening on nothing, because a blank app is read as broken.
+ */
+function renderProducts() {
+  const lang = state?.lang || 'EN'
+  const t = PONYTAIL.LOCALE[lang]?.SECTION_TITLES || {}
+  const L = PONYTAIL.LOCALE[lang]?.PRODUCT_LABELS || {}
+  const items = products(lang)
+  if (!items.length) {
+    return `
+      <div class="wb-title">${esc(t.PRODUCTS || 'Running Now')}</div>
+      <hr class="wb-divider">
+      <div class="wb-bullet">${esc(t.PRODUCTS_SUB || '')}</div>`
+  }
+  return `
+    <div class="wb-title">${esc(t.PRODUCTS || 'Running Now')}</div>
+    <div class="wb-sub">${esc(t.PRODUCTS_SUB || '')}</div>
+    <hr class="wb-divider">
+    ${items.map(p => `
+      <div class="wb-section">
+        <div class="wb-section-title">${esc(p.name)} — ${esc(p.tagline)}</div>
+        <div class="wb-note">${esc(p.summary)}</div>
+        <div class="wb-bullet"><b>${esc(L.ROLE || 'Role')}:</b> ${esc(p.role)}</div>
+        ${p.since ? `<div class="wb-bullet"><b>${esc(L.SINCE || 'Live since')}:</b> ${esc(p.since)}</div>` : ''}
+        ${p.stack.length ? `<div class="wb-bullet"><b>${esc(L.STACK || 'Built with')}:</b> ${esc(p.stack.join(', '))}</div>` : ''}
+        <div class="wb-bullet"><a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">${esc(p.url)}</a></div>
+      </div>`).join('')}
+  `
+}
+
 function renderTools() {
   const lang = state?.lang || 'EN'
   const groups = stackGroups(lang, toolsLayer)
@@ -502,6 +541,8 @@ export function initDesktop(appState) {
     renderLegal, { width: 620, height: 480 })
   // The terminal's `coffee` command had no equivalent here or in business, so
   // two interfaces out of three simply did not carry the offer.
+  registerApp('products', () => PONYTAIL.LOCALE[state?.lang || 'EN']?.SECTION_TITLES?.PRODUCTS || 'Running Now',
+    SVG.products, renderProducts, { width: 600, height: 440 })
   registerApp('tools', () => PONYTAIL.LOCALE[state?.lang || 'EN']?.SECTION_TITLES?.STACK || 'Toolbox',
     SVG.tools, renderTools, { width: 620, height: 460 })
   registerApp('coffee', () => coffeeTitle(PONYTAIL.LOCALE[state?.lang || 'EN']?.COFFEE || {}), SVG.coffee,
