@@ -249,6 +249,48 @@ test.describe('the toolbox filters by layer', () => {
   });
 });
 
+/**
+ * The reference architectures are read by the person paying, not by a peer.
+ *
+ * They were written the other way round: "strangler-fig extraction", "GitOps",
+ * "idempotent handlers", "hydrated on the client". Each is the right word among
+ * engineers and an opaque one to a founder deciding whether to call. The names
+ * stay technical — they are the categories, and a technical buyer scans them —
+ * but the sentence underneath has to say what the work is for.
+ */
+test.describe('the method is explained in words a buyer knows', () => {
+  // Terms with no plain-language value in a description. Not a style
+  // preference: each of these appeared in the copy and had to be looked up.
+  const JARGON = [
+    /strangler/i, /\bGitOps\b/i, /idempotent/i, /dead-letter/i, /hydrat(e|ed|ion)/i,
+    /\bnamespace/i, /blue-green/i, /reconciler/i, /\bgRPC\b/i, /snowflake/i,
+    /партицион/i, /инвалидац/i, /идемпотент/i, /гидратац/i, /пайплайн/i,
+  ];
+
+  for (const lang of ['EN', 'RU']) {
+    test(`${lang}: no description needs a glossary`, async () => {
+      const { default: PONYTAIL } = await import('../src/config/ponytail.config.js');
+      const bad = [];
+      for (const p of PONYTAIL.LOCALE[lang].PROJECTS) {
+        for (const term of JARGON) {
+          if (term.test(p.desc)) bad.push(`${p.name}: ${term}`);
+        }
+      }
+      expect(bad, `jargon left in ${lang} descriptions:\n${bad.join('\n')}`).toEqual([]);
+    });
+
+    test(`${lang}: every architecture says what it is for, at length`, async () => {
+      // A one-clause description is how the technical shorthand came back last
+      // time: there is no room to explain a thing in nine words.
+      const { default: PONYTAIL } = await import('../src/config/ponytail.config.js');
+      const thin = PONYTAIL.LOCALE[lang].PROJECTS
+        .filter((p) => (p.desc || '').split(/\s+/).length < 20)
+        .map((p) => `${p.name} (${p.desc.split(/\s+/).length} words)`);
+      expect(thin, `descriptions too short to explain anything:\n${thin.join('\n')}`).toEqual([]);
+    });
+  }
+});
+
 test.describe('the toolbox is the same list in every mode', () => {
   // 275 names, and the number in the copy is computed from the data rather than
   // typed into it — the project's first rule, applied one level down.
