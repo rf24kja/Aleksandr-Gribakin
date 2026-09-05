@@ -16,6 +16,8 @@ const EN = {
     CAREER: 'Career Timeline',
     PROJECTS: 'Reference Architectures',
     PROJECTS_SUB: 'How I approach these kinds of problems — the method, not a client list',
+    PRODUCTS: 'Current Projects',
+    PRODUCTS_SUB: 'My own products — open them and look, no NDA in the way',
     WEB: 'Client Projects',
     WEB_SUB: 'Commercial sites, and exactly which part of them was mine',
     PROCESS: 'How I Work',
@@ -28,6 +30,10 @@ const EN = {
     WRITE: 'Write to me',
     PRIVACY: 'Privacy policy',
     RIGHTS: 'All rights reserved',
+  },
+  // Unlike the client cases, these link out: they are his to show.
+  PRODUCT_LABELS: {
+    ROLE: 'Role', SINCE: 'Live since', STACK: 'Built with', OPEN: 'Open the site',
   },
   WEB_LABELS: {
     // No "open the site" link: the clients are named, not linked to.
@@ -68,6 +74,7 @@ const EN = {
     HEAD_HELP: 'AVAILABLE COMMANDS', HEAD_ID: 'IDENTITY', HEAD_ABOUT: 'ABOUT',
     HEAD_STATS: 'SYSTEM PROFILE', HEAD_CAREER: 'CAREER LOG', HEAD_TARGETS: 'TARGETS',
     HEAD_WEB: 'CLIENT PROJECTS', HINT_WEB: 'web <id> for the case',
+    HEAD_LIVE: 'CURRENT PROJECTS', LIVE_EMPTY: 'Nothing published yet.',
     HEAD_PROCESS: 'HOW I WORK', HEAD_LEGAL: 'LEGAL & PRIVACY',
     HINT_LEGAL: 'legal — terms and privacy policy',
     LABEL_EMAIL: 'Email', LABEL_TG: 'Telegram', LABEL_HOURS: 'Hours', LABEL_REPLY: 'Reply',
@@ -79,6 +86,7 @@ const EN = {
       STATS: 'headline numbers, computed from the content', CAREER: 'career log, or one entry in full',
       PROJECTS: 'list the reference architectures', OPEN: 'full brief on one of them',
       WEB: 'client sites, and one case in full',
+      LIVE: 'my own products, running now',
       PROCESS_CMD: 'how I work: hours, estimates, handover',
       LEGAL_CMD: 'terms, invoicing and the privacy policy',
     STACK: 'technology, by how often it appears', TOOLS: 'the whole toolbox, by area', ACH: 'milestones, or one in full',
@@ -203,6 +211,8 @@ const RU = {
     CAREER: 'Карьерный путь',
     PROJECTS: 'Отработанные архитектуры',
     PROJECTS_SUB: 'Как я решаю эти классы задач — метод, а не список заказчиков',
+    PRODUCTS: 'Текущие проекты',
+    PRODUCTS_SUB: 'Мои собственные продукты — можно открыть и посмотреть, без NDA',
     WEB: 'Клиентские проекты',
     WEB_SUB: 'Коммерческие сайты и то, какая именно часть в них моя',
     PROCESS: 'Как я работаю',
@@ -215,6 +225,9 @@ const RU = {
     WRITE: 'Написать',
     PRIVACY: 'Политика конфиденциальности',
     RIGHTS: 'Все права защищены',
+  },
+  PRODUCT_LABELS: {
+    ROLE: 'Роль', SINCE: 'Работает с', STACK: 'На чём', OPEN: 'Открыть сайт',
   },
   WEB_LABELS: {
     ROLE: 'Роль', PERIOD: 'Период', STACK: 'Стек',
@@ -248,6 +261,7 @@ const RU = {
     WELCOME: 'Введите `help`, чтобы узнать, что тут умеют.',
     HEAD_HELP: 'ДОСТУПНЫЕ КОМАНДЫ', HEAD_ID: 'ЛИЧНОСТЬ', HEAD_ABOUT: 'О СЕБЕ',
     HEAD_STATS: 'ПРОФИЛЬ СИСТЕМЫ', HEAD_CAREER: 'ЖУРНАЛ КАРЬЕРЫ', HEAD_TARGETS: 'ЦЕЛИ',
+    HEAD_LIVE: 'ТЕКУЩИЕ ПРОЕКТЫ', LIVE_EMPTY: 'Пока ничего не опубликовано.',
     HEAD_WEB: 'КЛИЕНТСКИЕ ПРОЕКТЫ', HINT_WEB: 'web <id> — кейс целиком',
     HEAD_PROCESS: 'КАК Я РАБОТАЮ', HEAD_LEGAL: 'ЮРИДИЧЕСКОЕ И ПРИВАТНОСТЬ',
     HINT_LEGAL: 'legal — условия и политика конфиденциальности',
@@ -260,6 +274,7 @@ const RU = {
       STATS: 'цифры, вычисленные из контента', CAREER: 'журнал карьеры или одна запись целиком',
       PROJECTS: 'список референсных архитектур', OPEN: 'полная справка по одной из них',
       WEB: 'клиентские сайты и один кейс целиком',
+      LIVE: 'мои собственные продукты, работают сейчас',
       PROCESS_CMD: 'как я работаю: часы, оценка, сдача',
       LEGAL_CMD: 'условия, инвойсы и политика конфиденциальности',
     STACK: 'технологии по частоте появления', TOOLS: 'весь инструментарий по областям', ACH: 'вехи или одна целиком',

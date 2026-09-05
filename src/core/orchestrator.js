@@ -12,6 +12,7 @@ import { computeStats } from '../lib/stats.js';
 import { trackEvent } from '../lib/analytics.js';
 import { attribution } from '../lib/attribution.js';
 import { webProjects } from '../data/webProjects.js';
+import { products } from '../data/products.js';
 import { PROCESS, CONTACTS, LEGAL, DONATION, hoursLine } from '../data/process.js';
 import { wireCopyButtons } from '../lib/copy.js';
 import { stackGroups, stackLayers, stackToolCount } from '../data/stack.js';
@@ -74,6 +75,7 @@ export default class PortfolioOrchestrator {
     if (this._rendered) return;
     this._rendered = true;
     this._renderStats();
+    this._renderProducts();
     this._renderCareer();
     this._renderWebProjects();
     this._renderProjects();
@@ -87,6 +89,7 @@ export default class PortfolioOrchestrator {
 
   _reRenderContent() {
     this._renderStats();
+    this._renderProducts();
     this._renderCareer();
     this._renderWebProjects();
     this._renderProjects();
@@ -128,6 +131,59 @@ export default class PortfolioOrchestrator {
     const labels = this._l().STATS_LABELS || {};
     renderStatCards(grid, this._stats, labels);
     wireStatCards(grid, labels);
+  }
+
+  /**
+   * The owner's own products, first among the proof.
+   *
+   * Everything else on this page a visitor has to take on trust: the client
+   * cases are under NDA, the reference architectures are a method. These two
+   * open in a tab. That is the strongest thing the page has, so it sits
+   * directly under the numbers rather than below three other sections.
+   *
+   * Built here rather than in index.html for the same reason the client
+   * section is: while the copy is unwritten the list is empty, and an empty
+   * list must leave no heading, no markup and nothing for a crawler to index
+   * as a promise the page does not keep.
+   */
+  _renderProducts() {
+    const existing = document.getElementById('productsOverlay');
+    const items = products(this.s.lang);
+    if (!items.length) { existing?.remove(); return; }
+
+    const t = this._l().SECTION_TITLES || {};
+    const L = this._l().PRODUCT_LABELS || {};
+    const anchor = document.getElementById('careerOverlay')
+      || document.getElementById('projectsOverlay');
+    if (!anchor) return;
+
+    const section = existing || document.createElement('div');
+    section.className = 'section-overlay';
+    section.id = 'productsOverlay';
+    section.innerHTML = `
+      <h2 class="section-title">${esc(t.PRODUCTS || 'Current Projects')}</h2>
+      <p class="section-sub">${esc(t.PRODUCTS_SUB || '')}</p>
+      <div class="product-grid">
+        ${items.map((p) => `
+          <article class="product-card">
+            ${p.shot ? `<img class="pc-shot" src="${esc(p.shot)}" alt="${esc(p.name)}"
+              loading="lazy" decoding="async" width="1280" height="800">` : ''}
+            <div class="pc-body">
+              <h3 class="pc-name">${esc(p.name)}</h3>
+              <p class="pc-tagline">${esc(p.tagline)}</p>
+              <p class="pc-summary">${esc(p.summary)}</p>
+              <dl class="pc-meta">
+                <dt>${esc(L.ROLE || 'Role')}</dt><dd>${esc(p.role)}</dd>
+                ${p.since ? `<dt>${esc(L.SINCE || 'Live since')}</dt><dd>${esc(p.since)}</dd>` : ''}
+                ${p.stack.length
+    ? `<dt>${esc(L.STACK || 'Built with')}</dt><dd>${esc(p.stack.join(', '))}</dd>` : ''}
+              </dl>
+              <a class="pc-open" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">
+                ${esc(L.OPEN || 'Open the site')}</a>
+            </div>
+          </article>`).join('')}
+      </div>`;
+    if (!existing) anchor.parentNode.insertBefore(section, anchor);
   }
 
   /**
