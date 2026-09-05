@@ -34,6 +34,7 @@ const EN = {
   // Unlike the client cases, these link out: they are his to show.
   PRODUCT_LABELS: {
     ROLE: 'Role', SINCE: 'Live since', STACK: 'Built with', OPEN: 'Open the site',
+    MORE: 'What it does',
   },
   WEB_LABELS: {
     // No "open the site" link: the clients are named, not linked to.
@@ -228,6 +229,7 @@ const RU = {
   },
   PRODUCT_LABELS: {
     ROLE: 'Роль', SINCE: 'Работает с', STACK: 'На чём', OPEN: 'Открыть сайт',
+    MORE: 'Подробнее',
   },
   WEB_LABELS: {
     ROLE: 'Роль', PERIOD: 'Период', STACK: 'Стек',

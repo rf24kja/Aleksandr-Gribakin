@@ -1370,13 +1370,40 @@
       border-bottom: 1px solid var(--border);
       background: var(--section-bg);
     }
-    .pc-body { padding: 18px; display: flex; flex-direction: column; gap: 8px; }
+    .pc-body { padding: 18px; display: flex; flex-direction: column; gap: 6px; }
     /* Weight stated, not inherited: an <h3> defaults to 700 and the site ships
        Inter 200-600, so the browser would have synthesised a bold. Matches
        .web-client, which is the same kind of heading one section down. */
     .pc-name { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: .01em; }
-    .pc-tagline { margin: 0; color: var(--accent); font-size: 13.5px; }
+    .pc-tagline { margin: 0; color: var(--accent); font-size: 14.5px; line-height: 1.4; }
     .pc-summary { margin: 0; color: var(--text-dim); font-size: 14px; line-height: 1.55; }
+    /* "More" — a details, like the toolbox areas, so it opens before the
+       scripts run and a keyboard reaches it. 44px of target, the bar every
+       other control here is held to. */
+    .pc-more { margin-top: 2px; }
+    .pc-more > summary {
+      list-style: none;
+      cursor: pointer;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      letter-spacing: .04em;
+      color: var(--text-dim);
+    }
+    .pc-more > summary::-webkit-details-marker { display: none; }
+    .pc-more > summary::after {
+      content: '▾';
+      font-size: 10px;
+      transition: transform .2s;
+    }
+    .pc-more[open] > summary::after { transform: rotate(180deg); }
+    .pc-more > summary:hover { color: var(--accent); }
+    .pc-more > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .pc-more .pc-summary { margin: 2px 0 0; }
+
     .pc-meta {
       margin: 4px 0 0;
       display: grid;

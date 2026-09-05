@@ -147,6 +147,43 @@ test.describe('once a product is published', () => {
     }
   });
 
+  test('the card leads with one line, and holds the rest back', async ({ page }) => {
+    // The section leads the page. A lead that opens with a paragraph each is a
+    // lead nobody reads to the end, so the summary sits behind "More".
+    await boot(page, 'business');
+    const card = page.locator('#productsOverlay .product-card').first();
+    await expect(card.locator('.pc-tagline')).toBeVisible();
+    await expect(card.locator('.pc-summary')).toBeHidden();
+
+    await card.locator('.pc-more > summary').click();
+    await expect(card.locator('.pc-summary')).toBeVisible();
+    await expect(card.locator('.pc-meta')).toBeVisible();
+  });
+
+  test('the essence really is one line, not a paragraph in disguise', async () => {
+    const { products } = await import('../src/data/products.js');
+    for (const lang of ['EN', 'RU']) {
+      for (const p of products(lang)) {
+        expect(p.tagline.length, `${lang} ${p.name}: tagline is ${p.tagline.length} chars`)
+          .toBeLessThan(70);
+        // And the detail behind "More" has to be worth opening.
+        expect(p.summary.length, `${lang} ${p.name}: summary is barely longer than the tagline`)
+          .toBeGreaterThan(p.tagline.length * 2);
+      }
+    }
+  });
+
+  test('no card shows a broken image', async ({ page }) => {
+    // A shot named in the data but missing on disk drew a grey block taller
+    // than the card, at the top of the page. An image that does not load now
+    // removes itself, so what is left is either a real picture or nothing.
+    await boot(page, 'business');
+    const broken = await page.evaluate(() => [...document.querySelectorAll('#productsOverlay img')]
+      .filter((i) => i.complete && i.naturalWidth === 0)
+      .map((i) => i.getAttribute('src')));
+    expect(broken, `broken images in the section: ${broken.join(', ')}`).toEqual([]);
+  });
+
   test('a picture never collapses the card it sits in', async ({ page }) => {
     await boot(page, 'business');
     const shots = page.locator('#productsOverlay .pc-shot');
