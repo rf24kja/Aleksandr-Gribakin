@@ -173,6 +173,32 @@ test.describe('once a product is published', () => {
     }
   });
 
+  test('its cards sit on the same column edges as every other section', async ({ page }) => {
+    // The page is one column of cards read top to bottom. This section shipped
+    // with a 16px gutter where its neighbours use 12, which made its cards two
+    // pixels narrower — a seam a reader sees without being able to name it.
+    await boot(page, 'business');
+    const edges = (sel) => page.evaluate((s) => [...new Set(
+      [...document.querySelectorAll(s)].map((e) => {
+        const b = e.getBoundingClientRect();
+        return `${Math.round(b.left)}+${Math.round(b.width)}`;
+      }),
+    )], sel);
+
+    const mine = await edges('#productsOverlay .product-card');
+    expect(mine.length, 'no product cards to measure').toBeGreaterThan(0);
+
+    // Whichever of the two neighbouring sections is on the page.
+    for (const sel of ['#webOverlay .web-card', '#projectsOverlay .project-card']) {
+      const theirs = await edges(sel);
+      if (!theirs.length) continue;
+      for (const edge of mine) {
+        expect(theirs, `product cards sit at ${edge}, ${sel} at ${theirs.join(', ')}`)
+          .toContain(edge);
+      }
+    }
+  });
+
   test('no card shows a broken image', async ({ page }) => {
     // A shot named in the data but missing on disk drew a grey block taller
     // than the card, at the top of the page. An image that does not load now
