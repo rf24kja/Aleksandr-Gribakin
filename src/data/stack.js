@@ -66,7 +66,7 @@ export const STACK_GROUPS = [
     lines: [
       { label: { EN: 'Language', RU: 'Язык' }, items: ['PHP'] },
       { label: { EN: 'Frameworks', RU: 'Фреймворки' }, items: ['Laravel', 'Symfony'] },
-      { label: { EN: 'CMS and e-commerce', RU: 'CMS и e-commerce' }, items: ['1С-Битрикс', 'WordPress', 'WooCommerce'] },
+      { label: { EN: 'CMS and e-commerce', RU: 'CMS и e-commerce' }, items: [{ EN: '1C-Bitrix', RU: '1С-Битрикс' }, 'WordPress', 'WooCommerce'] },
       { label: { EN: 'Tooling', RU: 'Инструментарий' }, items: ['Composer', 'PHPUnit', 'PHPStan', 'Psalm'] },
     ],
   },
@@ -77,7 +77,7 @@ export const STACK_GROUPS = [
       { label: { EN: 'Cross-platform', RU: 'Кросс-платформа' }, items: ['Flutter (Dart)', 'React Native', 'Expo'] },
       { label: { EN: 'Native layers', RU: 'Нативные слои' }, items: ['Swift (iOS)', 'Kotlin (Android)', 'platform channels'] },
       { label: { EN: 'Sync without a server', RU: 'Синхронизация без сервера' }, items: ['CRDT (Yjs, Automerge)', 'local-first'] },
-      { label: { EN: 'Client cryptography', RU: 'Криптография клиента' }, items: ['подпись сообщений', 'детерминированные идентификаторы', 'offline-first обмен'] },
+      { label: { EN: 'Client cryptography', RU: 'Криптография клиента' }, items: [{ EN: 'message signing', RU: 'подпись сообщений' }, { EN: 'deterministic identifiers', RU: 'детерминированные идентификаторы' }, { EN: 'offline-first sync', RU: 'offline-first обмен' }] },
     ],
   },
   {
@@ -92,7 +92,7 @@ export const STACK_GROUPS = [
       { label: { EN: 'Embeddings', RU: 'Эмбеддинги' }, items: ['sentence-transformers', 'FastEmbed'] },
       { label: { EN: 'Vector stores', RU: 'Векторные хранилища' }, items: ['Qdrant', 'Milvus', 'Pinecone', 'pgvector', 'Chroma', 'Weaviate'] },
       { label: { EN: 'Agent tooling protocol', RU: 'Протокол инструментов' }, items: ['MCP (Model Context Protocol)'] },
-      { label: { EN: 'Evaluation and tracing', RU: 'Оценка и наблюдение' }, items: ['Ragas', 'промпт-регрессии', 'трассировка вызовов'] },
+      { label: { EN: 'Evaluation and tracing', RU: 'Оценка и наблюдение' }, items: ['Ragas', { EN: 'prompt regressions', RU: 'промпт-регрессии' }, { EN: 'call tracing', RU: 'трассировка вызовов' }] },
     ],
   },
   {
@@ -102,7 +102,7 @@ export const STACK_GROUPS = [
       { label: { EN: 'Structured data', RU: 'Структурированные данные' }, items: ['Schema.org', 'JSON-LD', 'RealEstate', 'Product', 'Organization', 'Offer'] },
       { label: { EN: 'Social previews', RU: 'Соцпревью' }, items: ['Open Graph', 'Twitter Cards'] },
       { label: { EN: 'Indexing', RU: 'Индексация' }, items: ['XML-sitemap', 'robots.txt', 'canonical', 'hreflang'] },
-      { label: { EN: 'AI visibility', RU: 'AI-видимость' }, items: ['llms.txt', 'семантическая иерархия под парсинг'] },
+      { label: { EN: 'AI visibility', RU: 'AI-видимость' }, items: ['llms.txt', { EN: 'semantic hierarchy for parsing', RU: 'семантическая иерархия под парсинг' }] },
       { label: { EN: 'Core Web Vitals', RU: 'Core Web Vitals' }, items: ['Lighthouse', 'PageSpeed Insights', 'WebPageTest', 'web-vitals'] },
       { label: { EN: 'Internationalisation', RU: 'Интернационализация' }, items: ['next-intl', 'i18next', 'ICU MessageFormat'] },
     ],
@@ -127,7 +127,7 @@ export const STACK_GROUPS = [
       { label: { EN: 'Brokers', RU: 'Брокеры' }, items: ['RabbitMQ', 'Kafka', 'NATS', 'NATS JetStream'] },
       { label: { EN: 'Lightweight queues', RU: 'Лёгкие очереди' }, items: ['Redis Streams', 'Asynq', 'ARQ', 'Celery', 'Dramatiq'] },
       { label: { EN: 'Durable orchestration', RU: 'Durable-оркестрация' }, items: ['Temporal'] },
-      { label: { EN: 'Patterns', RU: 'Паттерны' }, items: ['outbox', 'dead-letter queue', 'at-least-once + идемпотентность'] },
+      { label: { EN: 'Patterns', RU: 'Паттерны' }, items: ['outbox', 'dead-letter queue', { EN: 'at-least-once + idempotency', RU: 'at-least-once + идемпотентность' }] },
     ],
   },
   {
@@ -153,7 +153,7 @@ export const STACK_GROUPS = [
       { label: { EN: 'Metrics', RU: 'Метрики' }, items: ['Prometheus', 'Alertmanager', 'Grafana'] },
       { label: { EN: 'Tracing and logs', RU: 'Трассировка и логи' }, items: ['OpenTelemetry', 'Loki', 'Tempo'] },
       { label: { EN: 'Application errors', RU: 'Ошибки приложения' }, items: ['Sentry'] },
-      { label: { EN: 'Availability', RU: 'Доступность' }, items: ['Uptime Kuma', 'healthcheck-эндпоинты', 'SLO и алертинг'] },
+      { label: { EN: 'Availability', RU: 'Доступность' }, items: ['Uptime Kuma', { EN: 'healthcheck endpoints', RU: 'healthcheck-эндпоинты' }, { EN: 'SLO and alerting', RU: 'SLO и алертинг' }] },
     ],
   },
   {
@@ -184,7 +184,7 @@ export const STACK_GROUPS = [
       { label: { EN: 'Market processing', RU: 'Обработка рынка' }, items: ['Pandas', 'Polars', 'NumPy', 'SciPy'] },
       { label: { EN: 'Indicators', RU: 'Индикаторы' }, items: ['TA-Lib', 'pandas-ta'] },
       { label: { EN: 'Exchange connectors', RU: 'Коннекторы бирж' }, items: ['ccxt'] },
-      { label: { EN: 'Strategy frameworks', RU: 'Фреймворки стратегий' }, items: ['freqtrade', 'jesse', 'кастомные бэктест-движки'] },
+      { label: { EN: 'Strategy frameworks', RU: 'Фреймворки стратегий' }, items: ['freqtrade', 'jesse', { EN: 'custom backtest engines', RU: 'кастомные бэктест-движки' }] },
       { label: { EN: 'Quote storage', RU: 'Хранение котировок' }, items: ['ClickHouse', 'TimescaleDB', 'DuckDB'] },
       { label: { EN: 'Visualisation', RU: 'Визуализация' }, items: ['Grafana', 'Plotly', 'TradingView Lightweight Charts'] },
       { label: { EN: 'Pipeline orchestration', RU: 'Оркестрация пайплайнов' }, items: ['Prefect', 'Dagster', 'Airflow'] },
@@ -208,11 +208,25 @@ export const STACK_GROUPS = [
       { label: { EN: 'Tokens and protocols', RU: 'Токены и протоколы' }, items: ['JWT', 'OAuth2', 'OIDC'] },
       { label: { EN: 'Identity providers', RU: 'Identity-провайдеры' }, items: ['Keycloak', 'Authentik', 'Ory (Kratos, Hydra)', 'Supabase Auth'] },
       { label: { EN: 'Client authorisation', RU: 'Клиентская авторизация' }, items: ['Auth.js', 'Clerk'] },
-      { label: { EN: 'Payments', RU: 'Платежи' }, items: ['Stripe', 'вебхуки платёжных провайдеров'] },
+      { label: { EN: 'Payments', RU: 'Платежи' }, items: ['Stripe', { EN: 'payment provider webhooks', RU: 'вебхуки платёжных провайдеров' }] },
       { label: { EN: 'Anti-bot', RU: 'Антибот и защита форм' }, items: ['Cloudflare Turnstile', 'rate limiting'] },
     ],
   },
 ];
+
+
+/**
+ * An entry is a plain string when it reads the same in both languages — most of
+ * them are product names — and a pair when it does not.
+ *
+ * Twelve entries were descriptions rather than names ("подпись сообщений",
+ * "SLO и алертинг") and, being one shared array, printed in Russian on the
+ * English site and in an English CV. The English form is the identity: it is
+ * what counts, what a case is matched against, and what stays stable if the
+ * Russian wording is reworded.
+ */
+const itemText = (item, key) => (typeof item === 'string' ? item : (item[key] || item.EN));
+const itemKey = (item) => (typeof item === 'string' ? item : item.EN);
 
 /**
  * The layers a visitor actually asks about — "do you do frontend, do you do
@@ -404,14 +418,14 @@ export function stackGroups(lang = 'EN', layer = null) {
     note: g.note ? (g.note[key] || g.note.EN) : null,
     lines: g.lines
       .filter((l) => !layer || layersOf(g.id, l.label.EN).includes(layer))
-      .map((l) => ({ label: l.label[key] || l.label.EN, items: l.items })),
+      .map((l) => ({ label: l.label[key] || l.label.EN, items: l.items.map((i) => itemText(i, key)) })),
   })).filter((g) => g.lines.length > 0);
 }
 
 /** Distinct tool count, computed rather than typed — as every figure here is. */
 export function stackToolCount() {
   const seen = new Set();
-  for (const g of STACK_GROUPS) for (const l of g.lines) for (const i of l.items) seen.add(i);
+  for (const g of STACK_GROUPS) for (const l of g.lines) for (const i of l.items) seen.add(itemKey(i));
   return seen.size;
 }
 
@@ -445,8 +459,9 @@ export function backedTools(labels = []) {
   for (const g of STACK_GROUPS) {
     for (const l of g.lines) {
       for (const item of l.items) {
-        for (const v of variants(item)) {
-          if (wanted.has(v)) { backed.add(item); break; }
+        const name = itemKey(item);
+        for (const v of variants(name)) {
+          if (wanted.has(v)) { backed.add(name); break; }
         }
       }
     }
@@ -458,7 +473,7 @@ export function backedTools(labels = []) {
 export function unmatchedWorkTech(labels = []) {
   const covered = new Set();
   for (const g of STACK_GROUPS) {
-    for (const l of g.lines) for (const item of l.items) for (const v of variants(item)) covered.add(v);
+    for (const l of g.lines) for (const item of l.items) for (const v of variants(itemKey(item))) covered.add(v);
   }
   return labels.filter((l) => !covered.has(l.toLowerCase().trim()));
 }
