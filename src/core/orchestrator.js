@@ -145,6 +145,11 @@ export default class PortfolioOrchestrator {
    * section is: while the copy is unwritten the list is empty, and an empty
    * list must leave no heading, no markup and nothing for a crawler to index
    * as a promise the page does not keep.
+   *
+   * A card shows a picture, a name and one line. Everything else is behind
+   * "More" — a <details>, like the toolbox areas, so it works before the
+   * scripts run and a keyboard can reach it. The section leads the page, and a
+   * lead that opens with a paragraph each is a lead nobody reads to the end.
    */
   _renderProducts() {
     const existing = document.getElementById('productsOverlay');
@@ -171,19 +176,33 @@ export default class PortfolioOrchestrator {
             <div class="pc-body">
               <h3 class="pc-name">${esc(p.name)}</h3>
               <p class="pc-tagline">${esc(p.tagline)}</p>
-              <p class="pc-summary">${esc(p.summary)}</p>
-              <dl class="pc-meta">
-                <dt>${esc(L.ROLE || 'Role')}</dt><dd>${esc(p.role)}</dd>
-                ${p.since ? `<dt>${esc(L.SINCE || 'Live since')}</dt><dd>${esc(p.since)}</dd>` : ''}
-                ${p.stack.length
+              <details class="pc-more">
+                <summary>${esc(L.MORE || 'More')}</summary>
+                <p class="pc-summary">${esc(p.summary)}</p>
+                <dl class="pc-meta">
+                  <dt>${esc(L.ROLE || 'Role')}</dt><dd>${esc(p.role)}</dd>
+                  ${p.since ? `<dt>${esc(L.SINCE || 'Live since')}</dt><dd>${esc(p.since)}</dd>` : ''}
+                  ${p.stack.length
     ? `<dt>${esc(L.STACK || 'Built with')}</dt><dd>${esc(p.stack.join(', '))}</dd>` : ''}
-              </dl>
+                </dl>
+              </details>
               <a class="pc-open" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">
                 ${esc(L.OPEN || 'Open the site')}</a>
             </div>
           </article>`).join('')}
       </div>`;
     if (!existing) anchor.parentNode.insertBefore(section, anchor);
+
+    // A shot named in the data but missing on disk drew a full-width broken
+    // image — a grey block taller than the card, at the top of the page. The
+    // card is complete without a picture, so a picture that does not load
+    // removes itself rather than leaving that.
+    section.querySelectorAll('.pc-shot').forEach((img) => {
+      const drop = () => img.remove();
+      img.addEventListener('error', drop, { once: true });
+      // Cached failures fire no event: the image is already done and empty.
+      if (img.complete && img.naturalWidth === 0) drop();
+    });
   }
 
   /**

@@ -14,6 +14,12 @@
  * runs paid advertising, and a guessed description of the owner's own business
  * is exactly the kind of claim the project's first rule exists to stop.
  *
+ * Two lengths, deliberately. `tagline` is the whole of what a card shows
+ * before anyone clicks: one line, no clauses, the thing itself. `summary` is
+ * what opens behind "More" — who it is for and what it does for them. A card
+ * that leads with a paragraph is a card nobody finishes, and this section sits
+ * above everything else on the page.
+ *
  * `shot` names a file under public/products/. Take them with:
  *
  *   node scripts/product-shots.mjs
@@ -31,8 +37,8 @@ export const PRODUCTS = [
     status: 'published',
     since: '',
     tagline: {
-      EN: 'Finds people asking to buy, in Telegram and VK, around the clock',
-      RU: 'Находит тех, кто спрашивает «где купить», в Telegram и VK — круглосуточно',
+      EN: 'Finds customers in Telegram chats and answers them for you',
+      RU: 'Находит клиентов в чатах Telegram и отвечает им за вас',
     },
     summary: {
       EN: 'A sales tool for companies whose customers talk in messengers. It watches the groups they talk in, works out which messages are somebody actually looking to buy rather than chatting, and hands those to the sales team sorted by how ready they are — with a reply sent while the person is still in the conversation, and an export into whatever CRM the company already runs.',
@@ -52,8 +58,8 @@ export const PRODUCTS = [
     status: 'published',
     since: '',
     tagline: {
-      EN: 'Phuket villas to rent or buy, dealt with directly rather than through an agency',
-      RU: 'Виллы на Пхукете в аренду и на продажу — напрямую, без агентства посередине',
+      EN: 'Phuket villas, straight from the owner',
+      RU: 'Виллы на Пхукете напрямую от собственника',
     },
     summary: {
       EN: 'A collection of houses across the districts of Phuket, each one visited in person before it is listed — the paperwork, the water, the electricity, how quiet it actually is — and photographed rather than illustrated with stock images. A visitor filters by district, price and bedrooms, and the enquiry reaches the owner instead of a chain of intermediaries.',
