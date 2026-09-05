@@ -172,15 +172,14 @@ test.describe('the page names its own parts', () => {
 });
 
 test.describe('every filter is visible without scrolling', () => {
-  // A filter row is a promise about how many choices there are. This one was
-  // briefly a sideways-scrolling strip: it fitted one line and hid that fact,
-  // so a phone showed four of seven categories and no sign of the rest. Wrapped
-  // rows are taller and honest. Both filter rows on the page are checked, since
-  // they share .cat-tabs and a rule aimed at one lands on the other.
-  for (const [what, sel] of [['projects', '#catTabs'], ['toolbox', '#stackLayers']]) {
-    test(`${what}: no chip is clipped or off-screen`, async ({ page }) => {
+  // A filter row is a promise about how many choices there are. The toolbox's
+  // row was briefly a sideways-scrolling strip: it fitted one line and hid that
+  // fact, so a phone showed four of eight layers and no sign of the rest.
+  // Wrapped rows are taller and honest.
+  {
+    test('no chip is clipped or off-screen', async ({ page }) => {
       await boot(page, 'business');
-      const row = page.locator(sel);
+      const row = page.locator('#stackLayers');
       await row.scrollIntoViewIfNeeded();
       const bad = await row.evaluate((el) => {
         const box = el.getBoundingClientRect();
@@ -249,6 +248,48 @@ test.describe('the toolbox filters by layer', () => {
   });
 });
 
+/**
+ * The reference architectures are read by the person paying, not by a peer.
+ *
+ * They were written the other way round: "strangler-fig extraction", "GitOps",
+ * "idempotent handlers", "hydrated on the client". Each is the right word among
+ * engineers and an opaque one to a founder deciding whether to call. The names
+ * stay technical — they are the categories, and a technical buyer scans them —
+ * but the sentence underneath has to say what the work is for.
+ */
+test.describe('the method is explained in words a buyer knows', () => {
+  // Terms with no plain-language value in a description. Not a style
+  // preference: each of these appeared in the copy and had to be looked up.
+  const JARGON = [
+    /strangler/i, /\bGitOps\b/i, /idempotent/i, /dead-letter/i, /hydrat(e|ed|ion)/i,
+    /\bnamespace/i, /blue-green/i, /reconciler/i, /\bgRPC\b/i, /snowflake/i,
+    /партицион/i, /инвалидац/i, /идемпотент/i, /гидратац/i, /пайплайн/i,
+  ];
+
+  for (const lang of ['EN', 'RU']) {
+    test(`${lang}: no description needs a glossary`, async () => {
+      const { default: PONYTAIL } = await import('../src/config/ponytail.config.js');
+      const bad = [];
+      for (const p of PONYTAIL.LOCALE[lang].PROJECTS) {
+        for (const term of JARGON) {
+          if (term.test(p.desc)) bad.push(`${p.name}: ${term}`);
+        }
+      }
+      expect(bad, `jargon left in ${lang} descriptions:\n${bad.join('\n')}`).toEqual([]);
+    });
+
+    test(`${lang}: every architecture says what it is for, at length`, async () => {
+      // A one-clause description is how the technical shorthand came back last
+      // time: there is no room to explain a thing in nine words.
+      const { default: PONYTAIL } = await import('../src/config/ponytail.config.js');
+      const thin = PONYTAIL.LOCALE[lang].PROJECTS
+        .filter((p) => (p.desc || '').split(/\s+/).length < 20)
+        .map((p) => `${p.name} (${p.desc.split(/\s+/).length} words)`);
+      expect(thin, `descriptions too short to explain anything:\n${thin.join('\n')}`).toEqual([]);
+    });
+  }
+});
+
 test.describe('the toolbox is the same list in every mode', () => {
   // 275 names, and the number in the copy is computed from the data rather than
   // typed into it — the project's first rule, applied one level down.
@@ -299,38 +340,19 @@ test.describe('the toolbox is the same list in every mode', () => {
   });
 });
 
-test.describe('one section about technology, two layers inside', () => {
-  test('the toolbox marks what has work behind it, and counts it', async ({ page }) => {
+test.describe('one section about technology, one layer inside', () => {
+  // The section used to carry a second layer: a "47 of them appear in the work
+  // above" line with frequency bars, and the entries it counted highlighted in
+  // the list. The owner removed both — the bars repeated the statistics further
+  // up the page. These guard the removal rather than the feature: a highlight
+  // with no legend, or a second chart of the same subject, should not come back
+  // by accident.
+  test('nothing above or inside the toolbox restates a fraction of it', async ({ page }) => {
     await boot(page, 'business');
-    const counts = await page.evaluate(async () => {
-      for (const d of document.querySelectorAll('#stackOverlay .stack-group')) d.open = true;
-      const all = [...document.querySelectorAll('#stackOverlay .sg-item')];
-      return {
-        total: new Set(all.map((e) => e.textContent.trim())).size,
-        backed: new Set(all.filter((e) => e.classList.contains('sg-backed'))
-          .map((e) => e.textContent.trim())).size,
-        claimed: Number(document.querySelector('#stackOverlay .sb-title')
-          ?.textContent.match(/\d+/)?.[0]),
-      };
-    });
-    // The lower layer is a subset of the upper one, and the sentence says so
-    // with the same number the markup carries.
-    expect(counts.backed).toBe(counts.claimed);
-    expect(counts.backed).toBeLessThan(counts.total);
-    expect(counts.backed).toBeGreaterThan(0);
-  });
-
-  // The "N of M" claim used to be duplicated in a summary panel above the
-  // project grid. That panel is gone — on a phone its four tiles wrapped into a
-  // broken row and one of them ("17 under NDA") repeated the project count — so
-  // the toolbox below is now the only place the fraction is stated, and this
-  // guards that it is still stated there rather than lost with the panel.
-  test('the toolbox is the one place the fraction is claimed', async ({ page }) => {
-    await boot(page, 'business');
-    const title = await page.locator('#stackOverlay .sb-title').innerText();
-    expect(Number(title.match(/\d+/)?.[0]), `no number in the backed-tools title: ${title}`)
-      .toBeGreaterThan(0);
-    // And nothing above the project grid repeats it.
+    await expect(page.locator('#stackOverlay .sb-title')).toHaveCount(0);
+    await expect(page.locator('#stackOverlay .sb-bars')).toHaveCount(0);
+    await expect(page.locator('#stackOverlay .sg-backed')).toHaveCount(0);
+    // The panel above the project grid went earlier, for the same reason.
     await expect(page.locator('.pdash-tile')).toHaveCount(0);
     await expect(page.locator('#projectsDash')).toHaveCount(0);
   });
@@ -347,6 +369,14 @@ test.describe('one section about technology, two layers inside', () => {
     // The Russian list keeps product names as they are spelt, so only entries
     // that are wholly Latin *words* are suspect — "PostgreSQL" is not.
     expect(items('RU').length).toBe(items('EN').length);
+  });
+
+  test('the toolbox still states its own size, computed', async ({ page }) => {
+    await boot(page, 'business');
+    const sub = await page.locator('#stackOverlay .section-sub').innerText();
+    const { stackToolCount } = await import('../src/data/stack.js');
+    expect(sub, `sub-line does not carry the tool count: ${sub}`)
+      .toContain(String(stackToolCount()));
   });
 
   test('every technology named in the work exists in the toolbox', async () => {

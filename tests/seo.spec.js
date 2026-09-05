@@ -44,6 +44,85 @@ test('each of those pages has a canonical of its own', async ({ request }) => {
   expect(html).not.toContain('<link rel="canonical" href="https://dev24.pro/"');
 });
 
+/**
+ * Structured data: the hidden paragraph a crawler and an assistant read.
+ *
+ * The shell used to ship one Person block and every page repeated it, so a case
+ * page announced who the author was and nothing at all about itself. These hold
+ * the replacement to the rule the visible site already follows: say nothing that
+ * cannot be checked against the page.
+ */
+test.describe('every page says what it is, in a form a machine can read', () => {
+  const ld = async (request, path) => {
+    const html = await request.get(path).then((r) => r.text());
+    const blocks = [...html.matchAll(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
+    )].map((m) => m[1]);
+    return { blocks, graph: blocks.length ? JSON.parse(blocks[0])['@graph'] : [] };
+  };
+  const typeOf = (graph, t) => graph.find((n) => n['@type'] === t);
+
+  test('one block per page, and it parses', async ({ request }) => {
+    for (const path of ['/', '/ru', '/case/sixt/', '/project/pg-highload/', '/privacy/']) {
+      const { blocks, graph } = await ld(request, path);
+      expect(blocks.length, `${path} has ${blocks.length} ld+json blocks`).toBe(1);
+      expect(graph.length, `${path} has an empty graph`).toBeGreaterThan(1);
+    }
+  });
+
+  test('a subpage describes itself, not just its author', async ({ request }) => {
+    const { graph } = await ld(request, '/case/sixt/');
+    const article = typeOf(graph, 'Article');
+    expect(article, 'the case page carries no Article node').toBeTruthy();
+    expect(article.mainEntityOfPage).toBe('https://dev24.pro/case/sixt');
+    expect(article.headline?.length, 'the Article has no headline').toBeGreaterThan(0);
+    // Where the page sits, so a result can be shown in context.
+    expect(typeOf(graph, 'BreadcrumbList'), 'no breadcrumb').toBeTruthy();
+  });
+
+  test('the person is one node the whole site points at', async ({ request }) => {
+    const { graph } = await ld(request, '/project/pg-highload/');
+    const article = typeOf(graph, 'Article');
+    const person = typeOf(graph, 'Person');
+    // An @id that does not resolve inside the graph is a dangling reference:
+    // the author becomes an anonymous blank node and the pages stop being one
+    // person's work as far as anything reading this is concerned.
+    expect(article.author['@id']).toBe(person['@id']);
+    expect(person['@id']).toBe('https://dev24.pro/#person');
+  });
+
+  test('the address in the markup is the address on the site', async ({ request }) => {
+    // These disagreed: the markup published a personal gmail while every
+    // visible surface said hello@. Search engines read the markup.
+    const { CONTACTS } = await import('../src/data/process.js');
+    const { graph } = await ld(request, '/');
+    expect(typeOf(graph, 'Person').email).toBe(`mailto:${CONTACTS.email}`);
+  });
+
+  test('the markup claims the whole toolbox, not a subset of it', async ({ request }) => {
+    // The page says "294 tools, this is what I can pick up". The markup once
+    // said 47 — the subset with work behind it on this site — which had the
+    // structured data understating the visible page. Read from the same file
+    // so the two cannot drift apart again in either direction.
+    const { stackGroups, stackToolCount } = await import('../src/data/stack.js');
+    const all = new Set(stackGroups('EN').flatMap((g) => g.lines.flatMap((line) => line.items)));
+    const { graph } = await ld(request, '/');
+    const known = typeOf(graph, 'Person').knowsAbout;
+    expect(known.length, 'knowsAbout is not the whole toolbox').toBe(stackToolCount());
+    expect(new Set(known)).toEqual(all);
+  });
+
+  test('no identity is asserted at a profile that is not his', async ({ request }) => {
+    // sameAs tells a search engine "this account is the same person". Pointing
+    // it at a URL he does not control is worse than leaving it empty, and it
+    // was once pointed at a GitHub account with no repositories.
+    const { graph } = await ld(request, '/');
+    for (const url of typeOf(graph, 'Person').sameAs || []) {
+      expect(url, `sameAs entry is not an absolute URL: ${url}`).toMatch(/^https:\/\//);
+    }
+  });
+});
+
 test('the sitemap lists every page and nothing that redirects', async ({ request }) => {
   const res = await request.get('/sitemap.xml');
   expect(res.status()).toBe(200);

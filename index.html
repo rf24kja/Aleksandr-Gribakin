@@ -1340,6 +1340,77 @@
       .pd-scope li { font-size: 13.5px; }
     }
 
+    /* The owner's own products. The only cards on this page carrying a picture
+       and a link out, because they are the only entries a visitor can go and
+       check for themselves — the screenshot is the argument, so it leads. */
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 760px) {
+      .product-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .product-card {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--section-bg);
+    }
+    /* 16:10 reserved before the image arrives: these load lazily and a card
+       that grows when the picture lands shoves the next one down the page. */
+    .pc-shot {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      object-position: top center;
+      border-bottom: 1px solid var(--border);
+      background: var(--section-bg);
+    }
+    .pc-body { padding: 18px; display: flex; flex-direction: column; gap: 8px; }
+    /* Weight stated, not inherited: an <h3> defaults to 700 and the site ships
+       Inter 200-600, so the browser would have synthesised a bold. Matches
+       .web-client, which is the same kind of heading one section down. */
+    .pc-name { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: .01em; }
+    .pc-tagline { margin: 0; color: var(--accent); font-size: 13.5px; }
+    .pc-summary { margin: 0; color: var(--text-dim); font-size: 14px; line-height: 1.55; }
+    .pc-meta {
+      margin: 4px 0 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 3px 10px;
+      font-size: 12.5px;
+    }
+    .pc-meta dt { color: var(--text-dim); font-family: var(--font-mono); font-size: 11px; }
+    .pc-meta dd { margin: 0; }
+    .pc-open {
+      margin-top: 10px;
+      align-self: flex-start;
+      /* 44px of target, the bar every other control on this page is held to. */
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 16px;
+      border: 1px solid var(--accent);
+      border-radius: 22px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .pc-open:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+    [data-mode="business"] .product-card {
+      border-color: rgba(255,255,255,.06);
+      background: var(--b-bg2);
+      border-radius: var(--b-radius);
+    }
+    [data-mode="business"] .pc-tagline { color: var(--b-accent-text); }
+    [data-mode="business"] .pc-summary { color: var(--b-text-dim); }
+    [data-mode="business"] .pc-open { border-color: var(--b-accent); color: var(--b-accent-text); }
+
     /* Client project cards. Wider than the architecture cards on purpose: a
        case carries a client, a period, a role and an outcome, and squeezing
        that into the same tile as a one-line description is what made the two
@@ -4031,7 +4102,6 @@
   <div class="section-overlay" id="projectsOverlay">
     <h2 class="section-title" data-i18n="SECTION_TITLES.PROJECTS">Reference Architectures</h2>
     <p class="section-sub" data-i18n="SECTION_TITLES.PROJECTS_SUB">How I solve these classes of problem — the method, not a client list</p>
-    <div class="cat-tabs" id="catTabs"></div>
     <div class="projects-grid" id="projectsGrid"></div>
   </div>
 

@@ -110,8 +110,8 @@ export const CONTACTS = {
   // mailbox. Read from here by the footer, the desktop Mail window, the
   // terminal's contact output and the privacy policy, so it is changed once.
   email: 'hello@dev24.pro',
-  telegram: '@amgam24',
-  telegramUrl: 'https://t.me/amgam24',
+  telegram: '@dev24pro',
+  telegramUrl: 'https://t.me/dev24pro',
 };
 
 // The address the terminal's `coffee` command has always printed. It lives here
