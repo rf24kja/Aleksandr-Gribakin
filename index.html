@@ -1340,9 +1340,10 @@
       .pd-scope li { font-size: 13.5px; }
     }
 
-    /* The owner's own products. The only cards on this page carrying a picture
-       and a link out, because they are the only entries a visitor can go and
-       check for themselves — the screenshot is the argument, so it leads. */
+    /* The owner's own products. The only cards on this page carrying a link
+       out, because they are the only entries a visitor can go and check for
+       themselves — so the link is the argument, and it is the loudest thing
+       on the card after the name. */
     .product-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -1362,22 +1363,11 @@
       border-radius: 12px;
       background: var(--section-bg);
     }
-    /* 16:10 reserved before the image arrives: these load lazily and a card
-       that grows when the picture lands shoves the next one down the page. */
-    .pc-shot {
-      display: block;
-      width: 100%;
-      aspect-ratio: 16 / 10;
-      object-fit: cover;
-      object-position: top center;
-      border-bottom: 1px solid var(--border);
-      background: var(--section-bg);
-    }
-    .pc-body { padding: 18px; display: flex; flex-direction: column; gap: 6px; }
+    .pc-body { padding: 20px; display: flex; flex-direction: column; gap: 6px; }
     /* Weight stated, not inherited: an <h3> defaults to 700 and the site ships
        Inter 200-600, so the browser would have synthesised a bold. Matches
        .web-client, which is the same kind of heading one section down. */
-    .pc-name { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: .01em; }
+    .pc-name { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: .01em; }
     .pc-tagline { margin: 0; color: var(--accent); font-size: 14.5px; line-height: 1.4; }
     .pc-summary { margin: 0; color: var(--text-dim); font-size: 14px; line-height: 1.55; }
     /* "More" — a details, like the toolbox areas, so it opens before the
@@ -1392,9 +1382,11 @@
       align-items: center;
       gap: 6px;
       font-family: var(--font-mono);
-      font-size: 11.5px;
+      font-size: 12.5px;
       letter-spacing: .04em;
-      color: var(--text-dim);
+      /* Not --text-dim: at 11.5px on this ground it read as disabled rather
+         than clickable, and it is the only way to the rest of the card. */
+      color: var(--accent);
     }
     .pc-more > summary::-webkit-details-marker { display: none; }
     .pc-more > summary::after {

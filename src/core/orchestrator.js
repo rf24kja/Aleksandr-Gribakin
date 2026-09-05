@@ -146,7 +146,7 @@ export default class PortfolioOrchestrator {
    * list must leave no heading, no markup and nothing for a crawler to index
    * as a promise the page does not keep.
    *
-   * A card shows a picture, a name and one line. Everything else is behind
+   * A card shows a name and one line. Everything else is behind
    * "More" — a <details>, like the toolbox areas, so it works before the
    * scripts run and a keyboard can reach it. The section leads the page, and a
    * lead that opens with a paragraph each is a lead nobody reads to the end.
@@ -171,8 +171,6 @@ export default class PortfolioOrchestrator {
       <div class="product-grid">
         ${items.map((p) => `
           <article class="product-card">
-            ${p.shot ? `<img class="pc-shot" src="${esc(p.shot)}" alt="${esc(p.name)}"
-              loading="lazy" decoding="async" width="1280" height="800">` : ''}
             <div class="pc-body">
               <h3 class="pc-name">${esc(p.name)}</h3>
               <p class="pc-tagline">${esc(p.tagline)}</p>
@@ -192,17 +190,6 @@ export default class PortfolioOrchestrator {
           </article>`).join('')}
       </div>`;
     if (!existing) anchor.parentNode.insertBefore(section, anchor);
-
-    // A shot named in the data but missing on disk drew a full-width broken
-    // image — a grey block taller than the card, at the top of the page. The
-    // card is complete without a picture, so a picture that does not load
-    // removes itself rather than leaving that.
-    section.querySelectorAll('.pc-shot').forEach((img) => {
-      const drop = () => img.remove();
-      img.addEventListener('error', drop, { once: true });
-      // Cached failures fire no event: the image is already done and empty.
-      if (img.complete && img.naturalWidth === 0) drop();
-    });
   }
 
   /**
