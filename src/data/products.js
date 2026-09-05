@@ -28,14 +28,20 @@ export const PRODUCTS = [
     id: '24go-site',
     name: '24go.site',
     url: 'https://24go.site',
-    status: 'draft',
+    status: 'published',
     since: '',
-    // What it is, in one line a stranger understands. Owner's words.
-    tagline: { EN: '', RU: '' },
-    // Two or three sentences: who it is for, and what it does for them.
-    summary: { EN: '', RU: '' },
-    // Exact, like every capacity line on this site.
-    role: { EN: '', RU: '' },
+    tagline: {
+      EN: 'Finds people asking to buy, in Telegram and VK, around the clock',
+      RU: 'Находит тех, кто спрашивает «где купить», в Telegram и VK — круглосуточно',
+    },
+    summary: {
+      EN: 'A sales tool for companies whose customers talk in messengers. It watches the groups they talk in, works out which messages are somebody actually looking to buy rather than chatting, and hands those to the sales team sorted by how ready they are — with a reply sent while the person is still in the conversation, and an export into whatever CRM the company already runs.',
+      RU: 'Инструмент продаж для компаний, чьи клиенты общаются в мессенджерах. Он следит за группами, где они общаются, отличает сообщение человека, который правда хочет купить, от просто разговора и отдаёт такие обращения отделу продаж, разобранными по готовности — с ответом, отправленным, пока человек ещё в переписке, и выгрузкой в ту CRM, которой компания уже пользуется.',
+    },
+    role: {
+      EN: 'My own product — built and run by me',
+      RU: 'Собственный продукт — разработка и эксплуатация',
+    },
     stack: [],
     shot: '24go-site.jpg',
   },
@@ -43,11 +49,20 @@ export const PRODUCTS = [
     id: '24go-asia',
     name: '24go.asia',
     url: 'https://24go.asia',
-    status: 'draft',
+    status: 'published',
     since: '',
-    tagline: { EN: '', RU: '' },
-    summary: { EN: '', RU: '' },
-    role: { EN: '', RU: '' },
+    tagline: {
+      EN: 'Phuket villas to rent or buy, dealt with directly rather than through an agency',
+      RU: 'Виллы на Пхукете в аренду и на продажу — напрямую, без агентства посередине',
+    },
+    summary: {
+      EN: 'A collection of houses across the districts of Phuket, each one visited in person before it is listed — the paperwork, the water, the electricity, how quiet it actually is — and photographed rather than illustrated with stock images. A visitor filters by district, price and bedrooms, and the enquiry reaches the owner instead of a chain of intermediaries.',
+      RU: 'Подборка домов по районам Пхукета: каждый осмотрен лично до того, как попасть в каталог, — документы, вода, электричество, действительно ли там тихо, — и отснят, а не проиллюстрирован стоковыми картинками. Посетитель отбирает по району, цене и числу спален, а заявка уходит собственнику, а не по цепочке посредников.',
+    },
+    role: {
+      EN: 'My own product — built and run by me',
+      RU: 'Собственный продукт — разработка и эксплуатация',
+    },
     stack: [],
     shot: '24go-asia.jpg',
   },

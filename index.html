@@ -1371,7 +1371,10 @@
       background: var(--section-bg);
     }
     .pc-body { padding: 18px; display: flex; flex-direction: column; gap: 8px; }
-    .pc-name { margin: 0; font-size: 18px; letter-spacing: .01em; }
+    /* Weight stated, not inherited: an <h3> defaults to 700 and the site ships
+       Inter 200-600, so the browser would have synthesised a bold. Matches
+       .web-client, which is the same kind of heading one section down. */
+    .pc-name { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: .01em; }
     .pc-tagline { margin: 0; color: var(--accent); font-size: 13.5px; }
     .pc-summary { margin: 0; color: var(--text-dim); font-size: 14px; line-height: 1.55; }
     .pc-meta {
