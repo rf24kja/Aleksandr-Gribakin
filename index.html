@@ -1346,7 +1346,10 @@
     .product-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 16px;
+      /* 12px, the gutter .web-grid and .projects-grid use. At 16 these cards
+         came out two pixels narrower than the ones in the sections below, so
+         the column edges did not line up down the page. */
+      gap: 12px;
     }
     @media (min-width: 760px) {
       .product-grid { grid-template-columns: repeat(2, 1fr); }
