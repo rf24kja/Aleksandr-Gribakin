@@ -269,7 +269,7 @@ const COMMANDS = [
       const items = products(ctx.lang);
       if (!items.length) return [{ text: `  ${t.LIVE_EMPTY || 'Nothing published yet.'}`, cls: 'dim' }];
 
-      const out = [...head(`${t.HEAD_LIVE || 'RUNNING NOW'} (${items.length})`, ctx.cols)];
+      const out = [...head(`${t.HEAD_LIVE || 'CURRENT PROJECTS'} (${items.length})`, ctx.cols)];
       for (const p of items) {
         out.push({ text: `  ${p.name}`, cls: 'accent' });
         for (const line of wrap(p.tagline, ctx.cols - 6, '    ')) out.push({ text: line, cls: 'dim' });

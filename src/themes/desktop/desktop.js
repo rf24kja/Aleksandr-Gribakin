@@ -414,12 +414,12 @@ function renderProducts() {
   const items = products(lang)
   if (!items.length) {
     return `
-      <div class="wb-title">${esc(t.PRODUCTS || 'Running Now')}</div>
+      <div class="wb-title">${esc(t.PRODUCTS || 'Current Projects')}</div>
       <hr class="wb-divider">
       <div class="wb-bullet">${esc(t.PRODUCTS_SUB || '')}</div>`
   }
   return `
-    <div class="wb-title">${esc(t.PRODUCTS || 'Running Now')}</div>
+    <div class="wb-title">${esc(t.PRODUCTS || 'Current Projects')}</div>
     <div class="wb-sub">${esc(t.PRODUCTS_SUB || '')}</div>
     <hr class="wb-divider">
     ${items.map(p => `
@@ -541,7 +541,7 @@ export function initDesktop(appState) {
     renderLegal, { width: 620, height: 480 })
   // The terminal's `coffee` command had no equivalent here or in business, so
   // two interfaces out of three simply did not carry the offer.
-  registerApp('products', () => PONYTAIL.LOCALE[state?.lang || 'EN']?.SECTION_TITLES?.PRODUCTS || 'Running Now',
+  registerApp('products', () => PONYTAIL.LOCALE[state?.lang || 'EN']?.SECTION_TITLES?.PRODUCTS || 'Current Projects',
     SVG.products, renderProducts, { width: 600, height: 440 })
   registerApp('tools', () => PONYTAIL.LOCALE[state?.lang || 'EN']?.SECTION_TITLES?.STACK || 'Toolbox',
     SVG.tools, renderTools, { width: 620, height: 460 })

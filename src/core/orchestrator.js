@@ -166,7 +166,7 @@ export default class PortfolioOrchestrator {
     section.className = 'section-overlay';
     section.id = 'productsOverlay';
     section.innerHTML = `
-      <h2 class="section-title">${esc(t.PRODUCTS || 'Running Now')}</h2>
+      <h2 class="section-title">${esc(t.PRODUCTS || 'Current Projects')}</h2>
       <p class="section-sub">${esc(t.PRODUCTS_SUB || '')}</p>
       <div class="product-grid">
         ${items.map((p) => `
