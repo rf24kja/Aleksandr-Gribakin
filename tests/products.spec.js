@@ -199,22 +199,4 @@ test.describe('once a product is published', () => {
     }
   });
 
-  test('no card shows a broken image', async ({ page }) => {
-    // A shot named in the data but missing on disk drew a grey block taller
-    // than the card, at the top of the page. An image that does not load now
-    // removes itself, so what is left is either a real picture or nothing.
-    await boot(page, 'business');
-    const broken = await page.evaluate(() => [...document.querySelectorAll('#productsOverlay img')]
-      .filter((i) => i.complete && i.naturalWidth === 0)
-      .map((i) => i.getAttribute('src')));
-    expect(broken, `broken images in the section: ${broken.join(', ')}`).toEqual([]);
-  });
-
-  test('a picture never collapses the card it sits in', async ({ page }) => {
-    await boot(page, 'business');
-    const shots = page.locator('#productsOverlay .pc-shot');
-    if (await shots.count() === 0) return;
-    const heights = await shots.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
-    for (const h of heights) expect(h, 'a product screenshot has no height').toBeGreaterThan(40);
-  });
 });

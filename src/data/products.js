@@ -20,11 +20,10 @@
  * that leads with a paragraph is a card nobody finishes, and this section sits
  * above everything else on the page.
  *
- * `shot` names a file under public/products/. Take them with:
- *
- *   node scripts/product-shots.mjs
- *
- * which reads the URLs below, so the picture and the entry cannot drift apart.
+ * No screenshots. They were tried and dropped: the entries named files nobody
+ * could produce from here, so every card drew a broken image instead. A name,
+ * one line and a link to the live site is the whole card — and the link is the
+ * better evidence anyway, because it cannot go stale the way a picture does.
  */
 
 /** @typedef {'draft'|'published'} Status */
@@ -49,7 +48,6 @@ export const PRODUCTS = [
       RU: 'Собственный продукт — разработка и эксплуатация',
     },
     stack: [],
-    shot: '24go-site.jpg',
   },
   {
     id: '24go-asia',
@@ -70,7 +68,6 @@ export const PRODUCTS = [
       RU: 'Собственный продукт — разработка и эксплуатация',
     },
     stack: [],
-    shot: '24go-asia.jpg',
   },
 ];
 
@@ -96,7 +93,6 @@ export function products(lang = 'EN') {
     summary: p.summary[key] || p.summary.EN,
     role: p.role[key] || p.role.EN,
     stack: p.stack,
-    shot: p.shot ? `/products/${p.shot}` : null,
   }));
 }
 
