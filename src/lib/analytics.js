@@ -19,6 +19,8 @@
  * one visible line instead of a hunt through the bundle.
  */
 
+import { initMetricaConsent } from './metrica-consent.js';
+
 const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 const YM_ID = () => meta('yandex-metrica');
 const GA_ID = () => meta('google-analytics');
@@ -26,6 +28,19 @@ const VERCEL_ON = () => meta('vercel-analytics') === 'on';
 
 let started = false;
 let lastUrl = '';
+let metricaActive = false;
+
+function metricaUrl(value) {
+  if (!value) return '';
+  const url = new URL(value, window.location.origin);
+  const publicHash = /^#\/(?:project|case|career|achievement)\/[a-z0-9-]+$/.test(url.hash) ? url.hash : '';
+  return url.origin + url.pathname + publicHash;
+}
+
+function maskMetricaFields() {
+  document.querySelectorAll('input,textarea,[contenteditable]').forEach(el => el.classList.add('ym-disable-keys'));
+  document.querySelectorAll('form,#terminalShell').forEach(el => el.classList.add('ym-hide-content'));
+}
 
 /** Path, query and hash — everything that distinguishes one view from another. */
 function currentUrl() {
@@ -48,14 +63,34 @@ function loadMetrica(id) {
   // window between the first pageview and the network.
   window.ym = window.ym || function ym(...args) { (window.ym.a = window.ym.a || []).push(args); };
   window.ym.l = Date.now();
-  script('https://mc.yandex.ru/metrika/tag.js');
+  maskMetricaFields();
+  window.dataLayer = window.dataLayer || [];
+  const source = `https://mc.yandex.ru/metrika/tag.js?id=${encodeURIComponent(id)}`;
+  if (![...document.scripts].some(el => el.src === source)) script(source);
   window.ym(id, 'init', {
     defer: true, // trackPage() is the only thing that reports a view
+    ssr: true,
+    ecommerce: 'dataLayer',
+    url: metricaUrl(currentUrl()),
+    referrer: metricaUrl(document.referrer),
     clickmap: true,
     trackLinks: true,
     accurateTrackBounce: true,
     webvisor: true,
   });
+}
+
+function setMetricaConsent(accepted) {
+  const id = YM_ID();
+  if (!accepted) {
+    if (metricaActive) window.ym(id, 'destruct');
+    metricaActive = false;
+    return;
+  }
+  if (!id || metricaActive) return;
+  loadMetrica(id);
+  metricaActive = true;
+  window.ym(id, 'hit', metricaUrl(currentUrl()), { title: document.title, referer: metricaUrl(document.referrer) });
 }
 
 function loadGA(id) {
@@ -102,7 +137,7 @@ export function trackPage(url = currentUrl()) {
   const title = document.title;
   const ym = YM_ID();
   const ga = GA_ID();
-  if (ym && window.ym) window.ym(ym, 'hit', absolute(url), { title, referer: referrer });
+  if (ym && metricaActive && window.ym) window.ym(ym, 'hit', metricaUrl(url), { title, referer: metricaUrl(referrer) });
   if (ga && window.gtag) {
     window.gtag('event', 'page_view', { page_location: absolute(url), page_title: title });
   }
@@ -118,7 +153,7 @@ export function trackPage(url = currentUrl()) {
 export function trackEvent(name, params = {}) {
   const ym = YM_ID();
   const ga = GA_ID();
-  if (ym && window.ym) window.ym(ym, 'reachGoal', name, params);
+  if (ym && metricaActive && window.ym) window.ym(ym, 'reachGoal', name, params);
   if (ga && window.gtag) window.gtag('event', name, params);
   if (window.va) window.va('event', { name, data: params });
 }
@@ -154,11 +189,15 @@ export function initAnalytics() {
   const start = () => {
     const ym = YM_ID();
     const ga = GA_ID();
-    if (ym) loadMetrica(ym);
     if (ga) loadGA(ga);
     if (VERCEL_ON()) loadVercel();
     trackPage();
     wireRouteChanges();
+    if (ym) {
+      const observer = new MutationObserver(maskMetricaFields);
+      observer.observe(document.body, {childList:true,subtree:true});
+      initMetricaConsent(setMetricaConsent);
+    }
   };
   requestAnimationFrame(() => requestAnimationFrame(start));
 }

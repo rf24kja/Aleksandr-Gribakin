@@ -1,6 +1,11 @@
 const CATEGORIES = ['Infrastructure', 'CI/CD', 'Backend', 'Data', 'Frontend', 'Observability'];
 
 const EN = {
+  METRICA: {
+    TITLE: 'Optional Yandex.Metrica analytics',
+    TEXT: 'With your consent, Yandex.Metrica uses cookies and Webvisor to analyse visits and interactions. Form values and terminal content are excluded. Data is sent to Yandex. Declining does not limit access. Existing Google Analytics and Vercel Analytics are described separately in the privacy policy.',
+    ACCEPT: 'Accept', DECLINE: 'Decline', SETTINGS: 'Yandex.Metrica preferences', PRIVACY: 'Privacy policy',
+  },
   NAME: 'ALEKSANDR GRIBAKIN', TAGLINE: '15 Years in Code', SKIP_LINK: 'Skip to content',
   ROLE: 'Lead Full Stack & DevOps Engineer',
   INTRO_SUB: 'Building systems that scale. Automating what should never have been manual.',
@@ -199,6 +204,11 @@ const EN = {
 };
 
 const RU = {
+  METRICA: {
+    TITLE: 'Необязательная аналитика Яндекс Метрики',
+    TEXT: 'С вашего согласия Яндекс Метрика использует cookie и Вебвизор для анализа посещений и взаимодействий. Значения полей и содержимое терминала исключены. Данные передаются Яндексу. Отказ не ограничивает доступ. Существующие Google Analytics и Vercel Analytics описаны отдельно в политике конфиденциальности.',
+    ACCEPT: 'Принять', DECLINE: 'Отклонить', SETTINGS: 'Настройки Яндекс Метрики', PRIVACY: 'Политика конфиденциальности',
+  },
   NAME: 'АЛЕКСАНДР ГРИБАКИН', TAGLINE: '15 лет в коде', SKIP_LINK: 'Перейти к содержанию',
   ROLE: 'Lead Full Stack & DevOps Engineer',
   INTRO_SUB: 'Строю системы, которые масштабируются. Автоматизирую то, что никогда не должно было делаться руками.',

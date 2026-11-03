@@ -73,8 +73,15 @@ loaded at all. Vercel needs no id, only its project toggle.
 
 This is a single-page site, so a pageview is a decision, not an event: Metrica
 is initialised with `defer: true` and GA4 with `send_page_view: false`, and
-`trackPage()` is the only thing that reports one. It de-duplicates by URL
+`trackPage()` reports route changes; consent acceptance reports the current page once. It de-duplicates by URL
 because the app rewrites the address with `replaceState` on boot.
+
+Metrica 114040235 requires its own optional consent (`dev24_metrica_consent_v1`),
+handled by `src/lib/metrica-consent.js`; no remote Metrica script or noscript
+pixel before acceptance. Preferences withdraw with `destruct`. GA4/Vercel retain
+their existing behavior and are not controlled by this provider-specific choice.
+Metrica URLs/referrers exclude queries and arbitrary fragments. Keep form fields
+masked and forms/terminal content hidden from Webvisor, including dynamic nodes.
 
 `trackEvent('consult')` fires on a successful send and nowhere else — never on
 the submit click. Both the business form and the terminal's `contact` flow

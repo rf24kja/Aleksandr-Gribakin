@@ -11,16 +11,15 @@
  * every one of those calls is in this repository. Two consequences worth
  * keeping in mind when editing:
  *
- *   - Yandex.Metrica is absent because it is not connected. When the counter is
- *     added, this file must be updated in the same deploy. A policy that omits
- *     a live tracker is worse than no policy.
+ *   - Yandex.Metrica requires separate optional consent; GA4 and Vercel retain
+ *     their existing behavior and must be described separately.
  *   - The storage keys below are the real ones. If a key is renamed in the app,
  *     rename it here too.
  */
 
 import { CONTACTS } from './process.js';
 
-export const PRIVACY_UPDATED = '2026-08-07';
+export const PRIVACY_UPDATED = '2026-11-03';
 
 // The policy is where someone exercises a right, so the address in it has to be
 // one that receives mail. Read from the same constant the footer uses rather
@@ -31,7 +30,7 @@ const MAIL = CONTACTS.email;
 export const PRIVACY = {
   EN: {
     title: 'Privacy Policy',
-    updated: 'Last updated: 7 August 2026',
+    updated: 'Last updated: 3 November 2026',
     intro: 'This site is a personal portfolio. It collects as little as it can, and this page says exactly what that is.',
     sections: [
       {
@@ -63,6 +62,7 @@ export const PRIVACY = {
           'theme — light or dark',
           'terminal-history — your command history in terminal mode',
           'attribution — the campaign labels, kept only until the tab is closed',
+          'dev24_metrica_consent_v1 — your separate Yandex.Metrica choice',
         ],
         after: ['All of it can be removed by clearing this site\'s data in your browser.'],
       },
@@ -71,8 +71,9 @@ export const PRIVACY = {
         list: [
           'Google Analytics 4 — anonymised visit statistics; it sets its own cookies (_ga and related).',
           'Vercel Web Analytics — visit statistics without cookies.',
+          'Yandex.Metrica, counter 114040235 — optional cookies and Webvisor for visits, browser/device information, clicks and interactions, only after you accept. Data is sent to Yandex. Form values and terminal content are excluded from recording.',
         ],
-        after: ['You can opt out with a blocker or by refusing third-party cookies. The site keeps working either way.'],
+        after: ['Use Yandex.Metrica preferences to decline or withdraw Metrica consent. This stops future collection, not deletion of data already sent or removal of provider cookies. GA4 and Vercel behavior is unchanged; the Metrica choice does not disable them. You can additionally use a blocker or browser privacy settings. The site keeps working either way.'],
       },
       {
         h: 'How long it is kept',
@@ -94,7 +95,7 @@ export const PRIVACY = {
 
   RU: {
     title: 'Политика конфиденциальности',
-    updated: 'Обновлено: 7 августа 2026',
+    updated: 'Обновлено: 3 ноября 2026',
     intro: 'Это персональный сайт-портфолио. Он собирает минимум, и на этой странице написано, что именно.',
     sections: [
       {
@@ -126,6 +127,7 @@ export const PRIVACY = {
           'theme — светлая или тёмная тема',
           'terminal-history — история команд в терминальном режиме',
           'attribution — метки рекламной кампании; хранится только до закрытия вкладки',
+          'dev24_metrica_consent_v1 — отдельный выбор Яндекс Метрики',
         ],
         after: ['Всё это удаляется очисткой данных сайта в браузере.'],
       },
@@ -134,8 +136,9 @@ export const PRIVACY = {
         list: [
           'Google Analytics 4 — обезличенная статистика посещений; ставит собственные файлы cookie (_ga и производные).',
           'Vercel Web Analytics — статистика посещений без файлов cookie.',
+          'Яндекс Метрика, счётчик 114040235 — необязательные cookie и Вебвизор для посещений, сведений о браузере/устройстве, кликов и взаимодействий, только после согласия. Данные передаются Яндексу. Значения полей и содержимое терминала исключены из записи.',
         ],
-        after: ['Отказаться можно блокировщиком или запретом сторонних cookie. Сайт продолжит работать.'],
+        after: ['Отказаться от Метрики или отозвать согласие можно через «Настройки Яндекс Метрики». Это прекращает последующий сбор, но не удаляет ранее переданные данные и cookie провайдера. Поведение GA4 и Vercel не менялось; выбор Метрики их не отключает. Дополнительно доступны блокировщик и настройки приватности браузера. Сайт продолжит работать.'],
       },
       {
         h: 'Сколько хранится',

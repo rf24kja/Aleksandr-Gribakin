@@ -34,11 +34,13 @@ const setMeta = (html, name, value) => html.replace(
 
 /** Serves the real site with the counters as given, and nothing phoning home. */
 async function withCounters(page, { ym = YM, ga = GA, vercel = false } = {}) {
+  await page.addInitScript(() => localStorage.setItem('dev24_metrica_consent_v1', 'accepted'));
   await page.route('**/_vercel/insights/**', (route) => route.fulfill({
     status: 200, contentType: 'application/javascript', body: 'window.va=function(){};',
   }));
   await page.route(/mc\.yandex\.ru|googletagmanager\.com/, (route) => route.abort());
   await page.route('**/*', async (route) => {
+    if (route.request().resourceType() !== 'document') return route.fallback();
     const res = await route.fetch();
     if (!(res.headers()['content-type'] || '').includes('text/html')) {
       return route.fulfill({ response: res });
@@ -93,7 +95,7 @@ test('a counter with no id configured contacts nobody', async ({ page }) => {
   expect(await ga4(page)).toEqual([]);
 });
 
-test('the site ships with a working GA4 id and no Metrica yet', async ({ page }) => {
+test('the site ships with separate GA4 and Metrica ids', async ({ page }) => {
   // Guards the handover itself. A measurement id is one typo away from
   // silently collecting nothing, and it is a value no test would otherwise
   // look at — the counters are configured one at a time, and this records
@@ -101,7 +103,7 @@ test('the site ships with a working GA4 id and no Metrica yet', async ({ page })
   const html = await (await page.request.get('/')).text();
   expect(html).toMatch(/<meta name="google-analytics" content="G-[A-Z0-9]{8,}"/);
   expect(html, 'Vercel is on — its endpoint serves the script').toContain('<meta name="vercel-analytics" content="on"');
-  expect(html, 'Metrica is waiting on the account').toContain('<meta name="yandex-metrica" content=""');
+  expect(html).toContain('<meta name="yandex-metrica" content="114040235"');
 });
 
 test.describe('with the counters configured', () => {
@@ -133,7 +135,8 @@ test.describe('with the counters configured', () => {
     expect(calls[1][2]).toContain('#/project/pg-highload');
     // The second view says where it came from, or every internal step looks
     // like a fresh arrival from the advert.
-    expect(calls[1][3].referer).toContain('/?t=');
+    expect(new URL(calls[1][3].referer).pathname).toBe('/');
+    expect(new URL(calls[1][3].referer).search).toBe('');
   });
 
   test('the same address is never reported twice', async ({ page }) => {
